@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Akrinity Shop Sample</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="announce"><div class="wrap"><span>Free shipping across India above ₹[AMOUNT]</span><span>UPI · Cards · COD · GST invoices</span></div></div>
+
+<header class="site"><div class="wrap bar">
+<a class="logo" href="index.html" aria-label="Akrinity home">Akrinity<i aria-hidden="true"></i></a>
+<nav class="main" aria-label="Main">
+<a href="shop.html" aria-current="page" style="color:var(--violet)">Shop</a><a href="index.html#custom">Custom printing</a><a href="index.html#process">How it works</a><a href="index.html#work">Portfolio</a><a href="index.html#business">Business</a>
+</nav>
+<div class="hdr-actions">
+<button class="circle" type="button" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+<button class="circle" id="cartBtn" type="button" aria-label="Cart, 0 items">0</button>
+<a class="btn btn-dark btn-sm" href="index.html#custom">Get a quote</a>
+</div>
+</div></header>
+
+<main id="main">
+
+<nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span aria-current="page">Shop</span></nav>
+
+<div class="wrap page-title">
+<h1 class="d">Shop <span class="hl">ready-made</span></h1>
+<p>Finished prints, in stock and made to order. Made-to-order and personalized items are not available as cash on delivery.</p>
+<p class="sample-note">Sample products. Names, prices and availability are placeholders.</p>
+</div>
+
+<div class="wrap shop-layout">
+
+<aside class="side" id="side" aria-label="Filters">
+<div class="side-top"><h2>Filters</h2><button class="link-btn" id="clear" type="button">Clear all</button></div>
+<div class="side-sec"><span class="label">Category</span><div id="cats"></div></div>
+<div class="side-sec"><span class="label" id="availLabel">Availability</span><div class="seg" id="avail" role="group" aria-labelledby="availLabel"></div></div>
+<div class="side-sec"><span class="label">Material</span><div id="mats"></div></div>
+<div class="side-sec"><label class="label" for="sort">Sort by</label>
+<select class="select" id="sort" style="width:100%">
+<option value="featured">Featured</option>
+<option value="name">Name A to Z</option>
+<option value="stock">In stock first</option>
+</select></div>
+</aside>
+
+<section aria-label="Products">
+<div class="toolbar">
+<div class="result" id="count" role="status" aria-live="polite">12 products</div>
+<button class="btn btn-sm filters-toggle" id="filtersBtn" type="button" aria-expanded="false" aria-controls="side">Filters</button>
+<div class="active-chips" id="active"></div>
+</div>
+<div class="grid-shop" id="grid"></div>
+<div class="empty" id="empty" role="status">
+<p><b>No products match these filters.</b></p>
+<button class="btn" id="clear2" type="button">Clear filters</button>
+</div>
+</section>
+
+</div>
+
+</main>
+
+<dialog id="qv" aria-labelledby="qvName">
+<div class="qv-body">
+<button class="qv-close" id="qvClose" type="button" aria-label="Close quick view">×</button>
+<div class="qv-art"><div class="pc-obj" id="qvObj"></div></div>
+<div class="qv-info">
+<span class="tag" id="qvTag">In stock</span>
+<h2 class="d" id="qvName">Product</h2>
+<p class="muted" id="qvMeta"></p>
+<div class="price"><span class="amt">₹[price]</span><span class="muted" style="font-size:14px">incl. GST</span></div>
+<div class="swatches" id="qvSw" role="group" aria-label="Colour"></div>
+<div class="qv-actions"><button class="btn btn-primary" id="qvAdd" type="button">Add to cart</button><a class="btn" href="product.html">Full details</a></div>
+</div>
+</div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer class="site"><div class="wrap">
+<div class="fcols">
+<div><div class="wm">Akrinity</div><p style="color:var(--muted-dark);font-size:14px;margin-top:10px">Get new drops and offers by email.</p></div>
+<div><h3>Shop</h3><a href="shop.html">All products</a><a href="shop.html">Home decor</a><a href="shop.html">Gifts and personalized</a><a href="shop.html">Spare parts</a></div>
+<div><h3>Custom</h3><a href="index.html#custom">Request a quote</a><a href="index.html#custom">Design and print</a><a href="index.html#business">Business orders</a><a href="index.html#work">Portfolio</a></div>
+<div><h3>Support</h3><a href="#main">Track your order</a><a href="#main">Shipping</a><a href="#main">Returns and warranty</a><a href="#main">Privacy and file terms</a></div>
+</div>
+<div class="fbar"><span>© Akrinity · GSTIN [YOUR GSTIN]</span><span>UPI · Cards · Netbanking · Cash on Delivery</span></div>
+</div></footer>
+
+<div class="ctl"><div class="in" role="group" aria-label="Preview level"><small>Sample level</small>
+<button type="button" data-tier="full" aria-pressed="true">Full</button>
+<button type="button" data-tier="light" aria-pressed="false">Light</button>
+<button type="button" data-tier="static" aria-pressed="false">Static</button></div></div>
+
+<script src="app.js"></script>
+<script src="shop.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+name = "akrinity-web"
+compatibility_date = "2026-11-01"
+pages_build_output_dir = "out"
+
+# Private customer-file bucket (Cloudflare R2). Created in the dashboard; no keys here.
+# [[r2_buckets]]
+# binding = "CUSTOMER_FILES"
+# bucket_name = "akrinity-customer-files"

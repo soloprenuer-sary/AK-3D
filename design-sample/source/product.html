@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Akrinity Product Sample</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="announce"><div class="wrap"><span>Free shipping across India above ₹[AMOUNT]</span><span>UPI · Cards · COD · GST invoices</span></div></div>
+
+<header class="site"><div class="wrap bar">
+<a class="logo" href="index.html" aria-label="Akrinity home">Akrinity<i aria-hidden="true"></i></a>
+<nav class="main" aria-label="Main">
+<a href="shop.html">Shop</a><a href="index.html#custom">Custom printing</a><a href="index.html#process">How it works</a><a href="index.html#work">Portfolio</a><a href="index.html#business">Business</a>
+</nav>
+<div class="hdr-actions">
+<button class="circle" type="button" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+<button class="circle" type="button" aria-label="Cart, 0 items">0</button>
+<a class="btn btn-dark btn-sm" href="index.html#custom">Get a quote</a>
+</div>
+</div></header>
+
+<main id="main">
+
+<nav class="crumbs" aria-label="Breadcrumb">
+<a href="index.html">Home</a><span aria-hidden="true">/</span><a href="shop.html">Shop</a><span aria-hidden="true">/</span><a href="shop.html">Desk and gadgets</a><span aria-hidden="true">/</span><span aria-current="page">Layered desk organiser</span>
+</nav>
+
+<section class="pdp wrap" aria-labelledby="pname">
+
+<div class="gallery">
+<div class="tabs" role="tablist" aria-label="Product views">
+<button class="tab" id="tab-photo" role="tab" type="button" aria-selected="true" aria-controls="pv-photo">Photos</button>
+<button class="tab" id="tab-3d" role="tab" type="button" aria-selected="false" aria-controls="pv-3d" tabindex="-1">3D view</button>
+</div>
+<div class="main-img" id="pv-photo" role="tabpanel" aria-labelledby="tab-photo"><span>Main product photo</span></div>
+<div class="main-3d" id="pv-3d" role="tabpanel" aria-labelledby="tab-3d" hidden><p>The 3D viewer loads here in Phase 2. Models rotate and show dimensions.</p></div>
+<div class="thumbs" role="group" aria-label="Photos">
+<button class="thumb" type="button" aria-label="Photo 1" aria-pressed="true"></button>
+<button class="thumb" type="button" aria-label="Photo 2" aria-pressed="false"></button>
+<button class="thumb" type="button" aria-label="Photo 3" aria-pressed="false"></button>
+<button class="thumb" type="button" aria-label="Photo 4" aria-pressed="false"></button>
+</div>
+</div>
+
+<div class="buy">
+<div><span class="tag accent">In stock</span></div>
+<h1 class="d" id="pname">Layered desk organiser</h1>
+<div class="price"><span class="amt">₹[price]</span><span class="muted" style="font-size:14px;font-weight:500">incl. GST</span></div>
+<p class="desc">[Two or three lines on what this is, who it is for and what makes it good.]</p>
+
+<fieldset class="opt">
+<legend>Material</legend>
+<div class="pills" data-group="material">
+<button class="pill" type="button" aria-pressed="true">PLA+</button>
+<button class="pill" type="button" aria-pressed="false">PETG</button>
+<button class="pill" type="button" aria-pressed="false">ABS</button>
+</div>
+</fieldset>
+
+<fieldset class="opt">
+<legend>Colour: <span id="colourName" style="font-weight:500;letter-spacing:0;text-transform:none">Black</span></legend>
+<div class="swatches">
+<button class="sw" type="button" aria-label="Black" data-name="Black" aria-pressed="true" style="background:#0B0B0C"></button>
+<button class="sw" type="button" aria-label="White" data-name="White" aria-pressed="false" style="background:#FFFFFF"></button>
+<button class="sw" type="button" aria-label="Orange" data-name="Orange" aria-pressed="false" style="background:#FF6A1F"></button>
+<button class="sw" type="button" aria-label="Violet" data-name="Violet" aria-pressed="false" style="background:#5B2BE0"></button>
+</div>
+</fieldset>
+
+<fieldset class="opt">
+<legend>Size</legend>
+<div class="pills" data-group="size">
+<button class="pill" type="button" aria-pressed="false">Small</button>
+<button class="pill" type="button" aria-pressed="true">Medium</button>
+<button class="pill" type="button" aria-pressed="false">Large</button>
+</div>
+</fieldset>
+
+<div class="opt">
+<label for="personal">Personalization <span class="muted" style="text-transform:none;letter-spacing:0;font-weight:500;font-size:14px">(optional)</span></label>
+<input class="text" id="personal" type="text" maxlength="40" placeholder="Name or short text" aria-describedby="personalHint" aria-invalid="false">
+<div class="hint" id="personalHint"><span><span id="count">0</span>/40 characters</span><span>Letters, numbers and spaces</span></div>
+<p class="err" id="personalErr" role="alert" hidden></p>
+</div>
+
+<div class="buyrow">
+<div class="qty">
+<button id="qtyDown" type="button" aria-label="Decrease quantity">−</button>
+<span id="qty" aria-live="polite">1</span>
+<button id="qtyUp" type="button" aria-label="Increase quantity">+</button>
+</div>
+<button class="btn btn-primary" id="add" type="button">Add to cart</button>
+</div>
+<p class="status" id="addStatus" aria-live="polite"></p>
+<a class="btn btn-wide" href="#">Order on WhatsApp</a>
+
+<div class="notice">
+<span class="label">In stock, ships in [X] working days</span>
+<span class="muted" style="font-size:14px">Packed and handed to the courier once payment is confirmed.</span>
+</div>
+
+<div class="opt">
+<label for="pin">Delivery estimate</label>
+<div class="pinrow"><input id="pin" type="text" inputmode="numeric" maxlength="6" placeholder="Enter pincode"><button class="btn btn-dark" id="pinBtn" type="button">Check</button></div>
+<p class="err" id="pinErr" role="alert" hidden></p>
+<p class="ok" id="pinOk" role="status" hidden></p>
+</div>
+
+<div class="bulk">
+<span class="label">Buying in bulk?</span>
+<div class="tiers">
+<div><span>1 to 9</span><b>₹[price]</b></div>
+<div><span>10 to 49</span><b>₹[price]</b></div>
+<div><span>50 and up</span><b>₹[price]</b></div>
+</div>
+<a class="link" href="index.html#business">Request a bulk quote →</a>
+</div>
+</div>
+
+</section>
+
+<section class="details"><div class="wrap">
+<div><h2>Details</h2><p>[Dimensions, weight, finish, assembly and care instructions.]</p></div>
+<div><h2>Shipping</h2><p>[Dispatch time, courier, tracking, free shipping threshold.]</p></div>
+<div><h2>Returns and warranty</h2><p>[Return window for ready-made items. Made-to-order and personalized items are not returnable unless faulty.]</p></div>
+</div></section>
+
+<section class="related"><div class="wrap">
+<h2 class="d">You may also <span class="hl">like</span></h2>
+<div class="grid4">
+<a class="card-p" href="product.html"><div class="img stripes"><span class="tag accent">In stock</span></div><div class="row"><div><div class="name">[Product name]</div><div class="price">₹[price]</div></div><span class="add" aria-hidden="true">+</span></div></a>
+<a class="card-p" href="product.html"><div class="img stripes"><span class="tag">Made to order</span></div><div class="row"><div><div class="name">[Product name]</div><div class="price">₹[price]</div></div><span class="add" aria-hidden="true">+</span></div></a>
+<a class="card-p" href="product.html"><div class="img stripes"><span class="tag accent">In stock</span></div><div class="row"><div><div class="name">[Product name]</div><div class="price">₹[price]</div></div><span class="add" aria-hidden="true">+</span></div></a>
+<a class="card-p" href="product.html"><div class="img stripes"><span class="tag">Made to order</span></div><div class="row"><div><div class="name">[Product name]</div><div class="price">₹[price]</div></div><span class="add" aria-hidden="true">+</span></div></a>
+</div>
+</div></section>
+
+</main>
+
+<footer class="site"><div class="wrap">
+<div class="fcols">
+<div><div class="wm">Akrinity</div><p style="color:var(--muted-dark);font-size:14px;margin-top:10px">Get new drops and offers by email.</p></div>
+<div><h3>Shop</h3><a href="shop.html">All products</a><a href="shop.html">Home decor</a><a href="shop.html">Gifts and personalized</a><a href="shop.html">Spare parts</a></div>
+<div><h3>Custom</h3><a href="index.html#custom">Request a quote</a><a href="index.html#custom">Design and print</a><a href="index.html#business">Business orders</a><a href="index.html#work">Portfolio</a></div>
+<div><h3>Support</h3><a href="#top">Track your order</a><a href="#top">Shipping</a><a href="#top">Returns and warranty</a><a href="#top">Privacy and file terms</a></div>
+</div>
+<div class="fbar"><span>© Akrinity · GSTIN [YOUR GSTIN]</span><span>UPI · Cards · Netbanking · Cash on Delivery</span></div>
+</div></footer>
+
+<div class="ctl"><div class="in" role="group" aria-label="Preview level"><small>Sample level</small>
+<button type="button" data-tier="full" aria-pressed="true">Full</button>
+<button type="button" data-tier="light" aria-pressed="false">Light</button>
+<button type="button" data-tier="static" aria-pressed="false">Static</button></div></div>
+
+<script src="app.js"></script>
+<script src="product.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "akrinity-web-static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--prefix", "akrinity-web", "serve", "akrinity-web/out", "-l", "3000"],
+      "port": 3000
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+# dependencies and build output (all sub-projects)
+node_modules/
+.next/
+out/
+.wrangler/
+
+# secrets (never commit real values)
+.env
+.env.*
+!.env.example
+
+# unrelated files kept out of the project repo
+dodge.svg
+dodge-challenger.svg
+ippo.svg
+ippo-front.svg
+
+# local Claude settings
+.claude/settings.local.json
+
+# OS and editor
+.DS_Store
+Thumbs.db

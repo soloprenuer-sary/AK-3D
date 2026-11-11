@@ -1,0 +1,185 @@
+<title>Akrinity Design Sample</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="announce"><div class="wrap"><span>Free shipping across India above ₹[AMOUNT]</span><span>UPI · Cards · COD · GST invoices</span></div></div>
+
+<header class="site"><div class="wrap bar">
+<a class="logo" href="index.html" aria-label="Akrinity home">Akrinity<i aria-hidden="true"></i></a>
+<nav class="main" aria-label="Main">
+<a href="shop.html">Shop</a><a href="#custom">Custom printing</a><a href="#process">How it works</a><a href="#work">Portfolio</a><a href="#business">Business</a>
+</nav>
+<div class="hdr-actions">
+<button class="circle" type="button" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+<button class="circle" type="button" aria-label="Cart, 0 items">0</button>
+<a class="btn btn-dark btn-sm" href="#custom">Get a quote</a>
+</div>
+</div></header>
+
+<main id="main">
+
+<section class="hero" id="top"><div class="wrap hero-grid">
+<div class="hero-copy">
+<span class="tag accent rise">3D printing studio, Mumbai</span>
+<h1 class="d rise" style="margin-top:20px;animation-delay:.05s">We print <span class="hl">anything.</span></h1>
+<p class="lead rise" style="animation-delay:.12s">Ready-made prints shipped across India, and custom jobs from your own file. Pay for custom work only after you approve the quote.</p>
+<div class="cta rise" style="animation-delay:.2s"><a class="btn btn-primary" href="shop.html">Shop ready-made</a><a class="btn" href="#custom">Upload a file</a></div>
+</div>
+<div class="hero-visual rise" style="animation-delay:.1s">
+<div class="disc" aria-hidden="true"></div>
+<div class="hero-printer" id="heroPrinter"></div>
+<div class="badge" aria-hidden="true">Made layer<br>by layer</div>
+</div>
+</div></section>
+
+<section class="sec" id="printer" style="padding-top:0"><div class="wrap">
+<div class="head-row">
+<div><span class="tag accent">Printing now</span><h2 class="d" style="margin-top:16px">Watch a <span class="hl">part</span> come off the bed.</h2></div>
+<p>Every part is built one thin layer at a time. The head moves across each layer, then steps up to the next one.</p>
+</div>
+<div class="loop-card">
+<div class="readout"><span class="big" id="roLayer">Layer 1 of 30</span><span>PLA+ · Sample vase</span></div>
+<div class="loop-host" id="loopPrinter"></div>
+</div>
+</div></section>
+
+<section class="stats"><div class="wrap">
+<div class="stat"><b>4</b><span>Material families</span></div>
+<div class="stat"><b>Pan-India</b><span>Tracked shipping</span></div>
+<div class="stat"><b>GST</b><span>Invoices for business</span></div>
+<div class="stat"><b>[X] hrs</b><span>Quote reply time</span></div>
+</div></section>
+
+<section class="statement"><div class="wrap">
+<h2 class="d">Made layer by <span class="hl">layer.</span></h2>
+<div class="side"><p class="muted" style="font-size:17px">Every part starts as a file and ends as something you can hold. See how a job moves from upload to your door.</p><a class="btn btn-dark btn-sm" href="#process" style="align-self:flex-start;border-radius:6px">See the process</a></div>
+</div></section>
+
+<section class="sec" id="shop"><div class="wrap">
+<div class="sec-head"><h2 class="d">Shop by <span style="color:var(--violet)">category</span></h2><a class="btn btn-sm" href="shop.html">View all</a></div>
+<div class="grid4">
+<a class="tile" href="shop.html" style="background:var(--accent)"><div class="shape"></div><span class="pill-l">Home decor</span><span class="arrow" aria-hidden="true">→</span></a>
+<a class="tile" href="shop.html" style="background:var(--violet);color:var(--white)"><div class="shape"></div><span class="pill-l">Desk and gadgets</span><span class="arrow" aria-hidden="true">→</span></a>
+<a class="tile" href="shop.html" style="background:var(--orange)"><div class="shape"></div><span class="pill-l">Figurines and miniatures</span><span class="arrow" aria-hidden="true">→</span></a>
+<a class="tile" href="shop.html" style="background:var(--ink)"><div class="shape" style="background:repeating-linear-gradient(0deg,rgba(243,241,234,.28) 0 6px,transparent 6px 12px);border-color:var(--paper)"></div><span class="pill-l">Gifts and personalized</span><span class="arrow" aria-hidden="true">→</span></a>
+</div>
+</div></section>
+
+<section class="custom" id="custom"><div class="wrap"><div class="card">
+<div>
+<span class="tag accent">Custom printing</span>
+<h2 class="d" style="margin-top:16px">Your file.<br>Our <em>printers.</em></h2>
+<p>Upload an STL, 3MF, OBJ, STEP or IGES file, pick a material, and get a price and lead time. Have only a sketch or an idea? We can model it first.</p>
+<a class="btn btn-primary" href="#custom">Request a quote</a>
+</div>
+<div class="upload" aria-label="Example of the upload form">
+<span class="label">3D file</span>
+<div class="drop"><span class="up" aria-hidden="true">↑</span><b>Choose files or drop them here</b><span class="muted" style="font-size:14px">STL, 3MF, OBJ, STEP, IGES · up to [XX] MB each</span></div>
+<div class="pills"><span class="pill" aria-pressed="true">PLA / PLA+</span><span class="pill" aria-pressed="false">PETG</span><span class="pill" aria-pressed="false">ABS / ASA</span><span class="pill" aria-pressed="false">Resin</span></div>
+</div>
+</div></div></section>
+
+<section class="sec" style="padding-top:24px"><div class="wrap">
+<div class="sec-head"><h2 class="d">Best <span class="hl">sellers</span></h2></div>
+<div class="grid4">
+<a class="card-p" href="product.html"><div class="img stripes"><span class="tag accent">In stock</span></div><div class="row"><div><div class="name">[Product name]</div><div class="price">₹[price]</div></div><span class="add" aria-hidden="true">+</span></div></a>
+<a class="card-p" href="product.html"><div class="img stripes"><span class="tag">Made to order</span></div><div class="row"><div><div class="name">[Product name]</div><div class="price">₹[price]</div></div><span class="add" aria-hidden="true">+</span></div></a>
+<a class="card-p" href="product.html"><div class="img stripes"><span class="tag accent">In stock</span></div><div class="row"><div><div class="name">[Product name]</div><div class="price">₹[price]</div></div><span class="add" aria-hidden="true">+</span></div></a>
+<a class="card-p" href="product.html"><div class="img stripes"><span class="tag">Made to order</span></div><div class="row"><div><div class="name">[Product name]</div><div class="price">₹[price]</div></div><span class="add" aria-hidden="true">+</span></div></a>
+</div>
+</div></section>
+
+<section class="sec band-ink process" id="process"><div class="wrap">
+<h2 class="d">From file to <em>front door</em></h2>
+<div class="steps">
+<div class="step"><span class="n">1</span><div><h3>Upload</h3><p>Send your 3D file or a sketch, and pick material and quantity.</p></div></div>
+<div class="step"><span class="n">2</span><div><h3>Quote</h3><p>We reply with a price and lead time.</p></div></div>
+<div class="step"><span class="n">3</span><div><h3>Approve and pay</h3><p>Larger jobs start with an advance. The balance is due before dispatch.</p></div></div>
+<div class="step"><span class="n">4</span><div><h3>Print and check</h3><p>We print your part and inspect it.</p></div></div>
+<div class="step"><span class="n">5</span><div><h3>Ship</h3><p>Tracked delivery, with a GST invoice if you need one.</p></div></div>
+</div>
+</div></section>
+
+<section class="sec"><div class="wrap">
+<div class="sec-head"><h2 class="d">Pick your <span style="color:var(--violet)">material</span></h2></div>
+<div class="mats">
+<div class="mat"><div class="top" style="background:var(--accent)"><b>PLA / PLA+</b></div><div class="body"><span class="label">Best for</span><p>Decor, display pieces, prototypes and everyday objects. Easy to print, clean surface detail, wide colour range.</p></div></div>
+<div class="mat"><div class="top" style="background:var(--violet)"><b style="color:var(--white)">PETG / ABS / ASA</b></div><div class="body"><span class="label">Best for</span><p>Tougher parts that face heat, impact or sunlight. ASA is the choice for outdoor use.</p></div></div>
+<div class="mat"><div class="top" style="background:var(--orange)"><b>Resin</b></div><div class="body"><span class="label">Best for</span><p>Fine detail and smooth finish: miniatures, jewellery models and small precise parts.</p></div></div>
+</div>
+</div></section>
+
+<section class="sec work" id="work" style="padding-top:24px"><div class="wrap">
+<div class="sec-head"><h2 class="d">Selected work</h2></div>
+<div class="grid4">
+<div><div class="tile2 stripes"></div><div class="cap"><b>[Project name]</b><span>[Material] · [Qty]</span></div></div>
+<div><div class="tile2 stripes"></div><div class="cap"><b>[Project name]</b><span>[Material] · [Qty]</span></div></div>
+<div><div class="tile2 stripes"></div><div class="cap"><b>[Project name]</b><span>[Material] · [Qty]</span></div></div>
+<div><div class="tile2 stripes"></div><div class="cap"><b>[Project name]</b><span>[Material] · [Qty]</span></div></div>
+</div>
+</div></section>
+
+<section class="final" id="business"><div class="wrap">
+<div>
+<h2 class="d">Let's print<br>something.</h2>
+<div class="cta" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px"><a class="btn btn-dark" href="#custom">Request a quote</a><a class="btn" href="#custom">Business and bulk orders</a></div>
+</div>
+<div class="contact">
+<div><span>WhatsApp</span><p>[WhatsApp number]</p></div>
+<div><span>Email</span><p>[support email]</p></div>
+<div><span>Studio</span><p>Mumbai, India</p></div>
+<div><span>Reply time</span><p>Within [X] hours</p></div>
+</div>
+</div></section>
+
+</main>
+
+<footer class="site"><div class="wrap">
+<div class="fcols">
+<div><div class="wm">Akrinity</div><p style="color:var(--muted-dark);font-size:14px;margin-top:10px">Get new drops and offers by email.</p>
+<form class="news" id="news"><label class="sr" for="em">Email</label><input id="em" type="email" placeholder="name@company.com" required><button type="submit" aria-label="Subscribe">→</button></form>
+<p id="newsmsg" style="font-size:13px;color:var(--accent);margin-top:8px" aria-live="polite"></p></div>
+<div><h3>Shop</h3><a href="shop.html">All products</a><a href="shop.html">Home decor</a><a href="shop.html">Gifts and personalized</a><a href="shop.html">Spare parts</a></div>
+<div><h3>Custom</h3><a href="#custom">Request a quote</a><a href="#custom">Design and print</a><a href="#business">Business orders</a><a href="#work">Portfolio</a></div>
+<div><h3>Support</h3><a href="#top">Track your order</a><a href="#top">Shipping</a><a href="#top">Returns and warranty</a><a href="#top">Privacy and file terms</a></div>
+</div>
+<div class="fbar"><span>© Akrinity · GSTIN [YOUR GSTIN]</span><span>UPI · Cards · Netbanking · Cash on Delivery</span></div>
+</div></footer>
+
+<div class="ctl"><div class="in" role="group" aria-label="Preview level"><small>Sample level</small>
+<button type="button" data-tier="full" aria-pressed="true">Full</button>
+<button type="button" data-tier="light" aria-pressed="false">Light</button>
+<button type="button" data-tier="static" aria-pressed="false">Static</button></div></div>
+
+<script src="printer.js"></script>
+<script src="app.js"></script>
+<script>
+(function(){
+  var heroHost=document.getElementById('heroPrinter');
+  var loopHost=document.getElementById('loopPrinter');
+  var hero=AkPrinter.create(heroHost,{mode:'hero'});
+  var loop=AkPrinter.create(loopHost,{mode:'loop',label:document.getElementById('roLayer')});
+  var heroSec=document.getElementById('top');
+  function heroFrac(){var r=heroSec.getBoundingClientRect();return Math.max(0,Math.min(1,-r.top/(r.height*0.8)))}
+  function onScroll(){hero.setTarget(0.4+0.6*heroFrac())}
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+  function applyTier(t){hero.setTier(t);loop.setTier(t)}
+  document.addEventListener('aktier',function(e){applyTier(e.detail)});
+  applyTier(AkApp.tier());
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.target===heroHost)hero.setVisible(e.isIntersecting);
+        if(e.target===loopHost)loop.setVisible(e.isIntersecting);
+      });
+    },{threshold:0.1});
+    io.observe(heroHost);io.observe(loopHost);
+  }else{hero.setVisible(true);loop.setVisible(true)}
+})();
+</script>
