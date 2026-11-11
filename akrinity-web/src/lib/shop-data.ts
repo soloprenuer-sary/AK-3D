@@ -34,6 +34,14 @@ export const SHOP_CATEGORIES = [
 
 export const SHOP_MATERIALS: Material[] = ['PLA+', 'PETG', 'ABS / ASA', 'Resin'];
 
+/** URL slug for a product, e.g. "Layered vase" -> "layered-vase". */
+export function productSlug(p: ShopProduct): string {
+  return p.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export const SHOP_PRODUCTS: ShopProduct[] = [
   { id: 'p01', name: 'Layered vase', category: 'Home decor', inStock: true, material: 'PLA+', colours: ['violet', 'lime', 'black'] },
   { id: 'p02', name: 'Desk cable organiser', category: 'Desk and gadgets', inStock: true, material: 'PETG', colours: ['black', 'white', 'orange'] },

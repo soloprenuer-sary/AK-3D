@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, type CSSProperties, type PointerEvent } from 'react';
-import { COLOURS, type ColourKey, type ShopProduct } from '@/lib/shop-data';
+import Link from 'next/link';
+import { COLOURS, productSlug, type ColourKey, type ShopProduct } from '@/lib/shop-data';
 
 interface ProductCardProps {
   product: ShopProduct;
@@ -90,7 +91,9 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
 
       <div className="pc-info">
         <div>
-          <span className="pc-name">{product.name}</span>
+          <Link className="pc-name" href={`/product/${productSlug(product)}`}>
+            {product.name}
+          </Link>
           <span className="pc-meta" style={{ display: 'block' }}>
             {product.material} · {product.category}
           </span>
