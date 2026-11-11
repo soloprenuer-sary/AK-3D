@@ -21,3 +21,9 @@ ippo-front.svg
 # OS and editor
 .DS_Store
 Thumbs.db
+
+# local-only test models (licence not cleared for public use)
+**/dev-models/
+
+# TypeScript build cache
+*.tsbuildinfo

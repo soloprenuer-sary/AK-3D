@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
+import { ModelViewer } from '@/components/three/ModelViewer';
 import {
   COLOURS,
   SHOP_MATERIALS,
@@ -10,6 +11,13 @@ import {
   type Material,
   type ShopProduct,
 } from '@/lib/shop-data';
+
+/**
+ * Local test model, set in .env.local and only used by the development server. It is never part
+ * of a production build, because the test model's licence is not cleared for public use.
+ */
+const DEV_MODEL_URL =
+  process.env.NODE_ENV === 'development' ? process.env.NEXT_PUBLIC_DEV_MODEL_URL : undefined;
 
 const SIZES = ['Small', 'Medium', 'Large'] as const;
 type Size = (typeof SIZES)[number];
@@ -127,7 +135,7 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
             className="main-3d"
             hidden={view !== '3d'}
           >
-            <p>The 3D viewer loads here in Phase 2. Models rotate and show dimensions.</p>
+            {view === '3d' && <ModelViewer product={product} modelUrl={DEV_MODEL_URL} />}
           </div>
 
           <div className="thumbs" role="group" aria-label="Photos">
