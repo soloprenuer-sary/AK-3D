@@ -21,6 +21,8 @@ export interface ShopProduct {
   inStock: boolean;
   material: Material;
   colours: ColourKey[];
+  /** Product photos from /public (first image is the main one). Optional. */
+  images?: string[];
 }
 
 export const SHOP_CATEGORIES = [
@@ -55,4 +57,19 @@ export const SHOP_PRODUCTS: ShopProduct[] = [
   { id: 'p10', name: 'Wall hook trio', category: 'Home decor', inStock: true, material: 'PETG', colours: ['black', 'lime'] },
   { id: 'p11', name: 'Cosplay badge', category: 'Hobby and cosplay', inStock: false, material: 'Resin', colours: ['orange', 'black'] },
   { id: 'p12', name: 'Shelf bracket', category: 'Spare parts', inStock: true, material: 'PETG', colours: ['white', 'black'] },
+  {
+    id: 'p13',
+    name: 'Rectangular twisted lamp',
+    category: 'Home decor',
+    inStock: false,
+    material: 'PLA+',
+    colours: ['white'],
+    images: [
+      '/products/rectangular-twisted-lamp/1.png',
+      '/products/rectangular-twisted-lamp/2.png',
+      '/products/rectangular-twisted-lamp/3.png',
+      '/products/rectangular-twisted-lamp/4.png',
+      '/products/rectangular-twisted-lamp/5.png',
+    ],
+  },
 ];

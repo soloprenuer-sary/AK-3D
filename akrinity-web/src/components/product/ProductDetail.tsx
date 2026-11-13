@@ -76,7 +76,7 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
     });
   };
 
-  const thumbs = [0, 1, 2, 3];
+  const thumbs = product.images?.length ? product.images.map((_, i) => i) : [0, 1, 2, 3];
 
   return (
     <main id="main">
@@ -123,9 +123,18 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
             aria-labelledby="tab-photo"
             className="main-img"
             hidden={view !== 'photo'}
-            style={artStyle}
+            style={product.images?.length ? { background: '#FFFFFF' } : artStyle}
           >
-            <div className="pc-obj" aria-hidden="true" />
+            {product.images?.length ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={product.images[thumb] ?? product.images[0]}
+                alt={`${product.name}, photo ${thumb + 1} of ${product.images.length}`}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 28, padding: 16 }}
+              />
+            ) : (
+              <div className="pc-obj" aria-hidden="true" />
+            )}
           </div>
 
           <div
@@ -147,6 +156,11 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
                 aria-label={`Photo ${i + 1}`}
                 aria-pressed={thumb === i}
                 onClick={() => setThumb(i)}
+                style={
+                  product.images?.[i]
+                    ? { backgroundImage: `url(${product.images[i]})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    : undefined
+                }
               />
             ))}
           </div>
