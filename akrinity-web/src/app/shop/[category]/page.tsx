@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ShopBrowser } from '@/components/shop/ShopBrowser';
 import { CATEGORIES, categorySlug, findCategory } from '@/lib/shop-data';
+import { getProducts } from '@/lib/catalogue';
 
 type Params = { params: Promise<{ category: string }> };
 
@@ -20,6 +21,7 @@ export default async function CategoryPage({ params }: Params) {
   const { category } = await params;
   const cat = findCategory(category);
   if (!cat) notFound();
+  const products = await getProducts();
 
   return (
     <main id="main">
@@ -40,7 +42,7 @@ export default async function CategoryPage({ params }: Params) {
         <p className="sample-note">Sample products. Names, prices and availability are placeholders.</p>
       </div>
 
-      <ShopBrowser categoryName={cat.name} subcategories={cat.subs} />
+      <ShopBrowser products={products} categoryName={cat.name} subcategories={cat.subs} />
     </main>
   );
 }

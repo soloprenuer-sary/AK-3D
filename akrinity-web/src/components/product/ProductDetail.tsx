@@ -183,7 +183,7 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
             {product.name}
           </h1>
           <div className="price">
-            <span className="amt">₹[price]</span>
+            <span className="amt">{product.price ?? '₹[price]'}</span>
             <span className="muted" style={{ fontSize: 14, fontWeight: 500 }}>
               incl. GST
             </span>
@@ -376,15 +376,15 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
             <div className="tiers">
               <div>
                 <span>1 to 9</span>
-                <b>₹[price]</b>
+                <b>{product.price ?? '₹[price]'}</b>
               </div>
               <div>
                 <span>10 to 49</span>
-                <b>₹[price]</b>
+                <b>{product.price ?? '₹[price]'}</b>
               </div>
               <div>
                 <span>50 and up</span>
-                <b>₹[price]</b>
+                <b>{product.price ?? '₹[price]'}</b>
               </div>
             </div>
             <Link className="link" href="/#business">
@@ -432,7 +432,7 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
                 <div className="row">
                   <div>
                     <div className="name">{p.name}</div>
-                    <div className="price">₹[price]</div>
+                    <div className="price">{p.price ?? '₹[price]'}</div>
                   </div>
                   <span className="add" aria-hidden="true">
                     +

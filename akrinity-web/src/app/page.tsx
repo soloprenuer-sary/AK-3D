@@ -11,7 +11,10 @@ import { SelectedWork } from '@/components/home/SelectedWork';
 import { FinalCta } from '@/components/home/FinalCta';
 import { KnowledgeHub } from '@/components/home/KnowledgeHub';
 
-export default function HomePage() {
+import { getGuides } from '@/lib/catalogue';
+
+export default async function HomePage() {
+  const guides = await getGuides();
   return (
     <main id="main">
       <Hero />
@@ -23,7 +26,7 @@ export default function HomePage() {
       <BestSellers />
       <ProcessSteps />
       <Materials />
-      <KnowledgeHub />
+      <KnowledgeHub guides={guides} />
       <SelectedWork />
       <FinalCta />
     </main>

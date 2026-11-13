@@ -34,6 +34,8 @@ Akrinity is a Mumbai 3D printing business run by Satyam (CS graduate, five years
 11. **Home page development started (2026-11-12, on the user's go-ahead, with plan defaults for the undecided items D1 to D7):** layout (announcement bar, sticky header, footer with newsletter form not yet connected), the 13 home sections as React components under `akrinity-web/src/components/home/`, the flat SVG printer as `components/printer/` (`PrinterSvg`, `PrinterHero` scroll-linked, `PrintingLoop` looping while visible), geometry in `lib/printer-geometry.ts`, placeholder content in `lib/placeholder-data.ts`, approved design styles in `src/app/globals.css`. Checked in the browser pane at 1440 and 375 wide: renders as designed, no horizontal scroll, loop and scroll behaviour work. Header search and cart are static; links to product, policy and account pages point at placeholders.
 12. **Shop page built (2026-11-12):** `/shop` in `akrinity-web` with a filter sidebar (category counts, availability, material, sort, clear all), active filter chips, the product grid, hover cards (tilt, colour dots, save, quick view, quick add), a quick-view dialog and a toast. Sample data in `src/lib/shop-data.ts`. Checked in the browser: filtering, quick view and layout work, and there is no sideways scroll. The product detail route is not built yet, so card names are not links.
 
+13. **WordPress connected to the frontend (2026-11-13):** the storefront reads products from the WooCommerce Store API (`/wp-json/wc/store/v1/products`) and articles from WPGraphQL (`/graphql`) through `akrinity-web/src/lib/catalogue.ts`. The sample catalogue is the fallback when WordPress is unreachable at build time, so the static build always succeeds. Local URLs live in `akrinity-web/.env.local` (`NEXT_PUBLIC_WC_STORE_API_URL`, `NEXT_PUBLIC_WP_GRAPHQL_URL`), not in the repo. Five products (Home decor, Desk & gadgets, Kitchen) and five articles were created and published in the local WordPress site. Prices and stock are placeholders until the studio enters real values.
+
 ## 4. Key decisions (current state)
 
 | Area | Decision |
@@ -48,6 +50,7 @@ Akrinity is a Mumbai 3D printing business run by Satyam (CS graduate, five years
 | Shipping | Shiprocket (Delhivery via aggregator) |
 | Hosting | Hostinger shared (after tests) + Cloudflare Pages/R2/DNS; VPS as fallback and for Phase 3 |
 | Budget | About ₹11,600 baseline, ₹15,000 ceiling |
+| Data source | WooCommerce Store API for products, WPGraphQL for articles; sample data as build-time fallback |
 | Elementor | Dropped for the front end (headless); still installed on the local site until removal is approved |
 
 ## 5. Files and where to find them

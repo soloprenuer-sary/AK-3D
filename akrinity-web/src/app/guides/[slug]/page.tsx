@@ -3,17 +3,19 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArticleMotion } from '@/components/guides/ArticleMotion';
 import { GuideCard } from '@/components/guides/GuideCard';
-import { GUIDES, type Block, type Guide } from '@/lib/guides-data';
+import { getGuides } from '@/lib/catalogue';
+import type { Block, Guide } from '@/lib/guides-data';
 
 type Params = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return GUIDES.map((g) => ({ slug: g.slug }));
+export async function generateStaticParams() {
+  const guides = await getGuides();
+  return guides.map((g) => ({ slug: g.slug }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const guide = GUIDES.find((g) => g.slug === slug);
+  const guide = (await getGuides()).find((g) => g.slug === slug);
   return { title: guide?.title ?? 'Article', description: guide?.summary };
 }
 
@@ -66,9 +68,10 @@ function renderBlock(b: Block, i: number) {
 
 export default async function ArticlePage({ params }: Params) {
   const { slug } = await params;
-  const guide = GUIDES.find((g) => g.slug === slug) as Guide | undefined;
+  const guides = await getGuides();
+  const guide = guides.find((g) => g.slug === slug) as Guide | undefined;
   if (!guide) notFound();
-  const others = GUIDES.filter((g) => g.slug !== guide.slug).slice(0, 2);
+  const others = guides.filter((g) => g.slug !== guide.slug).slice(0, 2);
 
   return (
     <main id="main">

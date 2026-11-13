@@ -5,7 +5,6 @@ import {
   MODE_LABEL,
   SHOP_CATEGORIES,
   SHOP_MATERIALS,
-  SHOP_PRODUCTS,
   type ColourMode,
   type Material,
   type ShopProduct,
@@ -32,12 +31,14 @@ const MODE_FILTERS: { value: ModeFilter; label: string }[] = [
 ];
 
 interface ShopBrowserProps {
+  /** Products to show (from WordPress when connected, otherwise the sample catalogue). */
+  products: ShopProduct[];
   /** When set, the page is one category: the category filter is fixed and subcategory chips show. */
   categoryName?: string;
   subcategories?: string[];
 }
 
-export function ShopBrowser({ categoryName, subcategories = [] }: ShopBrowserProps) {
+export function ShopBrowser({ products, categoryName, subcategories = [] }: ShopBrowserProps) {
   const fixed = Boolean(categoryName);
   const [category, setCategory] = useState<string>(categoryName ?? 'All');
   const [sub, setSub] = useState<string>('All');
@@ -97,7 +98,7 @@ export function ShopBrowser({ categoryName, subcategories = [] }: ShopBrowserPro
     return true;
   };
 
-  let list = SHOP_PRODUCTS.filter((p) => matches(p));
+  let list = products.filter((p) => matches(p));
   if (sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
   if (sort === 'stock') list = [...list].sort((a, b) => Number(b.inStock) - Number(a.inStock));
 
@@ -144,7 +145,7 @@ export function ShopBrowser({ categoryName, subcategories = [] }: ShopBrowserPro
               <span className="label" id="cat-label">Category</span>
               <div role="group" aria-labelledby="cat-label">
                 {['All', ...SHOP_CATEGORIES].map((c) => {
-                  const count = SHOP_PRODUCTS.filter((p) => (c === 'All' || p.category === c) && matches(p, true)).length;
+                  const count = products.filter((p) => (c === 'All' || p.category === c) && matches(p, true)).length;
                   return (
                     <button
                       key={c}

@@ -3,8 +3,8 @@
 import { useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { GuideCard } from '@/components/guides/GuideCard';
-import { GUIDES } from '@/lib/guides-data';
-import { CATEGORIES, SHOP_PRODUCTS, categorySlug, productSlug } from '@/lib/shop-data';
+import type { Guide } from '@/lib/guides-data';
+import { CATEGORIES, categorySlug, productSlug, type ShopProduct } from '@/lib/shop-data';
 
 function subscribeUrl(onChange: () => void) {
   window.addEventListener('popstate', onChange);
@@ -17,8 +17,13 @@ function noQuery() {
   return '';
 }
 
-/** Search across products, categories and articles. Runs in the browser on the sample data. */
-export function SearchPage() {
+interface SearchPageProps {
+  products: ShopProduct[];
+  guides: Guide[];
+}
+
+/** Search across products, categories and articles. Runs in the browser on the loaded data. */
+export function SearchPage({ products: allProducts, guides: allGuides }: SearchPageProps) {
   // The search term lives in the URL (?q=) so a search can be shared and the back button works.
   const q = useSyncExternalStore(subscribeUrl, readQuery, noQuery);
   const setQ = (value: string) => {
@@ -33,10 +38,10 @@ export function SearchPage() {
 
   const products = useMemo(() => {
     if (!term) return [];
-    return SHOP_PRODUCTS.filter((p) =>
+    return allProducts.filter((p) =>
       [p.name, p.sub, p.category, p.material, p.process].join(' ').toLowerCase().includes(term),
     );
-  }, [term]);
+  }, [term, allProducts]);
 
   const categories = useMemo(() => {
     if (!term) return [];
@@ -45,8 +50,8 @@ export function SearchPage() {
 
   const guides = useMemo(() => {
     if (!term) return [];
-    return GUIDES.filter((g) => [g.title, g.summary, g.type].join(' ').toLowerCase().includes(term));
-  }, [term]);
+    return allGuides.filter((g) => [g.title, g.summary, g.type].join(' ').toLowerCase().includes(term));
+  }, [term, allGuides]);
 
   const total = products.length + categories.length + guides.length;
 

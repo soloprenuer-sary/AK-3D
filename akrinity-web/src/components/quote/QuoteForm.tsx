@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { FilePreview } from '@/components/three/FilePreview';
 
 const ALLOWED = ['stl', '3mf', 'obj', 'step', 'stp', 'iges', 'igs', 'jpg', 'jpeg', 'png', 'pdf'];
 const MAX_MB = 300;
@@ -24,6 +25,7 @@ export function QuoteForm() {
   const [biz, setBiz] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [fileName, setFileName] = useState('');
+  const [model, setModel] = useState<File | null>(null);
   const [done, setDone] = useState(false);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -78,8 +80,13 @@ export function QuoteForm() {
           accept={job === 'print' ? '.stl,.3mf,.obj,.step,.stp,.iges,.igs' : '.jpg,.jpeg,.png,.pdf'}
           aria-invalid={Boolean(errors.file)}
           aria-describedby="file-hint"
-          onChange={(e) => setFileName(e.target.files?.[0]?.name ?? '')}
+          onChange={(e) => {
+            const picked = e.target.files?.[0] ?? null;
+            setFileName(picked?.name ?? '');
+            setModel(picked);
+          }}
         />
+        {job === 'print' && <FilePreview key={model ? `${model.name}-${model.size}` : 'none'} file={model} />}
         <span id="file-hint" className="meta">
           {job === 'print' ? 'STL, 3MF, OBJ, STEP or IGES' : 'JPG, PNG or PDF'} · up to {MAX_MB} MB · private, only the studio can open it
           {fileName ? ` · selected: ${fileName}` : ''}

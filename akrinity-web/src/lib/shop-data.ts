@@ -103,8 +103,10 @@ export interface ShopProduct {
   colours: ColourKey[];
   /** Colour options offered on this product. The first one is the default. */
   modes: ColourMode[];
-  /** Product photos from /public (first image is the main one). Optional. */
+  /** Product photos from /public or WordPress (first image is the main one). Optional. */
   images?: string[];
+  /** Price as shown to customers, e.g. "₹499". Sample products use a placeholder when unset. */
+  price?: string;
 }
 
 /** URL slug from a name, e.g. "Home decor" -> "home-decor", "Desk & gadgets" -> "desk-gadgets". */

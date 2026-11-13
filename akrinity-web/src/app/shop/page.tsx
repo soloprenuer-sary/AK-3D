@@ -2,10 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ShopBrowser } from '@/components/shop/ShopBrowser';
 import { CATEGORIES, categorySlug } from '@/lib/shop-data';
+import { getProducts } from '@/lib/catalogue';
 
 export const metadata: Metadata = { title: 'Shop' };
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const products = await getProducts();
   return (
     <main id="main">
       <nav className="crumbs" aria-label="Breadcrumb">
@@ -33,7 +35,7 @@ export default function ShopPage() {
         ))}
       </nav>
 
-      <ShopBrowser />
+      <ShopBrowser products={products} />
     </main>
   );
 }

@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GuideCard } from '@/components/guides/GuideCard';
-import { GUIDES } from '@/lib/guides-data';
+import { getGuides } from '@/lib/catalogue';
 
 export const metadata: Metadata = {
   title: 'Knowledge hub',
   description: 'Materials, guides and design notes from the studio.',
 };
 
-export default function KnowledgeHubPage() {
-  const [featured, ...rest] = GUIDES;
+export default async function KnowledgeHubPage() {
+  const [featured, ...rest] = await getGuides();
   return (
     <main id="main">
       <nav className="crumbs" aria-label="Breadcrumb">

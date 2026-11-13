@@ -99,7 +99,7 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
             {product.material} · {product.sub}
           </span>
         </div>
-        <span className="pc-price">₹[price]</span>
+        <span className="pc-price">{product.price ?? '₹[price]'}</span>
       </div>
     </article>
   );

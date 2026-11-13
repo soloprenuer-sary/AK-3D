@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { GuideCard } from '@/components/guides/GuideCard';
-import { GUIDES } from '@/lib/guides-data';
+import type { Guide } from '@/lib/guides-data';
 
-export function KnowledgeHub() {
+export function KnowledgeHub({ guides }: { guides: Guide[] }) {
   return (
     <section className="sec" aria-labelledby="hub-h">
       <div className="wrap">
@@ -15,7 +15,7 @@ export function KnowledgeHub() {
           </Link>
         </div>
         <div className="post-grid" style={{ padding: 0 }}>
-          {GUIDES.slice(0, 3).map((g) => (
+          {guides.slice(0, 3).map((g) => (
             <GuideCard key={g.slug} guide={g} />
           ))}
         </div>
