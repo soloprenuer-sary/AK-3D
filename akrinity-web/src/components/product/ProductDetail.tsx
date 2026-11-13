@@ -5,12 +5,15 @@ import Link from 'next/link';
 import { ModelViewer } from '@/components/three/ModelViewer';
 import {
   COLOURS,
+  MODE_LABEL,
   SHOP_MATERIALS,
   productSlug,
   type ColourKey,
+  type ColourMode,
   type Material,
   type ShopProduct,
 } from '@/lib/shop-data';
+import { ProductReviews } from './ProductReviews';
 
 /**
  * Local test model, set in .env.local and only used by the development server. It is never part
@@ -36,6 +39,7 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
   const [thumb, setThumb] = useState(0);
   const [material, setMaterial] = useState<Material>(product.material);
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
+  const [mode, setMode] = useState<ColourMode>(product.modes[0]);
   const [size, setSize] = useState<Size>('Medium');
   const [personal, setPersonal] = useState('');
   const [personalError, setPersonalError] = useState('');
@@ -61,7 +65,7 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
       return;
     }
     setStatus(
-      `${qty} ${qty === 1 ? 'item' : 'items'} added to cart. Sample only, no order is placed.`,
+      `${qty} ${qty === 1 ? 'item' : 'items'} (${MODE_LABEL[mode].toLowerCase()}) added to cart. Sample only, no order is placed.`,
     );
   };
 
@@ -184,6 +188,32 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
           <p className="desc">
             [Two or three lines on what this is, who it is for and what makes it good.]
           </p>
+
+          <fieldset className="opt">
+            <legend>Colour option</legend>
+            <div className="pills" role="radiogroup" aria-label="Colour option">
+              {product.modes.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="radio"
+                  className="pill"
+                  aria-checked={mode === m}
+                  aria-pressed={mode === m}
+                  onClick={() => setMode(m)}
+                >
+                  {MODE_LABEL[m]}
+                </button>
+              ))}
+            </div>
+            <p className="muted" style={{ fontSize: 14 }}>
+              {mode === 'multi'
+                ? 'Multi-colour prints take longer and may cost more. The extra cost and lead time are confirmed before payment.'
+                : mode === 'painted'
+                  ? 'Painted items are made to order. Painting is quoted separately, and we will tell you the cost first.'
+                  : 'One filament colour, the quickest option.'}
+            </p>
+          </fieldset>
 
           <fieldset className="opt">
             <legend>Material</legend>
@@ -380,6 +410,8 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
           </div>
         </div>
       </section>
+
+      <ProductReviews productName={product.name} />
 
       <section className="related">
         <div className="wrap">

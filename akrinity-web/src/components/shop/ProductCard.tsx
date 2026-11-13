@@ -2,7 +2,7 @@
 
 import { useState, type CSSProperties, type PointerEvent } from 'react';
 import Link from 'next/link';
-import { COLOURS, productSlug, type ColourKey, type ShopProduct } from '@/lib/shop-data';
+import { COLOURS, MODE_LABEL, productSlug, type ColourKey, type ShopProduct } from '@/lib/shop-data';
 
 interface ProductCardProps {
   product: ShopProduct;
@@ -41,6 +41,7 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
         <span className={product.inStock ? 'tag accent' : 'tag'}>
           {product.inStock ? 'In stock' : 'Made to order'}
         </span>
+        <span className="tag mode-tag">{product.modes.map((m) => MODE_LABEL[m]).join(' · ')}</span>
 
         <button
           type="button"
@@ -95,7 +96,7 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
             {product.name}
           </Link>
           <span className="pc-meta" style={{ display: 'block' }}>
-            {product.material} · {product.category}
+            {product.material} · {product.sub}
           </span>
         </div>
         <span className="pc-price">₹[price]</span>

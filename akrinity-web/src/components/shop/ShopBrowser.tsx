@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
+  MODE_LABEL,
   SHOP_CATEGORIES,
   SHOP_MATERIALS,
   SHOP_PRODUCTS,
+  type ColourMode,
   type Material,
   type ShopProduct,
 } from '@/lib/shop-data';
@@ -13,6 +15,7 @@ import { QuickView } from './QuickView';
 
 type Availability = 'all' | 'stock' | 'mto';
 type Sort = 'featured' | 'name' | 'stock';
+type ModeFilter = 'all' | ColourMode;
 
 const AVAILABILITY: { value: Availability; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -20,9 +23,25 @@ const AVAILABILITY: { value: Availability; label: string }[] = [
   { value: 'mto', label: 'Made to order' },
 ];
 
-export function ShopBrowser() {
-  const [category, setCategory] = useState<string>('All');
+const MODE_FILTERS: { value: ModeFilter; label: string }[] = [
+  { value: 'all', label: 'Any' },
+  { value: 'single', label: 'Single colour' },
+  { value: 'multi', label: 'Multi-colour' },
+  { value: 'painted', label: 'Painted (later)' },
+];
+
+interface ShopBrowserProps {
+  /** When set, the page is one category: the category filter is fixed and subcategory chips show. */
+  categoryName?: string;
+  subcategories?: string[];
+}
+
+export function ShopBrowser({ categoryName, subcategories = [] }: ShopBrowserProps) {
+  const fixed = Boolean(categoryName);
+  const [category, setCategory] = useState<string>(categoryName ?? 'All');
+  const [sub, setSub] = useState<string>('All');
   const [availability, setAvailability] = useState<Availability>('all');
+  const [mode, setMode] = useState<ModeFilter>('all');
   const [materials, setMaterials] = useState<Material[]>([]);
   const [sort, setSort] = useState<Sort>('featured');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -56,8 +75,10 @@ export function ShopBrowser() {
   };
 
   const clearAll = () => {
-    setCategory('All');
+    if (!fixed) setCategory('All');
+    setSub('All');
     setAvailability('all');
+    setMode('all');
     setMaterials([]);
     setSort('featured');
   };
@@ -67,8 +88,10 @@ export function ShopBrowser() {
 
   const matches = (p: ShopProduct, ignoreCategory = false) => {
     if (!ignoreCategory && category !== 'All' && p.category !== category) return false;
+    if (sub !== 'All' && p.sub !== sub) return false;
     if (availability === 'stock' && !p.inStock) return false;
     if (availability === 'mto' && p.inStock) return false;
+    if (mode !== 'all' && !p.modes.includes(mode)) return false;
     if (materials.length && !materials.includes(p.material)) return false;
     return true;
   };
@@ -78,16 +101,34 @@ export function ShopBrowser() {
   if (sort === 'stock') list = [...list].sort((a, b) => Number(b.inStock) - Number(a.inStock));
 
   const activeChips: { label: string; remove: () => void }[] = [];
-  if (category !== 'All') activeChips.push({ label: category, remove: () => setCategory('All') });
+  if (!fixed && category !== 'All') activeChips.push({ label: category, remove: () => setCategory('All') });
+  if (sub !== 'All') activeChips.push({ label: sub, remove: () => setSub('All') });
   if (availability !== 'all')
     activeChips.push({
       label: availability === 'stock' ? 'In stock' : 'Made to order',
       remove: () => setAvailability('all'),
     });
+  if (mode !== 'all') activeChips.push({ label: MODE_LABEL[mode], remove: () => setMode('all') });
   materials.forEach((m) => activeChips.push({ label: m, remove: () => toggleMaterial(m) }));
 
   return (
     <>
+      {fixed && subcategories.length > 0 && (
+        <div className="sub-chips" role="group" aria-label="Subcategories">
+          {['All', ...subcategories].map((s) => (
+            <button
+              key={s}
+              type="button"
+              className="pill"
+              aria-pressed={sub === s}
+              onClick={() => setSub(s)}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="wrap shop-layout">
         <aside className={filtersOpen ? 'side open' : 'side'} id="shop-filters" aria-label="Filters">
           <div className="side-top">
@@ -97,24 +138,37 @@ export function ShopBrowser() {
             </button>
           </div>
 
+          {!fixed && (
+            <div className="side-sec">
+              <span className="label" id="cat-label">Category</span>
+              <div role="group" aria-labelledby="cat-label">
+                {['All', ...SHOP_CATEGORIES].map((c) => {
+                  const count = SHOP_PRODUCTS.filter((p) => (c === 'All' || p.category === c) && matches(p, true)).length;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      className="cat-btn"
+                      aria-pressed={category === c}
+                      onClick={() => setCategory(c)}
+                    >
+                      <span>{c}</span>
+                      <span className="n">{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="side-sec">
-            <span className="label" id="cat-label">Category</span>
-            <div role="group" aria-labelledby="cat-label">
-              {['All', ...SHOP_CATEGORIES].map((c) => {
-                const count = SHOP_PRODUCTS.filter((p) => (c === 'All' || p.category === c) && matches(p, true)).length;
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    className="cat-btn"
-                    aria-pressed={category === c}
-                    onClick={() => setCategory(c)}
-                  >
-                    <span>{c}</span>
-                    <span className="n">{count}</span>
-                  </button>
-                );
-              })}
+            <span className="label" id="mode-label">Colour option</span>
+            <div className="seg" role="group" aria-labelledby="mode-label">
+              {MODE_FILTERS.map((m) => (
+                <button key={m.value} type="button" className="pill" aria-pressed={mode === m.value} onClick={() => setMode(m.value)}>
+                  {m.label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -122,13 +176,7 @@ export function ShopBrowser() {
             <span className="label" id="avail-label">Availability</span>
             <div className="seg" role="group" aria-labelledby="avail-label">
               {AVAILABILITY.map((a) => (
-                <button
-                  key={a.value}
-                  type="button"
-                  className="pill"
-                  aria-pressed={availability === a.value}
-                  onClick={() => setAvailability(a.value)}
-                >
+                <button key={a.value} type="button" className="pill" aria-pressed={availability === a.value} onClick={() => setAvailability(a.value)}>
                   {a.label}
                 </button>
               ))}

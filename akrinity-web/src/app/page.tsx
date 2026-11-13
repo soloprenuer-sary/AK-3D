@@ -9,6 +9,7 @@ import { ProcessSteps } from '@/components/home/ProcessSteps';
 import { Materials } from '@/components/home/Materials';
 import { SelectedWork } from '@/components/home/SelectedWork';
 import { FinalCta } from '@/components/home/FinalCta';
+import { KnowledgeHub } from '@/components/home/KnowledgeHub';
 
 export default function HomePage() {
   return (
@@ -22,6 +23,7 @@ export default function HomePage() {
       <BestSellers />
       <ProcessSteps />
       <Materials />
+      <KnowledgeHub />
       <SelectedWork />
       <FinalCta />
     </main>

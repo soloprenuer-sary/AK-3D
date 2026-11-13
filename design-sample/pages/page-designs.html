@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Akrinity page designs (for approval)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../source/styles.css">
+<style>
+  .board { max-width: 1280px; margin: 0 auto; padding: 40px var(--gutter) 80px; }
+  .board h1 { font: 400 88px/0.95 var(--display); text-transform: uppercase; }
+  .board .note { color: var(--muted); max-width: 720px; margin-top: 12px; font-size: 17px; }
+  .frame { margin-top: 56px; border: 1.5px solid var(--ink); border-radius: 28px; background: var(--white); overflow: hidden; }
+  .frame-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 18px 24px; border-bottom: 1.5px solid var(--ink); background: var(--paper); }
+  .frame-head h2 { font: 400 40px/1 var(--display); text-transform: uppercase; }
+  .frame-body { padding: 32px; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  @media (max-width: 860px) { .frame-body { grid-template-columns: 1fr; } .board h1 { font-size: 56px; } }
+  .panel { border: 1.5px solid var(--ink); border-radius: 24px; padding: 24px; background: var(--white); }
+  .row { display: grid; grid-template-columns: 96px 1fr auto; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid #DCD8CE; }
+  .row:last-child { border-bottom: 0; }
+  .thumb-s { width: 96px; height: 96px; border-radius: 16px; border: 1.5px solid var(--ink); background: var(--stripe); }
+  .meta { font-size: 14px; color: var(--muted); }
+  .sum div { display: flex; justify-content: space-between; padding: 6px 0; font-size: 15px; }
+  .sum .total { font: 400 34px/1 var(--display); padding-top: 14px; margin-top: 8px; border-top: 1.5px solid var(--ink); }
+  .steps { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .steps span { min-height: 34px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--ink); font-size: 13px; font-weight: 700; }
+  .steps span.on { background: var(--ink); color: var(--paper); }
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .field label { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .field input, .field select { min-height: 52px; border: 1.5px solid var(--ink); border-radius: 14px; padding: 0 16px; font: 16px var(--body); background: var(--white); }
+  .field .err { color: var(--error); font-size: 14px; font-weight: 600; }
+  .field input.bad { border: 2px solid var(--error); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } }
+  .opt { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 16px; border: 1.5px solid var(--ink); border-radius: 16px; margin-bottom: 10px; font-weight: 600; }
+  .opt.sel { background: var(--accent); }
+  .opt small { margin-left: auto; font-weight: 500; color: var(--muted); }
+  .opt.off { opacity: .45; }
+  .notice { border: 1.5px dashed var(--ink); border-radius: 16px; padding: 14px 16px; font-size: 14px; margin-bottom: 14px; background: var(--paper); }
+  .timeline { display: grid; gap: 0; }
+  .tl { display: grid; grid-template-columns: 36px 1fr; gap: 14px; position: relative; padding-bottom: 22px; }
+  .tl:before { content: ""; position: absolute; left: 17px; top: 36px; bottom: 0; width: 2px; background: var(--ink); }
+  .tl:last-child:before { display: none; }
+  .tl .dot { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--ink); display: grid; place-items: center; font-weight: 700; font-size: 14px; background: var(--white); }
+  .tl.done .dot { background: var(--accent); }
+  .tl.now .dot { background: var(--ink); color: var(--paper); }
+  .tl.todo .dot { color: var(--muted); }
+  .tl b { display: block; }
+  .tl span { font-size: 14px; color: var(--muted); }
+  .ann { font-size: 13px; color: var(--muted); border-top: 1.5px solid var(--ink); padding: 14px 24px; background: var(--paper); }
+  .ann b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="announce"><div class="wrap"><span>Free shipping across India above ₹[AMOUNT]</span><span>UPI · Cards · COD · GST invoices</span></div></div>
+
+<main class="board">
+  <h1>Page designs</h1>
+  <p class="note">For approval before building. Same system as the home, shop and product pages: Anton headings, Inter text, ink borders, lime for the main action, violet for focus and banners. Mobile stacks each layout into one column. Placeholders stay in brackets until real content is supplied.</p>
+
+  <!-- 1. CART -->
+  <section class="frame" aria-labelledby="cart-h">
+    <div class="frame-head"><h2 id="cart-h">1. Cart</h2><span class="tag">Desktop · mobile stacks</span></div>
+    <div class="frame-body">
+      <div class="panel">
+        <div class="row">
+          <div class="thumb-s" aria-hidden="true"></div>
+          <div><b>Rectangular twisted lamp</b><div class="meta">PLA+ · White · Medium · Name: “Ann”</div><div class="meta">Made to order · no cash on delivery</div></div>
+          <div><b>₹[price]</b><div class="meta">Qty 1 [−] [+]</div></div>
+        </div>
+        <div class="row">
+          <div class="thumb-s" aria-hidden="true"></div>
+          <div><b>Desk cable organiser</b><div class="meta">PETG · Black</div><div class="meta">In stock · ships in [X] days</div></div>
+          <div><b>₹[price]</b><div class="meta">Qty 2 [−] [+]</div></div>
+        </div>
+        <p class="meta" style="margin-top:14px">Remove · Save for later (phase 2)</p>
+      </div>
+      <div class="panel">
+        <div class="notice">Add ₹[AMOUNT] more for free shipping.</div>
+        <div class="sum">
+          <div><span>Subtotal</span><span>₹[price]</span></div>
+          <div><span>Shipping</span><span>Enter pincode at checkout</span></div>
+          <div><span>GST (included)</span><span>₹[price]</span></div>
+          <div class="total"><span>Total</span><span>₹[price]</span></div>
+        </div>
+        <button class="btn btn-primary btn-wide" style="margin-top:18px;width:100%" type="button">Checkout</button>
+        <p class="meta" style="margin-top:12px">Made-to-order items are paid in full or with an advance. Cash on delivery is only offered for stocked items under the order limit.</p>
+      </div>
+    </div>
+    <div class="ann"><b>Notes:</b> Cart is WooCommerce (Store API). Totals, tax and shipping come from the server, never calculated in the page. Empty state: “Your cart is empty” + Shop ready-made. Mini-cart drawer opens from the header count with the same rows.</div>
+  </section>
+
+  <!-- 2. CHECKOUT -->
+  <section class="frame" aria-labelledby="co-h">
+    <div class="frame-head"><h2 id="co-h">2. Checkout</h2><span class="tag">Guest checkout allowed</span></div>
+    <div class="frame-body">
+      <form class="panel" onsubmit="return false">
+        <div class="steps"><span class="on">1 Details</span><span>2 Delivery</span><span>3 Payment</span></div>
+        <div class="grid2">
+          <div class="field"><label for="n">Name</label><input id="n" value="Ann"></div>
+          <div class="field"><label for="p">WhatsApp or phone</label><input id="p" class="bad" value="98765"><span class="err">Enter a 10-digit mobile number.</span></div>
+        </div>
+        <div class="field"><label for="e">Email</label><input id="e" placeholder="name@example.com"></div>
+        <div class="field"><label for="a">Address</label><input id="a" placeholder="House, street, area"></div>
+        <div class="grid2">
+          <div class="field"><label for="c">City</label><input id="c"></div>
+          <div class="field"><label for="pc">Pincode</label><input id="pc" inputmode="numeric" maxlength="6"></div>
+        </div>
+        <div class="opt"><input type="checkbox" aria-label="Business order"> Business order, add GST invoice details<small>optional</small></div>
+        <div class="grid2" style="margin-top:4px">
+          <div class="field"><label for="g">GSTIN</label><input id="g" maxlength="15"></div>
+          <div class="field"><label for="co">Company name</label><input id="co"></div>
+        </div>
+        <p class="label" style="margin:18px 0 10px">Payment</p>
+        <div class="opt sel">UPI, cards and netbanking (Razorpay)</div>
+        <div class="opt off">Cash on delivery <small>not available for this cart</small></div>
+        <div class="opt sel" style="background:var(--white)">Advance now, balance before dispatch <small>custom work</small></div>
+        <div class="field" style="margin-top:14px"><label style="display:flex;gap:10px;align-items:center;text-transform:none;letter-spacing:0;font-size:15px"><input type="checkbox" style="min-height:auto"> I agree to the terms, returns and file-use policy</label></div>
+        <button class="btn btn-primary btn-wide" style="width:100%" type="button">Pay ₹[price]</button>
+      </form>
+      <div class="panel">
+        <p class="label">Order summary</p>
+        <div class="sum" style="margin-top:12px">
+          <div><span>Rectangular twisted lamp ×1</span><span>₹[price]</span></div>
+          <div><span>Desk cable organiser ×2</span><span>₹[price]</span></div>
+          <div><span>Shipping (pincode [XXXXXX])</span><span>₹[price]</span></div>
+          <div class="total"><span>Total</span><span>₹[price]</span></div>
+        </div>
+        <p class="meta" style="margin-top:14px">Advance for custom items is shown separately before you pay. Razorpay opens in a secure window; card details never touch this site.</p>
+      </div>
+    </div>
+    <div class="ann"><b>Notes:</b> Pincode check runs against the courier before payment. Errors name the field and the fix (for example “Enter a 10-digit mobile number”). COD rows disappear when the cart has made-to-order or personalized items. Razorpay test mode first; Store API spike 1 must pass.</div>
+  </section>
+
+  <!-- 3. CONFIRMATION -->
+  <section class="frame" aria-labelledby="cf-h">
+    <div class="frame-head"><h2 id="cf-h">3. Order confirmation</h2><span class="tag accent">Shown after payment is confirmed</span></div>
+    <div class="frame-body">
+      <div class="panel">
+        <h3 class="d" style="font-size:56px;line-height:1">Order [#1234] is in.</h3>
+        <p class="muted" style="margin-top:10px">We sent the details to [email]. Made-to-order items start printing after the advance clears.</p>
+        <div class="timeline" style="margin-top:24px">
+          <div class="tl done"><div class="dot">✓</div><div><b>Order received</b><span>Today</span></div></div>
+          <div class="tl now"><div class="dot">2</div><div><b>Advance paid</b><span>Balance due before dispatch</span></div></div>
+          <div class="tl todo"><div class="dot">3</div><div><b>Printing</b><span>Expected in [X] working days</span></div></div>
+          <div class="tl todo"><div class="dot">4</div><div><b>Shipped</b><span>Tracking link by message</span></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="label">Next steps</p>
+        <div class="opt" style="margin-top:12px">Download GST invoice <small>PDF</small></div>
+        <div class="opt">Track this order <small>[#1234]</small></div>
+        <div class="opt">Message us on WhatsApp <small>[number]</small></div>
+        <a class="btn btn-dark" style="margin-top:16px;width:100%" href="#">Continue shopping</a>
+      </div>
+    </div>
+    <div class="ann"><b>Notes:</b> Purchase event fires here, only after WooCommerce confirms payment. Invoice link is a signed URL. No account needed to see this page; the same status is in the account later.</div>
+  </section>
+
+  <!-- 4. CUSTOM QUOTE -->
+  <section class="frame" aria-labelledby="q-h">
+    <div class="frame-head"><h2 id="q-h">4. Custom quote</h2><span class="tag">States: empty · uploading · rejected file · sent</span></div>
+    <div class="frame-body">
+      <div class="panel">
+        <div class="steps"><span class="on">1 Your file</span><span>2 Material and quantity</span><span>3 Your details</span></div>
+        <div class="field"><label>3D file (STL, 3MF, OBJ, STEP, IGES)</label>
+          <div class="notice" style="text-align:center;padding:26px"><b>Drop files here or choose files</b><br><span class="meta">Up to [XX] MB each · private, only you and the studio can open them</span></div>
+        </div>
+        <div class="notice" style="border-color:var(--error);background:#FFF4F3;color:var(--ink)"><b>“lamp-kit.stl” was not added.</b> It is not a supported file type. Export it as STL or 3MF and try again.</div>
+        <div class="field"><label>Uploading: “lamp-body.3mf”</label><div style="height:10px;border:1.5px solid var(--ink);border-radius:999px;overflow:hidden"><div style="width:62%;height:100%;background:var(--violet)"></div></div><span class="meta">62% · you can close this page and come back</span></div>
+        <div class="grid2">
+          <div class="field"><label>Quantity</label><input value="1"></div>
+          <div class="field"><label>Needed by</label><input type="date"></div>
+        </div>
+        <div class="field"><label>Notes</label><input placeholder="What is it for? Size, strength or finish?"></div>
+        <div class="opt"><input type="checkbox" aria-label="Business order"> I need a GST invoice (business)<small>adds company and GSTIN</small></div>
+        <div class="opt"><input type="checkbox" aria-label="Design help"> I need design help from a sketch or photo<small>adds a file step</small></div>
+        <label class="opt" style="gap:10px"><input type="checkbox" aria-label="Consent"> I agree the file is mine or I have the right to print it. Terms and file-use policy.</label>
+        <button class="btn btn-primary btn-wide" style="width:100%" type="button">Request my quote</button>
+        <p class="meta" style="margin-top:10px">We reply within [X] hours. No payment is taken at this step.</p>
+      </div>
+      <div class="panel">
+        <p class="label">What happens next</p>
+        <div class="timeline" style="margin-top:16px">
+          <div class="tl now"><div class="dot">1</div><div><b>We check your file</b><span>Printable, size and fixes</span></div></div>
+          <div class="tl todo"><div class="dot">2</div><div><b>You get a quote</b><span>Price and lead time, email or WhatsApp</span></div></div>
+          <div class="tl todo"><div class="dot">3</div><div><b>Approve and pay</b><span>Advance first, balance before dispatch</span></div></div>
+          <div class="tl todo"><div class="dot">4</div><div><b>We print, check and ship</b><span>Track it from your account</span></div></div>
+        </div>
+        <p class="meta" style="margin-top:12px">Lamp kits and parts from other designers need proof of licence before we print them.</p>
+      </div>
+    </div>
+    <div class="ann"><b>Notes:</b> Uploads go straight to private storage with signed links; the page never serves the file back. File rules: extension and size checked before upload and again on the server. Rejected files say what to fix. The quote becomes a WooCommerce order only when the studio prices it.</div>
+  </section>
+
+  <!-- 5. ACCOUNT: ORDERS AND TRACKING (phase 2) -->
+  <section class="frame" aria-labelledby="ac-h">
+    <div class="frame-head"><h2 id="ac-h">5. Account and order tracking</h2><span class="tag">Phase 2</span></div>
+    <div class="frame-body">
+      <div class="panel">
+        <p class="label">Your orders</p>
+        <div class="row" style="grid-template-columns:1fr auto">
+          <div><b>#1234 · Rectangular twisted lamp</b><div class="meta">Printing · advance paid</div></div><span class="tag accent">Printing</span>
+        </div>
+        <div class="row" style="grid-template-columns:1fr auto">
+          <div><b>#1198 · Desk cable organiser ×2</b><div class="meta">Delivered on [date]</div></div><span class="tag">Delivered</span>
+        </div>
+        <div class="row" style="grid-template-columns:1fr auto">
+          <div><b>Quote Q-0042 · Custom bracket</b><div class="meta">Quoted · waiting for your approval</div></div><span class="tag">Quoted</span>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="label">Order #1234 timeline</p>
+        <div class="timeline" style="margin-top:16px">
+          <div class="tl done"><div class="dot">✓</div><div><b>Quote requested</b><span>[date]</span></div></div>
+          <div class="tl done"><div class="dot">✓</div><div><b>Quoted</b><span>[date]</span></div></div>
+          <div class="tl done"><div class="dot">✓</div><div><b>Approved</b><span>[date]</span></div></div>
+          <div class="tl done"><div class="dot">✓</div><div><b>Advance paid</b><span>[date]</span></div></div>
+          <div class="tl now"><div class="dot">5</div><div><b>Printing</b><span>Layer progress shared when ready</span></div></div>
+          <div class="tl todo"><div class="dot">6</div><div><b>Quality check</b></div></div>
+          <div class="tl todo"><div class="dot">7</div><div><b>Shipped</b><span>Courier and tracking link</span></div></div>
+          <div class="tl todo"><div class="dot">8</div><div><b>Delivered</b></div></div>
+        </div>
+        <p class="meta" style="margin-top:6px">Balance due before dispatch: ₹[price] <button class="btn btn-sm" type="button" style="margin-left:8px">Pay balance</button></p>
+      </div>
+    </div>
+    <div class="ann"><b>Notes:</b> Statuses come from WooCommerce slugs and map to these labels in the frontend. Unknown slugs show “In progress”. Other account pages in the same system: login and register, addresses, GSTIN, files you uploaded (download only your own), B2B apply.</div>
+  </section>
+</main>
+</body>
+</html>
