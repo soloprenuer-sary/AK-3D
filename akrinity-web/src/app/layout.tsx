@@ -5,6 +5,7 @@ import './globals.css';
 import { AnnouncementBar } from '@/components/layout/AnnouncementBar';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SiteFooter } from '@/components/layout/SiteFooter';
+import { CartProvider } from '@/lib/cart-store';
 
 export const metadata: Metadata = {
   title: { default: 'Akrinity', template: '%s · Akrinity' },
@@ -24,10 +25,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a className="skip" href="#main">
           Skip to content
         </a>
-        <AnnouncementBar />
-        <SiteHeader />
-        {children}
-        <SiteFooter />
+        <CartProvider>
+          <AnnouncementBar />
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+        </CartProvider>
       </body>
     </html>
   );

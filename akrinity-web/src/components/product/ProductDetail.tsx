@@ -14,6 +14,7 @@ import {
   type ShopProduct,
 } from '@/lib/shop-data';
 import { ProductReviews } from './ProductReviews';
+import { useCart } from '@/lib/cart-store';
 
 /**
  * Local test model, set in .env.local and only used by the development server. It is never part
@@ -48,6 +49,7 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
   const [pinMessage, setPinMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [status, setStatus] = useState('');
   const personalInput = useRef<HTMLInputElement>(null);
+  const cartApi = useCart();
 
   const artStyle = { '--c': COLOURS[colour] } as CSSProperties;
 
@@ -64,6 +66,7 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
       personalInput.current?.focus();
       return;
     }
+    cartApi.add({ id: product.id, name: product.name, mode, qty });
     setStatus(
       `${qty} ${qty === 1 ? 'item' : 'items'} (${MODE_LABEL[mode].toLowerCase()}) added to cart. Sample only, no order is placed.`,
     );
@@ -328,9 +331,9 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
             {status}
           </p>
 
-          <a className="btn btn-wide" href="#">
-            Order on WhatsApp
-          </a>
+          <Link className="btn btn-wide" href="/contact">
+            Ask about this product
+          </Link>
 
           <div className="notice">
             <span className="label">

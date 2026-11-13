@@ -10,6 +10,7 @@ import {
   type Material,
   type ShopProduct,
 } from '@/lib/shop-data';
+import { useCart } from '@/lib/cart-store';
 import { ProductCard } from './ProductCard';
 import { QuickView } from './QuickView';
 
@@ -46,7 +47,7 @@ export function ShopBrowser({ categoryName, subcategories = [] }: ShopBrowserPro
   const [sort, setSort] = useState<Sort>('featured');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [quick, setQuick] = useState<ShopProduct | null>(null);
-  const [cart, setCart] = useState(0);
+  const cartApi = useCart();
   const [justAdded, setJustAdded] = useState<string | null>(null);
   const [toast, setToast] = useState('');
   const addTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -67,7 +68,7 @@ export function ShopBrowser({ categoryName, subcategories = [] }: ShopBrowserPro
   };
 
   const addToCart = (p: ShopProduct) => {
-    setCart((c) => c + 1);
+    cartApi.add({ id: p.id, name: p.name, mode: p.modes[0] });
     setJustAdded(p.id);
     if (addTimer.current) clearTimeout(addTimer.current);
     addTimer.current = setTimeout(() => setJustAdded(null), 1400);
@@ -263,7 +264,6 @@ export function ShopBrowser({ categoryName, subcategories = [] }: ShopBrowserPro
         {toast}
       </div>
 
-      <span hidden aria-live="polite">Cart: {cart}</span>
     </>
   );
 }

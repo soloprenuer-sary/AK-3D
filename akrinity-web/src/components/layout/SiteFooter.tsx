@@ -16,27 +16,29 @@ export function SiteFooter() {
           <div>
             <h3>Shop</h3>
             <Link href="/shop">All products</Link>
-            <Link href="/shop">Home decor</Link>
-            <Link href="/shop">Gifts and personalized</Link>
-            <Link href="/shop">Spare parts</Link>
+            <Link href="/shop/home-decor">Home decor</Link>
+            <Link href="/shop/kitchen">Kitchen</Link>
+            <Link href="/shop/gifts-personalised">Gifts and personalised</Link>
+            <Link href="/shop/spare-parts">Spare parts</Link>
           </div>
           <div>
             <h3>Custom</h3>
             <Link href="/quote">Request a quote</Link>
             <Link href="/quote">Design and print</Link>
-            <Link href="/#business">Business orders</Link>
-            <Link href="/#work">Portfolio</Link>
+            <Link href="/guides">Knowledge hub</Link>
+            <Link href="/search">Search</Link>
           </div>
           <div>
-            <h3>Support</h3>
-            <Link href="/">Track your order</Link>
-            <Link href="/">Shipping</Link>
-            <Link href="/">Returns and warranty</Link>
-            <Link href="/">Privacy and file terms</Link>
+            <h3>Help</h3>
+            <Link href="/faq">FAQ</Link>
+            <Link href="/shipping">Shipping</Link>
+            <Link href="/returns">Returns and warranty</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/about">About</Link>
           </div>
         </div>
         <div className="fbar">
-          <span>© Akrinity · GSTIN [YOUR GSTIN]</span>
+          <span>© Akrinity · GSTIN [YOUR GSTIN] · <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link></span>
           <span>UPI · Cards · Netbanking · Cash on Delivery</span>
         </div>
       </div>
