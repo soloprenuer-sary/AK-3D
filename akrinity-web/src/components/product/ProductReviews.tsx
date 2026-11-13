@@ -13,12 +13,12 @@ export function ProductReviews({ productName }: { productName: string }) {
   const [error, setError] = useState('');
 
   return (
-    <section className="reviews wrap" aria-labelledby="reviews-h">
+    <section className="review-box" aria-labelledby="reviews-h">
       <div className="reviews-head">
         <h2 id="reviews-h" className="d">
-          Reviews for <span className="hl">{productName}</span>
+          Reviews
         </h2>
-        <p className="muted">No reviews yet. Be the first to tell us how it turned out.</p>
+        <p className="muted">No reviews yet for {productName}. Be the first to tell us how it turned out.</p>
       </div>
 
       <form

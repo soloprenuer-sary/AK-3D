@@ -192,6 +192,8 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
             [Two or three lines on what this is, who it is for and what makes it good.]
           </p>
 
+          <ProductReviews productName={product.name} />
+
           <fieldset className="opt">
             <legend>Colour option</legend>
             <div className="pills" role="radiogroup" aria-label="Colour option">
@@ -413,8 +415,6 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
           </div>
         </div>
       </section>
-
-      <ProductReviews productName={product.name} />
 
       <section className="related">
         <div className="wrap">

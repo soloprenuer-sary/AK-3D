@@ -2,10 +2,12 @@
 
 import { useState, type FormEvent } from 'react';
 import { FilePreview } from '@/components/three/FilePreview';
+import { COLOURS, type ColourKey } from '@/lib/shop-data';
 
 const ALLOWED = ['stl', '3mf', 'obj', 'step', 'stp', 'iges', 'igs', 'jpg', 'jpeg', 'png', 'pdf'];
 const MAX_MB = 300;
 const MATERIALS = ['PLA / PLA+', 'PETG', 'ABS / ASA', 'Resin', 'Not sure'];
+const PREVIEW_COLOURS: ColourKey[] = ['white', 'black', 'orange', 'violet', 'lime'];
 
 interface Errors {
   name?: string;
@@ -26,6 +28,7 @@ export function QuoteForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [fileName, setFileName] = useState('');
   const [model, setModel] = useState<File | null>(null);
+  const [previewColour, setPreviewColour] = useState<ColourKey>('white');
   const [done, setDone] = useState(false);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -71,49 +74,6 @@ export function QuoteForm() {
         </div>
       </fieldset>
 
-      <div className="field">
-        <label htmlFor="file">{job === 'print' ? '3D file' : 'Sketch, photo or reference'}</label>
-        <input
-          id="file"
-          name="file"
-          type="file"
-          accept={job === 'print' ? '.stl,.3mf,.obj,.step,.stp,.iges,.igs' : '.jpg,.jpeg,.png,.pdf'}
-          aria-invalid={Boolean(errors.file)}
-          aria-describedby="file-hint"
-          onChange={(e) => {
-            const picked = e.target.files?.[0] ?? null;
-            setFileName(picked?.name ?? '');
-            setModel(picked);
-          }}
-        />
-        {job === 'print' && <FilePreview key={model ? `${model.name}-${model.size}` : 'none'} file={model} />}
-        <span id="file-hint" className="meta">
-          {job === 'print' ? 'STL, 3MF, OBJ, STEP or IGES' : 'JPG, PNG or PDF'} · up to {MAX_MB} MB · private, only the studio can open it
-          {fileName ? ` · selected: ${fileName}` : ''}
-        </span>
-        {errors.file && <p className="err" role="alert">{errors.file}</p>}
-      </div>
-
-      <div className="grid2">
-        <div className="field">
-          <label htmlFor="material">Material</label>
-          <select id="material" name="material" defaultValue="Not sure">
-            {MATERIALS.map((m) => (
-              <option key={m}>{m}</option>
-            ))}
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="qty">Quantity</label>
-          <input id="qty" name="qty" type="number" min={1} max={500} defaultValue={1} />
-        </div>
-      </div>
-
-      <div className="field">
-        <label htmlFor="notes">Notes</label>
-        <textarea id="notes" name="notes" rows={4} placeholder="What is it for? Size, strength or finish you want?" />
-      </div>
-
       <div className="grid2">
         <div className="field">
           <label htmlFor="name">Name</label>
@@ -127,16 +87,35 @@ export function QuoteForm() {
         </div>
       </div>
 
-      <div className="field">
-        <label htmlFor="email">Email (optional)</label>
-        <input id="email" name="email" type="email" autoComplete="email" aria-invalid={Boolean(errors.email)} />
-        {errors.email && <p className="err" role="alert">{errors.email}</p>}
+      <div className="grid2">
+        <div className="field">
+          <label htmlFor="email">Email (optional)</label>
+          <input id="email" name="email" type="email" autoComplete="email" aria-invalid={Boolean(errors.email)} />
+          {errors.email && <p className="err" role="alert">{errors.email}</p>}
+        </div>
+        <div className="field">
+          <label htmlFor="material">Material</label>
+          <select id="material" name="material" defaultValue="Not sure">
+            {MATERIALS.map((m) => (
+              <option key={m}>{m}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <label className="check">
-        <input type="checkbox" checked={biz} onChange={(e) => setBiz(e.target.checked)} />
-        I am ordering for a business and need a GST invoice
-      </label>
+      <div className="grid2">
+        <div className="field">
+          <label htmlFor="qty">Quantity</label>
+          <input id="qty" name="qty" type="number" min={1} max={500} defaultValue={1} />
+        </div>
+        <div className="field" style={{ justifyContent: 'flex-end' }}>
+          <label className="check">
+            <input type="checkbox" checked={biz} onChange={(e) => setBiz(e.target.checked)} />
+            I am ordering for a business and need a GST invoice
+          </label>
+        </div>
+      </div>
+
       {biz && (
         <div className="grid2">
           <div className="field">
@@ -150,6 +129,58 @@ export function QuoteForm() {
           </div>
         </div>
       )}
+
+      <div className="field">
+        <label htmlFor="notes">Notes</label>
+        <textarea id="notes" name="notes" rows={4} placeholder="What is it for? Size, strength or finish you want?" />
+      </div>
+
+      <div className="file-box">
+        <div className="file-box-head">
+          <div className="field" style={{ flex: '1 1 260px' }}>
+            <label htmlFor="file">{job === 'print' ? '3D file' : 'Sketch, photo or reference'}</label>
+            <input
+              id="file"
+              name="file"
+              type="file"
+              accept={job === 'print' ? '.stl,.3mf,.obj,.step,.stp,.iges,.igs' : '.jpg,.jpeg,.png,.pdf'}
+              aria-invalid={Boolean(errors.file)}
+              aria-describedby="file-hint"
+              onChange={(e) => {
+                const picked = e.target.files?.[0] ?? null;
+                setFileName(picked?.name ?? '');
+                setModel(picked);
+              }}
+            />
+          </div>
+          {job === 'print' && (
+            <div className="file-colours" role="group" aria-label="Preview colour">
+              <span className="label">Preview colour: {previewColour}</span>
+              <div className="swatches">
+                {PREVIEW_COLOURS.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className="sw"
+                    aria-label={`Preview colour ${key}`}
+                    aria-pressed={previewColour === key}
+                    style={{ background: COLOURS[key] }}
+                    onClick={() => setPreviewColour(key)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {job === 'print' && <FilePreview key={model ? `${model.name}-${model.size}` : 'none'} file={model} colour={COLOURS[previewColour]} />}
+
+        <span id="file-hint" className="meta">
+          {job === 'print' ? 'STL, 3MF, OBJ, STEP or IGES' : 'JPG, PNG or PDF'} · up to {MAX_MB} MB · private, only the studio can open it
+          {fileName ? ` · selected: ${fileName}` : ''}
+        </span>
+        {errors.file && <p className="err" role="alert">{errors.file}</p>}
+      </div>
 
       <label className="check">
         <input name="consent" type="checkbox" aria-invalid={Boolean(errors.consent)} />

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function KnowledgeHubPage() {
-  const [featured, ...rest] = await getGuides();
+  const guides = await getGuides();
   return (
     <main id="main">
       <nav className="crumbs" aria-label="Breadcrumb">
@@ -31,13 +31,9 @@ export default async function KnowledgeHubPage() {
         </p>
       </div>
 
-      <section className="wrap" aria-label="Featured article">
-        <GuideCard guide={featured} />
-      </section>
-
-      <section className="wrap" style={{ marginTop: 24 }} aria-label="All articles">
+      <section className="wrap" style={{ marginTop: 8 }} aria-label="All articles">
         <div className="post-grid">
-          {rest.map((g) => (
+          {guides.map((g) => (
             <GuideCard key={g.slug} guide={g} />
           ))}
         </div>
