@@ -14,7 +14,7 @@ export function KnowledgeHub({ guides }: { guides: Guide[] }) {
             All articles
           </Link>
         </div>
-        <div className="post-grid" style={{ padding: 0 }}>
+        <div className="post-grid hub-scroll" style={{ padding: 0 }}>
           {guides.slice(0, 3).map((g) => (
             <GuideCard key={g.slug} guide={g} />
           ))}

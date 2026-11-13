@@ -339,10 +339,10 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
             <button type="button" className="btn btn-primary" onClick={addToCart}>
               Add to cart
             </button>
+            <p className="status" role="status" aria-live="polite">
+              {status}
+            </p>
           </div>
-          <p className="status" role="status" aria-live="polite">
-            {status}
-          </p>
 
           <Link className="btn btn-wide" href="/contact">
             Ask about this product

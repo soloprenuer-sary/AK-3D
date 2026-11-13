@@ -63,6 +63,15 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
     [],
   );
 
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFiltersOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [filtersOpen]);
+
   const notify = (message: string) => {
     setToast(message);
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -141,12 +150,18 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
       )}
 
       <div className="wrap shop-layout">
+        {filtersOpen && <div className="side-backdrop" onClick={() => setFiltersOpen(false)} aria-hidden="true" />}
         <aside className={filtersOpen ? 'side open' : 'side'} id="shop-filters" aria-label="Filters">
           <div className="side-top">
             <h2>Filters</h2>
-            <button type="button" className="link-btn" onClick={clearAll}>
-              Clear all
-            </button>
+            <span className="side-actions">
+              <button type="button" className="link-btn" onClick={clearAll}>
+                Clear all
+              </button>
+              <button type="button" className="side-close" aria-label="Close filters" onClick={() => setFiltersOpen(false)}>
+                ×
+              </button>
+            </span>
           </div>
 
           {!fixed && (
@@ -214,6 +229,10 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
               <option value="stock">In stock first</option>
             </select>
           </div>
+
+          <button type="button" className="btn btn-primary side-apply" onClick={() => setFiltersOpen(false)}>
+            Show {list.length} {list.length === 1 ? 'product' : 'products'}
+          </button>
         </aside>
 
         <section aria-label="Products">
