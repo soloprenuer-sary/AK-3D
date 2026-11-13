@@ -36,6 +36,8 @@ Akrinity is a Mumbai 3D printing business run by Satyam (CS graduate, five years
 
 13. **WordPress connected to the frontend (2026-11-13):** the storefront reads products from the WooCommerce Store API (`/wp-json/wc/store/v1/products`) and articles from WPGraphQL (`/graphql`) through `akrinity-web/src/lib/catalogue.ts`. The sample catalogue is the fallback when WordPress is unreachable at build time, so the static build always succeeds. Local URLs live in `akrinity-web/.env.local` (`NEXT_PUBLIC_WC_STORE_API_URL`, `NEXT_PUBLIC_WP_GRAPHQL_URL`), not in the repo. Five products (Home decor, Desk & gadgets, Kitchen) and five articles were created and published in the local WordPress site. Prices and stock are placeholders until the studio enters real values.
 
+14. **Site audit and fixes (2026-11-14):** every page checked at desktop and phone width with Playwright (no console errors, no sideways scroll, internal links all resolve) plus 33 interaction checks (cart, filters, search, quick view, product options, reviews, quote form, STL preview and colour, mobile menu). Fixes: the twisted lamp stays on the site while it exists only in code (`LOCAL_PRODUCTS` in `catalogue.ts`), the default WordPress "Hello world!" post is hidden from the hub, product descriptions and photos from WordPress now show on cards, quick view and product pages, stock and colour-option tags no longer overlap, home Best sellers uses real products and Selected work uses the lamp renders, the quote preview centres models that sit far from the origin, and phone tap targets are larger.
+
 ## 4. Key decisions (current state)
 
 | Area | Decision |

@@ -35,8 +35,13 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
   return (
     <article className="pc">
       <div className="pc-media" onPointerMove={onMove} onPointerLeave={onLeave}>
-        <div className="pc-art">
-          <div className="pc-obj" style={objStyle} />
+        <div className={product.images?.length ? 'pc-art has-img' : 'pc-art'}>
+          {product.images?.length ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={product.images[0]} alt="" loading="lazy" />
+          ) : (
+            <div className="pc-obj" style={objStyle} />
+          )}
         </div>
         <span className={product.inStock ? 'tag accent' : 'tag'}>
           {product.inStock ? 'In stock' : 'Made to order'}

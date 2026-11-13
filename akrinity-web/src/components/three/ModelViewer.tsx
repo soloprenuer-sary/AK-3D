@@ -59,7 +59,7 @@ export function ModelViewer({ product, modelUrl }: ModelViewerProps) {
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-      camera.position.set(0, 2.4, 8.5);
+      camera.position.set(0, 2.8, 11);
       scene.add(new THREE.AmbientLight(0xffffff, 0.9));
       const key = new THREE.DirectionalLight(0xffffff, 1.4);
       key.position.set(3, 6, 4);
@@ -125,8 +125,8 @@ export function ModelViewer({ product, modelUrl }: ModelViewerProps) {
       controls.enableDamping = true;
       controls.enablePan = false;
       controls.minDistance = 4;
-      controls.maxDistance = 12;
-      controls.target.set(0, 1.6, 0);
+      controls.maxDistance = 15;
+      controls.target.set(0, 1.4, 0);
       controls.update();
       controlsRef.current = controls;
 

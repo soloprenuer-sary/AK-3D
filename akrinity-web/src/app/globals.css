@@ -338,6 +338,26 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .cat-card-sub{font-size:13px;color:var(--muted);max-width:90%}
 .cat-card .arrow{position:absolute;right:16px;bottom:16px;width:40px;height:40px;border-radius:50%;background:var(--accent);border:1.5px solid var(--ink);display:grid;place-items:center;font-weight:700}
 .mode-tag{background:var(--white);font-size:10px}
+.pc-media .mode-tag{top:44px}
+@media (max-width:640px){.pc-media .mode-tag{display:none}.pc-heart{display:none}}
+@media (hover:none){.pc-add{left:auto;right:8px;bottom:8px;min-height:34px;padding:0 12px;font-size:12px}}
+/* product photos inside cards, quick view, home grids */
+.pc-art.has-img{background:var(--white)}
+.pc-art img{width:100%;height:100%;object-fit:contain;padding:8px}
+.qv-art.has-img{background:var(--white)}
+.qv-art img{width:100%;height:100%;object-fit:contain;padding:16px;border-radius:inherit}
+.card-p .img.has-img{background:var(--white);border:1.5px solid var(--ink);overflow:hidden}
+.card-p .img img{width:100%;height:100%;object-fit:contain;padding:8px;display:block}
+.tile2-img{background:var(--white)}
+.tile2-img img{width:100%;height:100%;object-fit:contain;padding:12px;display:block}
+.panel-light{align-self:start}
+/* bigger tap targets on phones */
+@media (max-width:640px){
+  .crumbs a{display:inline-flex;align-items:center;min-height:40px}
+  .fbar a{display:inline-block;padding:12px 4px}
+  .link{display:inline-block;padding:12px 0}
+  .logo{min-height:44px}
+}
 
 /* header: mobile menu, cart panel, search */
 .menu-btn{display:none}

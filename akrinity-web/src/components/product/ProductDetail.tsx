@@ -189,7 +189,7 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
             </span>
           </div>
           <p className="desc">
-            [Two or three lines on what this is, who it is for and what makes it good.]
+            {product.description ?? '[Two or three lines on what this is, who it is for and what makes it good.]'}
           </p>
 
           <fieldset className="opt">

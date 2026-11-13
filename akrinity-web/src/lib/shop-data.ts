@@ -107,6 +107,8 @@ export interface ShopProduct {
   images?: string[];
   /** Price as shown to customers, e.g. "₹499". Sample products use a placeholder when unset. */
   price?: string;
+  /** Short description from WordPress. Sample products use a placeholder when unset. */
+  description?: string;
 }
 
 /** URL slug from a name, e.g. "Home decor" -> "home-decor", "Desk & gadgets" -> "desk-gadgets". */

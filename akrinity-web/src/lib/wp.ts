@@ -13,6 +13,8 @@ const GRAPHQL = process.env.NEXT_PUBLIC_WP_GRAPHQL_URL ?? '';
 interface StoreProduct {
   id: number;
   name: string;
+  short_description?: string;
+  description?: string;
   prices: { price: string; currency_minor_unit: number };
   is_in_stock: boolean;
   images: { src: string; alt: string }[];
@@ -60,6 +62,7 @@ export async function fetchStoreProducts(): Promise<ShopProduct[] | null> {
         modes: ['single'] as ColourMode[],
         images: p.images.map((i) => i.src),
         price: formatRupees(p.prices.price, p.prices.currency_minor_unit),
+        description: stripTags(p.short_description || p.description || '') || undefined,
       };
     });
   } catch {
@@ -120,7 +123,8 @@ export async function fetchPosts(): Promise<Guide[] | null> {
     const json = (await res.json()) as { data?: { posts?: { nodes: GqlPost[] } } };
     const nodes = json.data?.posts?.nodes;
     if (!nodes) return null;
-    return nodes.map(postToGuide);
+    // WordPress ships a default "Hello world!" post. It is not an article for the site.
+    return nodes.filter((n) => n.slug !== 'hello-world').map(postToGuide);
   } catch {
     return null;
   }

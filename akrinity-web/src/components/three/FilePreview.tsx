@@ -124,8 +124,11 @@ export function FilePreview({ file, colour }: FilePreviewProps) {
         const size = box.getSize(new THREE.Vector3());
         const centre = box.getCenter(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z, 0.0001);
-        wrapper.position.sub(centre);
-        wrapper.scale.setScalar(2.4 / maxDim);
+        // Scale first, then move by the scaled centre so the model sits in the middle of the view,
+        // wherever it was placed in the file (many exports sit far from the origin).
+        const fit = 1.6 / maxDim;
+        wrapper.scale.setScalar(fit);
+        wrapper.position.copy(centre).multiplyScalar(-fit);
         scene.add(wrapper);
 
         const controls: OrbitControls = new Controls(camera, renderer.domElement);
@@ -135,7 +138,7 @@ export function FilePreview({ file, colour }: FilePreviewProps) {
         controls.autoRotateSpeed = 2.0;
         controls.minDistance = 2;
         controls.maxDistance = 9;
-        camera.position.set(0, 1.4, 5.2);
+        camera.position.set(0, 1.2, 5.4);
         controls.update();
 
         const resize = () => {

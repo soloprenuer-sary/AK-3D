@@ -31,8 +31,8 @@ export default async function KnowledgeHubPage() {
         </p>
       </div>
 
-      <section className="wrap" style={{ marginTop: 8 }} aria-label="All articles">
-        <div className="post-grid">
+      <section className="wrap" style={{ marginTop: 8, paddingBottom: 'var(--sec)' }} aria-label="All articles">
+        <div className="post-grid" style={{ paddingBottom: 16 }}>
           {guides.map((g) => (
             <GuideCard key={g.slug} guide={g} />
           ))}
