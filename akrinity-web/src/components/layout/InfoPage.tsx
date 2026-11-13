@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 
 export interface InfoSection {
@@ -11,11 +12,14 @@ export function InfoPage({
   intro,
   sections,
   note,
+  children,
 }: {
   title: string;
   intro: string;
   sections: InfoSection[];
   note?: string;
+  /** Extra content shown after the sections, for example a form. */
+  children?: ReactNode;
 }) {
   return (
     <main id="main">
@@ -55,6 +59,12 @@ export function InfoPage({
           </article>
         ))}
       </section>
+
+      {children && (
+        <section className="wrap" style={{ paddingBottom: 'var(--sec)' }}>
+          {children}
+        </section>
+      )}
 
       <section className="wrap" style={{ paddingBottom: 'var(--sec)' }}>
         <div className="info-hero" style={{ gridTemplateColumns: '1fr auto', alignItems: 'center' }}>

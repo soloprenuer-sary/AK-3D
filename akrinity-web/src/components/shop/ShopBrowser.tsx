@@ -5,6 +5,7 @@ import {
   MODE_LABEL,
   SHOP_CATEGORIES,
   SHOP_MATERIALS,
+  productSlug,
   type ColourMode,
   type Material,
   type ShopProduct,
@@ -69,7 +70,15 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
   };
 
   const addToCart = (p: ShopProduct) => {
-    cartApi.add({ id: p.id, name: p.name, mode: p.modes[0] });
+    cartApi.add({
+      id: p.id,
+      slug: productSlug(p),
+      name: p.name,
+      mode: p.modes[0],
+      price: p.price,
+      image: p.images?.[0],
+      madeToOrder: !p.inStock,
+    });
     setJustAdded(p.id);
     if (addTimer.current) clearTimeout(addTimer.current);
     addTimer.current = setTimeout(() => setJustAdded(null), 1400);

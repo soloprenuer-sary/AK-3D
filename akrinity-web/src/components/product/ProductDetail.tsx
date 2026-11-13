@@ -66,7 +66,20 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
       personalInput.current?.focus();
       return;
     }
-    cartApi.add({ id: product.id, name: product.name, mode, qty });
+    const detail = [material, colour, size, personal.trim() ? `Name: ${personal.trim()}` : '']
+      .filter(Boolean)
+      .join(' · ');
+    cartApi.add({
+      id: product.id,
+      slug: productSlug(product),
+      name: product.name,
+      mode,
+      qty,
+      detail,
+      price: product.price,
+      image: product.images?.[0],
+      madeToOrder: !product.inStock,
+    });
     setStatus(
       `${qty} ${qty === 1 ? 'item' : 'items'} (${MODE_LABEL[mode].toLowerCase()}) added to cart. Sample only, no order is placed.`,
     );
@@ -387,7 +400,7 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
                 <b>{product.price ?? '₹[price]'}</b>
               </div>
             </div>
-            <Link className="link" href="/#business">
+            <Link className="link" href="/business">
               Request a bulk quote →
             </Link>
           </div>

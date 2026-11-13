@@ -14,7 +14,7 @@ export function FinalCta() {
             <Link className="btn btn-dark" href="/quote">
               Request a quote
             </Link>
-            <Link className="btn" href="/quote">
+            <Link className="btn" href="/business">
               Business and bulk orders
             </Link>
           </div>

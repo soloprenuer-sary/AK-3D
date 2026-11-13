@@ -25,11 +25,14 @@ export function SiteFooter() {
             <h3>Custom</h3>
             <Link href="/quote">Request a quote</Link>
             <Link href="/quote">Design and print</Link>
+            <Link href="/business">Business and bulk</Link>
+            <Link href="/how-we-print">How we print</Link>
             <Link href="/guides">Knowledge hub</Link>
-            <Link href="/search">Search</Link>
           </div>
           <div>
             <h3>Help</h3>
+            <Link href="/track-order">Track an order</Link>
+            <Link href="/account">Account</Link>
             <Link href="/faq">FAQ</Link>
             <Link href="/shipping">Shipping</Link>
             <Link href="/returns">Returns and warranty</Link>

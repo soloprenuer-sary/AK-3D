@@ -463,3 +463,56 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .ctl button:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
 @media (max-width:480px){.ctl small{display:none}.ctl .in{padding-left:6px}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (max-width:640px){.hdr-actions .acct{display:none}}
+
+/* forms inside cards, two-column form grid */
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px}
+.form-grid .full{grid-column:1/-1}
+@media (max-width:640px){.form-grid{grid-template-columns:minmax(0,1fr)}}
+.info-card .quote-form{border:0;padding:0;background:transparent}
+.quote-form input[type=radio]{width:20px;height:20px;padding:0;accent-color:var(--ink);flex:none}
+.auth-card{gap:18px}
+
+/* cart, checkout and order pages */
+.cart-page{display:grid;grid-template-columns:minmax(0,1fr);gap:28px;align-items:start}
+@media (min-width:980px){.cart-page{grid-template-columns:minmax(0,1fr) 380px}}
+.cart-side{display:flex;flex-direction:column;gap:16px}
+@media (min-width:980px){.cart-side{position:sticky;top:104px}}
+.cart-rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.cart-row{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:16px;align-items:start;background:var(--white);border:1.5px solid var(--ink);border-radius:24px;padding:16px}
+.cart-row .cart-thumb{width:96px;height:96px;border-radius:16px}
+.cart-row-info{display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-width:0}
+.cart-row-name{font-weight:700;font-size:18px;text-decoration:none}
+.cart-row-name:hover{color:var(--violet)}
+.cart-row-side{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.cart-row-price{font:400 28px/1 var(--display)}
+.cart-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+@media (max-width:560px){.cart-row{grid-template-columns:72px minmax(0,1fr)}.cart-row .cart-thumb{width:72px;height:72px}.cart-row-side{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center}}
+.order-summary{background:var(--white);border:1.5px solid var(--ink);border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:14px}
+.order-summary h2{font-size:36px;line-height:1}
+.sum-lines{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.sum-lines li,.sum-rows>div{display:flex;justify-content:space-between;gap:12px}
+.sum-rows{margin:0;display:flex;flex-direction:column;gap:10px}
+.sum-rows dt{color:var(--muted)}
+.sum-rows dd{margin:0;font-weight:600;text-align:right}
+.sum-total{border-top:1.5px solid var(--ink);padding-top:12px}
+.sum-total dt{color:var(--ink);font-weight:700}
+.sum-total dd{font:400 28px/1 var(--display)}
+.co-step{display:flex;align-items:center;gap:10px;font:400 28px/1 var(--display);text-transform:uppercase;margin:8px 0 0}
+.step-badge{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--ink);color:var(--accent);font:400 18px/1 var(--display)}
+.pay-options{display:flex;flex-direction:column;gap:10px}
+.pay-opt{display:flex;gap:12px;align-items:flex-start;border:1.5px solid var(--ink);border-radius:16px;padding:14px 16px;cursor:pointer;background:var(--paper)}
+.pay-opt.on{background:var(--accent)}
+.pay-opt.off{opacity:.55;cursor:not-allowed}
+.pay-opt>span{display:flex;flex-direction:column;gap:2px;text-transform:none;letter-spacing:0;font-size:15px;font-weight:500}
+.pay-opt input{margin-top:2px}
+
+/* status timeline */
+.timeline{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column}
+.tl-step{position:relative;display:flex;gap:14px;align-items:flex-start;padding-bottom:18px}
+.tl-step:not(:last-child)::before{content:'';position:absolute;left:17px;top:36px;bottom:0;width:2px;background:var(--ink);opacity:.2}
+.tl-dot{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--ink);background:var(--white);font-weight:700}
+.tl-step.done .tl-dot{background:var(--ink);color:var(--accent)}
+.tl-step.now .tl-dot{background:var(--accent)}
+.tl-step>div{display:flex;flex-direction:column;gap:2px;flex:1;padding-top:6px}

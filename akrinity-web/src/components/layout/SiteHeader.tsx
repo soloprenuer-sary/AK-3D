@@ -2,25 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
-import { useCart } from '@/lib/cart-store';
-import { COLOURS, SHOP_PRODUCTS } from '@/lib/shop-data';
-
-/** Product photo in the cart, or a coloured placeholder shape when the product has no photo yet. */
-function CartThumb({ id, name }: { id: string; name: string }) {
-  const p = SHOP_PRODUCTS.find((x) => x.id === id);
-  const photo = p?.images?.[0];
-  if (photo) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <span className="cart-thumb"><img src={photo} alt={name} /></span>;
-  }
-  const tone = p ? COLOURS[p.colours[0]] : '#5B2BE0';
-  return (
-    <span className="cart-thumb" role="img" aria-label={`${name} (photo coming)`} style={{ background: 'repeating-linear-gradient(0deg,var(--stripe) 0 6px,var(--stripe2) 6px 12px)' }}>
-      <i style={{ ['--c' as string]: tone } as CSSProperties} />
-    </span>
-  );
-}
+import { CartThumb } from '@/components/cart/CartThumb';
+import { formatRupees, useCart } from '@/lib/cart-store';
 
 const NAV = [
   { href: '/shop', label: 'Shop' },
@@ -31,7 +14,7 @@ const NAV = [
 ];
 
 export function SiteHeader() {
-  const { lines, count, remove, clear, modeLabel } = useCart();
+  const { lines, count, subtotal, remove, clear, modeLabel } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const cartDialog = useRef<HTMLDialogElement>(null);
@@ -65,6 +48,12 @@ export function SiteHeader() {
               <path d="M20 20l-4-4" />
             </svg>
           </Link>
+          <Link className="circle acct" href="/account" aria-label="Account">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21c1-4 4-6 8-6s7 2 8 6" />
+            </svg>
+          </Link>
           <button className="circle" type="button" aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`} onClick={() => setCartOpen(true)}>
             {count}
           </button>
@@ -86,6 +75,12 @@ export function SiteHeader() {
           ))}
           <Link href="/search" onClick={() => setMenuOpen(false)}>
             Search
+          </Link>
+          <Link href="/cart" onClick={() => setMenuOpen(false)}>
+            Cart
+          </Link>
+          <Link href="/account" onClick={() => setMenuOpen(false)}>
+            Account
           </Link>
         </nav>
       )}
@@ -116,11 +111,12 @@ export function SiteHeader() {
             <ul className="cart-lines">
               {lines.map((l) => (
                 <li key={l.key} className="cart-line">
-                  <CartThumb id={l.id} name={l.name} />
+                  <CartThumb line={l} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <b>{l.name}</b>
                     <div className="meta">
                       {modeLabel(l.mode)} · qty {l.qty}
+                      {l.price ? ` · ${l.price}` : ''}
                     </div>
                   </div>
                   <button type="button" className="link-btn" onClick={() => remove(l.key)} aria-label={`Remove ${l.name}`}>
@@ -130,16 +126,23 @@ export function SiteHeader() {
               ))}
             </ul>
           )}
-          <p className="meta" style={{ marginTop: 16 }}>
-            Sample cart. Checkout opens once the store is connected to WooCommerce.
-          </p>
+          {lines.length > 0 && (
+            <p className="meta" style={{ marginTop: 16 }}>
+              Subtotal: <b>{subtotal === null ? '₹[price]' : formatRupees(subtotal)}</b> · shipping is shown at checkout.
+            </p>
+          )}
           <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
             <button className="btn" type="button" disabled={lines.length === 0} onClick={clear}>
               Clear cart
             </button>
-            <button className="btn btn-primary" type="button" disabled>
-              Checkout (coming soon)
-            </button>
+            <Link className="btn" href="/cart" onClick={() => cartDialog.current?.close()}>
+              View cart
+            </Link>
+            {lines.length > 0 && (
+              <Link className="btn btn-primary" href="/checkout" onClick={() => cartDialog.current?.close()}>
+                Checkout
+              </Link>
+            )}
           </div>
         </div>
       </dialog>
