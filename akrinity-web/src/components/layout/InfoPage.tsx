@@ -5,7 +5,7 @@ export interface InfoSection {
   paragraphs: string[];
 }
 
-/** Simple content page used for About, Contact, FAQ, Shipping, Returns, Privacy and Terms. */
+/** Content page used for About, Contact, FAQ, Shipping, Returns, Privacy and Terms. */
 export function InfoPage({
   title,
   intro,
@@ -24,22 +24,55 @@ export function InfoPage({
         <span aria-hidden="true">/</span>
         <span aria-current="page">{title}</span>
       </nav>
-      <div className="wrap page-title">
-        <h1 className="d">
-          {title}
-        </h1>
-        <p>{intro}</p>
-        {note && <p className="sample-note">{note}</p>}
-      </div>
-      <section className="wrap info-body" style={{ paddingBottom: 'var(--sec)' }}>
+
+      <section className="wrap" style={{ paddingTop: 16 }}>
+        <div className="info-hero">
+          <div>
+            <span className="tag accent">Akrinity</span>
+            <h1 className="d" style={{ marginTop: 16, fontSize: 'clamp(52px,7vw,88px)', lineHeight: 0.95 }}>
+              {title}
+            </h1>
+            <p style={{ marginTop: 16, fontSize: 18, lineHeight: 1.6, color: 'var(--muted)', maxWidth: 520 }}>{intro}</p>
+            {note && (
+              <p className="meta" style={{ marginTop: 14 }}>
+                {note}
+              </p>
+            )}
+          </div>
+          <div className="img-ph" role="img" aria-label="Page image placeholder" style={{ aspectRatio: '4 / 3' }}>
+            <span>Image · 4 : 3</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="wrap" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 20, padding: '24px var(--gutter) var(--sec)' }}>
         {sections.map((s) => (
-          <div key={s.heading} className="info-block">
-            <h2 className="label">{s.heading}</h2>
+          <article key={s.heading} className="info-card">
+            <h2>{s.heading}</h2>
             {s.paragraphs.map((p) => (
               <p key={p}>{p}</p>
             ))}
-          </div>
+          </article>
         ))}
+      </section>
+
+      <section className="wrap" style={{ paddingBottom: 'var(--sec)' }}>
+        <div className="info-hero" style={{ gridTemplateColumns: '1fr auto', alignItems: 'center' }}>
+          <div>
+            <h2 className="d" style={{ fontSize: 40 }}>
+              Still <span className="hl">unsure?</span>
+            </h2>
+            <p className="muted" style={{ marginTop: 8 }}>Ask the studio, or read the knowledge hub.</p>
+          </div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <Link className="btn btn-primary" href="/contact">
+              Contact us
+            </Link>
+            <Link className="btn" href="/guides">
+              Knowledge hub
+            </Link>
+          </div>
+        </div>
       </section>
     </main>
   );

@@ -2,7 +2,25 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { useCart } from '@/lib/cart-store';
+import { COLOURS, SHOP_PRODUCTS } from '@/lib/shop-data';
+
+/** Product photo in the cart, or a coloured placeholder shape when the product has no photo yet. */
+function CartThumb({ id, name }: { id: string; name: string }) {
+  const p = SHOP_PRODUCTS.find((x) => x.id === id);
+  const photo = p?.images?.[0];
+  if (photo) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <span className="cart-thumb"><img src={photo} alt={name} /></span>;
+  }
+  const tone = p ? COLOURS[p.colours[0]] : '#5B2BE0';
+  return (
+    <span className="cart-thumb" role="img" aria-label={`${name} (photo coming)`} style={{ background: 'repeating-linear-gradient(0deg,var(--stripe) 0 6px,var(--stripe2) 6px 12px)' }}>
+      <i style={{ ['--c' as string]: tone } as CSSProperties} />
+    </span>
+  );
+}
 
 const NAV = [
   { href: '/shop', label: 'Shop' },
@@ -97,8 +115,9 @@ export function SiteHeader() {
           ) : (
             <ul className="cart-lines">
               {lines.map((l) => (
-                <li key={l.key}>
-                  <div>
+                <li key={l.key} className="cart-line">
+                  <CartThumb id={l.id} name={l.name} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <b>{l.name}</b>
                     <div className="meta">
                       {modeLabel(l.mode)} · qty {l.qty}

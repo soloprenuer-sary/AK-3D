@@ -7,6 +7,7 @@ export type Block =
   | { t: 'p'; text: string }
   | { t: 'h2'; text: string }
   | { t: 'tip'; text: string }
+  | { t: 'img'; caption: string }
   | { t: 'table'; head: string[]; rows: string[][] };
 
 export interface Guide {
@@ -32,6 +33,7 @@ export const GUIDES: Guide[] = [
       { t: 'h2', text: 'The short answer' },
       { t: 'p', text: 'PLA is easy to print and gives clean detail, so it suits decor and display pieces. PETG is tougher and handles everyday knocks better, which suits desk and functional parts. ABS and ASA cope better with heat, and ASA is the choice for outdoor use because it resists sunlight.' },
       { t: 'table', head: ['Filament', 'Good for', 'Watch out for'], rows: [['PLA / PLA+', 'Decor, display, prototypes', 'Softens in strong heat'], ['PETG', 'Desk and functional parts', 'Can string slightly, needs care in finishing'], ['ABS / ASA', 'Heat, impact, outdoor (ASA)', 'Needs a warmer print environment']] },
+      { t: 'img', caption: 'Side-by-side test prints in PLA, PETG and ASA (placeholder)' },
       { t: 'tip', text: 'Not sure? Tell us where the part will live (sun, heat, weight) and we will suggest a filament with the quote.' },
     ],
   },
@@ -47,6 +49,7 @@ export const GUIDES: Guide[] = [
       { t: 'h2', text: 'Single colour' },
       { t: 'p', text: 'One filament colour per part. It is the quickest option and the one most products are offered in.' },
       { t: 'h2', text: 'Multi-colour' },
+      { t: 'img', caption: 'Single-colour and multi-colour version of the same part (placeholder)' },
       { t: 'p', text: 'Several colours in one print, made on a multi-filament setup. It takes longer to print and can cost more, so the product page shows the extra cost and lead time before you add it to the cart.' },
       { t: 'h2', text: 'Painted later' },
       { t: 'p', text: 'Some single-colour parts can be painted after printing. Painted items are made to order and are quoted separately.' },

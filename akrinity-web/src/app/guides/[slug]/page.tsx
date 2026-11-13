@@ -29,6 +29,15 @@ function renderBlock(b: Block, i: number) {
           <b>Tip.</b> {b.text}
         </div>
       );
+    case 'img':
+      return (
+        <figure key={i} className="article-figure">
+          <div className="img-ph" role="img" aria-label={b.caption}>
+            <span>Image · 16 : 9</span>
+          </div>
+          <figcaption>{b.caption}</figcaption>
+        </figure>
+      );
     case 'table':
       return (
         <table key={i}>
@@ -78,6 +87,9 @@ export default async function ArticlePage({ params }: Params) {
         </span>
         <h1 style={{ marginTop: 14 }}>{guide.title}</h1>
         <p className="lead">{guide.summary}</p>
+        <div className="img-ph article-hero" role="img" aria-label="Article hero image placeholder">
+          <span>Hero image · 16 : 9 · 1600 × 900</span>
+        </div>
         <div id="article-body" className="body">
           {guide.body.map(renderBlock)}
         </div>
