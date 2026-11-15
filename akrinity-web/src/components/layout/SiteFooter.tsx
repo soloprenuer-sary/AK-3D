@@ -24,7 +24,8 @@ export function SiteFooter() {
           <div>
             <h3>Custom</h3>
             <Link href="/quote">Request a quote</Link>
-            <Link href="/quote">Design and print</Link>
+            <Link href="/design-service">Design service</Link>
+            <Link href="/materials">Materials</Link>
             <Link href="/business">Business and bulk</Link>
             <Link href="/how-we-print">How we print</Link>
             <Link href="/guides">Knowledge hub</Link>
@@ -35,6 +36,8 @@ export function SiteFooter() {
             <Link href="/account">Account</Link>
             <Link href="/faq">FAQ</Link>
             <Link href="/shipping">Shipping</Link>
+            <Link href="/refunds">Refunds and cancellation</Link>
+            <Link href="/care">Care and safety</Link>
             <Link href="/returns">Returns and warranty</Link>
             <Link href="/contact">Contact</Link>
             <Link href="/about">About</Link>
