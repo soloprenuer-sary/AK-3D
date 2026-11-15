@@ -27,12 +27,26 @@ interface SimpleFormProps {
   /** Optional tick box the visitor must agree to. */
   consent?: string;
   note?: string;
+  /**
+   * Optional real submit. Receives the checked values and returns an error message to show, or
+   * null on success. Without it the form only checks the fields (no backend is connected).
+   */
+  onSubmit?: (values: Record<string, string>) => Promise<string | null>;
 }
 
 const RULES: Record<Rule, { test: (v: string) => boolean; message: string }> = {
-  phone: { test: (v) => /^\+?\d{10,13}$/.test(v.replace(/\s+/g, '')), message: 'Enter a 10-digit mobile number, with or without +91.' },
-  email: { test: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), message: 'Enter an email like name@example.com.' },
-  gstin: { test: (v) => /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(v.toUpperCase()), message: 'GSTIN should be 15 characters, for example 27ABCDE1234F1Z5.' },
+  phone: {
+    test: (v) => /^\+?\d{10,13}$/.test(v.replace(/\s+/g, '')),
+    message: 'Enter a 10-digit mobile number, with or without +91.',
+  },
+  email: {
+    test: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+    message: 'Enter an email like name@example.com.',
+  },
+  gstin: {
+    test: (v) => /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(v.toUpperCase()),
+    message: 'GSTIN should be 15 characters, for example 27ABCDE1234F1Z5.',
+  },
   password: { test: (v) => v.length >= 8, message: 'Use at least 8 characters.' },
 };
 
@@ -40,11 +54,21 @@ const RULES: Record<Rule, { test: (v: string) => boolean; message: string }> = {
  * Small validated form used on the contact, business, login and track-order pages. It checks the
  * fields in the browser and shows a note. Nothing is sent or stored: no backend is connected yet.
  */
-export function SimpleForm({ id, fields, submitLabel, successNote, consent, note }: SimpleFormProps) {
+export function SimpleForm({
+  id,
+  fields,
+  submitLabel,
+  successNote,
+  consent,
+  note,
+  onSubmit: send,
+}: SimpleFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [serverError, setServerError] = useState('');
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     const next: Record<string, string> = {};
@@ -54,11 +78,25 @@ export function SimpleForm({ id, fields, submitLabel, successNote, consent, note
         next[field.name] = `Enter your ${field.label.toLowerCase()}.`;
         continue;
       }
-      if (value && field.rule && !RULES[field.rule].test(value)) next[field.name] = RULES[field.rule].message;
+      if (value && field.rule && !RULES[field.rule].test(value))
+        next[field.name] = RULES[field.rule].message;
     }
     if (consent && !f.get('consent')) next.consent = 'Tick the box to continue.';
     setErrors(next);
-    setDone(Object.keys(next).length === 0);
+    setServerError('');
+    const valid = Object.keys(next).length === 0;
+    if (!valid || !send) {
+      setDone(valid);
+      return;
+    }
+    const values: Record<string, string> = {};
+    for (const field of fields) values[field.name] = String(f.get(field.name) ?? '').trim();
+    if (consent) values.consent = 'true';
+    setBusy(true);
+    const error = await send(values);
+    setBusy(false);
+    if (error) setServerError(error);
+    else setDone(true);
   };
 
   return (
@@ -74,7 +112,13 @@ export function SimpleForm({ id, fields, submitLabel, successNote, consent, note
                 {field.required ? '' : ' (optional)'}
               </label>
               {type === 'textarea' ? (
-                <textarea id={fid} name={field.name} rows={4} placeholder={field.placeholder} aria-invalid={Boolean(errors[field.name])} />
+                <textarea
+                  id={fid}
+                  name={field.name}
+                  rows={4}
+                  placeholder={field.placeholder}
+                  aria-invalid={Boolean(errors[field.name])}
+                />
               ) : type === 'select' ? (
                 <select id={fid} name={field.name} defaultValue={field.options?.[0]}>
                   {field.options?.map((o) => (
@@ -115,9 +159,14 @@ export function SimpleForm({ id, fields, submitLabel, successNote, consent, note
         </>
       )}
 
-      <button className="btn btn-primary btn-wide" type="submit">
-        {submitLabel}
+      <button className="btn btn-primary btn-wide" type="submit" disabled={busy} aria-busy={busy}>
+        {busy ? 'Please wait…' : submitLabel}
       </button>
+      {serverError && (
+        <p className="err" role="alert">
+          {serverError}
+        </p>
+      )}
       {note && <p className="meta">{note}</p>}
       {done && (
         <p className="ok" role="status">

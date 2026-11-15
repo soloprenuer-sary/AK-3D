@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { AccountHeader } from '@/components/account/AccountHeader';
 
 export const metadata: Metadata = { title: 'Account', robots: { index: false } };
 
@@ -21,20 +22,7 @@ export default function AccountPage() {
         <span aria-current="page">Account</span>
       </nav>
 
-      <div className="wrap page-title">
-        <h1 className="d">
-          Your <span className="hl">account</span>
-        </h1>
-        <p>You are not signed in. Accounts arrive in the next phase; until then, guest checkout and order tracking by number work without one.</p>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
-          <Link className="btn btn-primary" href="/login">
-            Sign in or create account
-          </Link>
-          <Link className="btn" href="/track-order">
-            Track an order
-          </Link>
-        </div>
-      </div>
+      <AccountHeader />
 
       <section className="wrap" style={{ paddingBottom: 'var(--sec)' }} aria-label="What the account will hold">
         <h2 className="label" style={{ marginBottom: 14 }}>

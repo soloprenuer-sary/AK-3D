@@ -13,6 +13,7 @@
     "format:check": "prettier --check .",
     "test:e2e": "playwright test",
     "pages:dev": "wrangler pages dev out",
+    "auth:dev": "npm run build && wrangler pages dev out --port 8788",
     "check": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {

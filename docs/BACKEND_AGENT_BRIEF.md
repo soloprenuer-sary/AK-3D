@@ -386,6 +386,8 @@ Steps:
 
 ### B17. Approved snippet (only if a plugin fails)
 
+**Status: approved and written.** The owner approved one snippet for password reset and email verification: `wordpress/mu-plugins/akrinity-headless-auth.php` (decision 20). Deploy it by copying to `wp-content/mu-plugins/` and setting `AKRINITY_FRONTEND_URL` in `wp-config.php`. Do not add other custom code under this approval.
+
 **Goal:** a last resort, used only if a plugin cannot do a required job.
 
 Rules:

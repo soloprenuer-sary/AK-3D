@@ -1,0 +1,9 @@
+# Copy to .dev.vars for local work with `npm run auth:dev`. Never commit real values.
+WP_URL=http://akrinity-3d.local
+# Local (http): application password of a shop-manager user
+WC_APP_USER=
+WC_APP_PASSWORD=
+# Production (https): WooCommerce REST key of a shop-manager user
+# WC_CONSUMER_KEY=
+# WC_CONSUMER_SECRET=
+# TURNSTILE_SECRET_KEY=

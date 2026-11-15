@@ -4,7 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import nextPlugin from '@next/eslint-plugin-next';
 
 export default tseslint.config(
-  { ignores: ['.next/**', 'out/**', 'node_modules/**', 'next-env.d.ts', 'playwright-report/**'] },
+  { ignores: ['.next/**', '.wrangler/**', 'out/**', 'node_modules/**', 'next-env.d.ts', 'playwright-report/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
