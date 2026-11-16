@@ -27,3 +27,6 @@ Thumbs.db
 
 # TypeScript build cache
 *.tsbuildinfo
+
+# Product exports and imports (not for the repo)
+imports/

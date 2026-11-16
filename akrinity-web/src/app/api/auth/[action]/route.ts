@@ -319,6 +319,27 @@ async function wpRoute(
   }
 }
 
+/** Creates the customer through the snippet's /register route. status 0 means WordPress did not answer; 404 means the snippet is older. */
+async function registerViaSnippet(
+  env: Env,
+  payload: Record<string, string>,
+): Promise<{ status: number; code: string }> {
+  const req = wcRequest(env, '/akrinity/v1/register');
+  try {
+    const res = await fetch(req.url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...req.headers },
+      body: JSON.stringify(payload),
+      signal: signal(),
+    });
+    const data = (await res.json().catch(() => ({}))) as { code?: string };
+    return { status: res.status, code: String(data.code ?? '') };
+  } catch (e) {
+    console.error('register: no answer from WordPress', String(e));
+    return { status: 0, code: '' };
+  }
+}
+
 function tokenSeconds(token: string): number {
   try {
     const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
@@ -439,34 +460,8 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
   let wpStatus = 0;
   let wpCode = '';
   let madeId = 0;
-  try {
-    const res = await fetch(req.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...req.headers },
-      body: JSON.stringify({
-        email,
-        password,
-        first_name: first,
-        last_name: rest.join(' '),
-        role: 'customer', // everyone who signs up on the storefront is saved as a WooCommerce customer
-        billing: { first_name: first, last_name: rest.join(' '), email, phone },
-      }),
-      signal: signal(),
-    });
-    created = res.status === 201;
-    wpStatus = res.status;
-    if (!created)
-      wpCode = String(
-        (
-          (await res
-            .clone()
-            .json()
-            .catch(() => ({}))) as { code?: string }
-        ).code ?? '',
-      );
-    if (created) madeId = ((await res.json()) as { id?: number }).id ?? 0;
-  } catch (e) {
-    console.error('register: no answer from WordPress while creating the account', String(e));
+  const viaSnippet = await registerViaSnippet(env, { name, email, phone, password });
+  if (viaSnippet.status === 0) {
     return json(
       {
         error:
@@ -476,6 +471,51 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
       503,
     );
   }
+  if (viaSnippet.status === 201) created = true;
+  else if (viaSnippet.status !== 404) {
+    // 400 means the email is taken or invalid; anything else means WordPress refused the service account.
+    wpStatus = viaSnippet.status;
+    wpCode = viaSnippet.code;
+  }
+  // The older snippet has no /register route: use the WooCommerce API (needs an account that can create users).
+  if (viaSnippet.status === 404)
+    try {
+      const res = await fetch(req.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...req.headers },
+        body: JSON.stringify({
+          email,
+          password,
+          first_name: first,
+          last_name: rest.join(' '),
+          role: 'customer', // everyone who signs up on the storefront is saved as a WooCommerce customer
+          billing: { first_name: first, last_name: rest.join(' '), email, phone },
+        }),
+        signal: signal(),
+      });
+      created = res.status === 201;
+      wpStatus = res.status;
+      if (!created)
+        wpCode = String(
+          (
+            (await res
+              .clone()
+              .json()
+              .catch(() => ({}))) as { code?: string }
+          ).code ?? '',
+        );
+      if (created) madeId = ((await res.json()) as { id?: number }).id ?? 0;
+    } catch (e) {
+      console.error('register: no answer from WordPress while creating the account', String(e));
+      return json(
+        {
+          error:
+            'Sign-up is taking longer than usual. Your account may already be created: check your email for a verification link, or try signing in in a minute.',
+          code: 'slow',
+        },
+        503,
+      );
+    }
   if (!created && (wpStatus === 401 || wpStatus === 403 || wpStatus >= 500 || wpStatus === 404)) {
     console.error('register: WordPress refused the service account', wpStatus, wpCode);
     return json(

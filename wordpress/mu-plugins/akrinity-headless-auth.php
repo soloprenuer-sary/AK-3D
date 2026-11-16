@@ -49,6 +49,37 @@ add_filter(
 	}
 );
 
+/* ---------- Slow work after the response ---------- */
+
+/**
+ * Runs $fn after the reply has gone back to the storefront, so sending email (which can take
+ * several seconds over SMTP) does not hold the visitor up. If the server cannot finish the
+ * request early, the work simply runs at the end, which is the old behaviour.
+ */
+function akr_after_response( callable $fn ): void {
+	add_action(
+		'shutdown',
+		function () use ( $fn ) {
+			if ( function_exists( 'fastcgi_finish_request' ) ) {
+				fastcgi_finish_request();
+			} elseif ( function_exists( 'litespeed_finish_request' ) ) {
+				litespeed_finish_request();
+			}
+			$fn();
+		},
+		2
+	);
+}
+
+// The storefront sends its own verification email, so WooCommerce's welcome email is skipped
+// for accounts created through the API (it would be a second slow email).
+add_filter(
+	'woocommerce_email_enabled_customer_new_account',
+	function ( $enabled ) {
+		return ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ? false : $enabled;
+	}
+);
+
 /* ---------- Email verification ---------- */
 
 function akr_send_verification( WP_User $user ): void {
@@ -75,19 +106,27 @@ function akr_send_verification( WP_User $user ): void {
 	);
 }
 
-// New customers created by the storefront's account service start unverified.
+/** Marks a new customer unverified and emails the link (after the reply). Skipped when the development switch is off. */
+function akr_start_verification( WP_User $user ): void {
+	// Development switch: define( 'AKRINITY_REQUIRE_VERIFIED_EMAIL', false ) in wp-config.php to skip verification.
+	if ( defined( 'AKRINITY_REQUIRE_VERIFIED_EMAIL' ) && ! AKRINITY_REQUIRE_VERIFIED_EMAIL ) {
+		return;
+	}
+	update_user_meta( $user->ID, 'akr_email_verified', '0' );
+	akr_after_response(
+		function () use ( $user ) {
+			akr_send_verification( $user );
+		}
+	);
+}
+
+// Customers created through the WooCommerce REST API start unverified (older sign-up path).
 add_action(
 	'woocommerce_rest_insert_customer',
 	function ( $user_data, $request, $creating ) {
-		if ( ! $creating || ! ( $user_data instanceof WP_User ) ) {
-			return;
+		if ( $creating && $user_data instanceof WP_User ) {
+			akr_start_verification( $user_data );
 		}
-		// Development switch: define( 'AKRINITY_REQUIRE_VERIFIED_EMAIL', false ) in wp-config.php to skip verification.
-		if ( defined( 'AKRINITY_REQUIRE_VERIFIED_EMAIL' ) && ! AKRINITY_REQUIRE_VERIFIED_EMAIL ) {
-			return;
-		}
-		update_user_meta( $user_data->ID, 'akr_email_verified', '0' );
-		akr_send_verification( $user_data );
 	},
 	10,
 	3
@@ -125,6 +164,47 @@ add_action(
 			);
 		};
 
+		// Creates a customer, and only a customer. The storefront's service account (a Shop manager)
+		// cannot create users through the WooCommerce API, and should not be given that power.
+		$route(
+			'/register',
+			function ( WP_REST_Request $req ) {
+				$p        = $req->get_json_params();
+				$email    = sanitize_email( (string) ( $p['email'] ?? '' ) );
+				$name     = trim( sanitize_text_field( (string) ( $p['name'] ?? '' ) ) );
+				$phone    = sanitize_text_field( (string) ( $p['phone'] ?? '' ) );
+				$password = (string) ( $p['password'] ?? '' );
+				if ( ! is_email( $email ) || '' === $name || strlen( $password ) < 8 || strlen( $password ) > 128 ) {
+					return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
+				}
+				$parts = preg_split( '/s+/', $name, 2 );
+				$id    = wc_create_new_customer(
+					$email,
+					'',
+					$password,
+					array(
+						'first_name'   => $parts[0],
+						'last_name'    => $parts[1] ?? '',
+						'display_name' => $name,
+					)
+				);
+				if ( is_wp_error( $id ) ) {
+					return new WP_REST_Response( array( 'code' => 'exists' ), 400 );
+				}
+				if ( '' !== $phone ) {
+					update_user_meta( $id, 'billing_phone', $phone );
+				}
+				update_user_meta( $id, 'billing_first_name', $parts[0] );
+				update_user_meta( $id, 'billing_last_name', $parts[1] ?? '' );
+				update_user_meta( $id, 'billing_email', $email );
+				$user = get_user_by( 'id', $id );
+				if ( $user ) {
+					akr_start_verification( $user );
+				}
+				return new WP_REST_Response( array( 'id' => $id ), 201 );
+			}
+		);
+
 		// Always answers the same way, so it cannot be used to find out who has an account.
 		$route(
 			'/password/forgot',
@@ -132,7 +212,12 @@ add_action(
 				$email = sanitize_email( (string) ( $req->get_json_params()['email'] ?? '' ) );
 				$user  = $email ? get_user_by( 'email', $email ) : false;
 				if ( $user ) {
-					retrieve_password( $user->user_login );
+					$login = $user->user_login;
+					akr_after_response(
+						function () use ( $login ) {
+							retrieve_password( $login );
+						}
+					);
 				}
 				return array( 'ok' => true );
 			}
@@ -184,7 +269,11 @@ add_action(
 				if ( $user && '0' === get_user_meta( $user->ID, 'akr_email_verified', true ) ) {
 					$saved = get_user_meta( $user->ID, 'akr_verify', true );
 					if ( ! is_array( $saved ) || ( $saved['sent'] ?? 0 ) + AKR_RESEND_GAP < time() ) {
-						akr_send_verification( $user );
+						akr_after_response(
+							function () use ( $user ) {
+								akr_send_verification( $user );
+							}
+						);
 					}
 				}
 				return array( 'ok' => true );
