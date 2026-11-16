@@ -1,27 +1,41 @@
 <?php
 /**
- * Plugin Name: Akrinity headless auth
- * Description: Password-reset and email-verification links for the headless storefront. The one approved WordPress snippet (decision 20).
- * Version: 1.0.0
+ * Plugin Name: Akrinity headless account
+ * Description: Customer sign-up, account details and orders for the headless storefront. The one approved WordPress snippet (decisions 20 and 32).
+ * Version: 2.0.0
  *
  * Install: copy this file to wp-content/mu-plugins/ and add to wp-config.php:
  *   define( 'AKRINITY_FRONTEND_URL', 'https://www.example.com' );
+ *   define( 'AKRINITY_SHARED_SECRET', '<a new random value, 40 or more characters>' );
+ * The same secret value is set in Vercel as AKRINITY_SHARED_SECRET. Nothing secret lives in this file.
  *
- * What it does:
- *  - Reset and verification emails link to the storefront, not to WordPress.
- *  - New customers created through the WooCommerce REST API must verify their email before they can sign in.
- *  - Adds four routes under /wp-json/akrinity/v1/ for the storefront's account service. They need a signed-in
- *    user who can manage WooCommerce (the shop-manager service account), so the public cannot call them directly.
- * No secrets live in this file.
+ * What it does (all under /wp-json/akrinity/v1/):
+ *  - Service routes, only for the storefront (they need the shared secret in the X-Akrinity-Key header):
+ *      POST /register          creates a customer (role Customer, nothing else)
+ *      POST /account/status    says whether an email has an account, only guest orders, or is new
+ *      POST /password/forgot   emails a reset link to the storefront
+ *      POST /password/reset    sets a new password from the emailed link
+ *  - Customer routes, for a signed-in customer (their own sign-in token) and only about themselves:
+ *      GET|POST /me            details and saved addresses
+ *      POST /me/password       change password
+ *      GET /orders             their orders
+ *      GET /orders/{id}        one of their orders
+ *  - Password-reset emails link to the storefront, and slow emails are sent after the reply.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const AKR_VERIFY_TTL = DAY_IN_SECONDS * 2;
-const AKR_RESEND_GAP = 60;
-
 function akr_frontend_url(): string {
 	return defined( 'AKRINITY_FRONTEND_URL' ) ? rtrim( (string) AKRINITY_FRONTEND_URL, '/' ) : '';
+}
+
+/** True when the request carries the shared secret. Without a long secret in wp-config.php nothing is allowed. */
+function akr_secret_ok( WP_REST_Request $req ): bool {
+	if ( ! defined( 'AKRINITY_SHARED_SECRET' ) || strlen( (string) AKRINITY_SHARED_SECRET ) < 32 ) {
+		return false;
+	}
+	$sent = (string) $req->get_header( 'x-akrinity-key' );
+	return '' !== $sent && hash_equals( (string) AKRINITY_SHARED_SECRET, $sent );
 }
 
 /* ---------- Password reset email ---------- */
@@ -54,7 +68,7 @@ add_filter(
 /**
  * Runs $fn after the reply has gone back to the storefront, so sending email (which can take
  * several seconds over SMTP) does not hold the visitor up. If the server cannot finish the
- * request early, the work simply runs at the end, which is the old behaviour.
+ * request early, the work simply runs at the end.
  */
 function akr_after_response( callable $fn ): void {
 	add_action(
@@ -71,8 +85,8 @@ function akr_after_response( callable $fn ): void {
 	);
 }
 
-// The storefront sends its own verification email, so WooCommerce's welcome email is skipped
-// for accounts created through the API (it would be a second slow email).
+// WooCommerce's welcome email is skipped for accounts created through the API: it is a slow extra
+// email, and the storefront signs the new customer in straight away.
 add_filter(
 	'woocommerce_email_enabled_customer_new_account',
 	function ( $enabled ) {
@@ -80,94 +94,119 @@ add_filter(
 	}
 );
 
-/* ---------- Email verification ---------- */
+/* ---------- Helpers for account data ---------- */
 
-function akr_send_verification( WP_User $user ): void {
-	$base = akr_frontend_url();
-	if ( ! $base ) {
+const AKR_ADDRESS_KEYS = array( 'first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country' );
+
+/** One saved address (billing or shipping) as plain values. */
+function akr_read_address( int $user_id, string $type ): array {
+	$keys = AKR_ADDRESS_KEYS;
+	if ( 'billing' === $type ) {
+		$keys = array_merge( $keys, array( 'email', 'phone' ) );
+	}
+	$out = array();
+	foreach ( $keys as $key ) {
+		$out[ $key ] = (string) get_user_meta( $user_id, $type . '_' . $key, true );
+	}
+	return $out;
+}
+
+/** Saves the allowed fields of one address from a request body. Anything else is ignored. */
+function akr_save_address( int $user_id, string $type, $data ): void {
+	if ( ! is_array( $data ) ) {
 		return;
 	}
-	$key = bin2hex( random_bytes( 24 ) );
-	update_user_meta(
-		$user->ID,
-		'akr_verify',
+	$keys = AKR_ADDRESS_KEYS;
+	if ( 'billing' === $type ) {
+		$keys = array_merge( $keys, array( 'email', 'phone' ) );
+	}
+	foreach ( $keys as $key ) {
+		if ( ! array_key_exists( $key, $data ) ) {
+			continue;
+		}
+		$value = 'email' === $key ? sanitize_email( (string) $data[ $key ] ) : sanitize_text_field( (string) $data[ $key ] );
+		update_user_meta( $user_id, $type . '_' . $key, substr( $value, 0, 200 ) );
+	}
+}
+
+function akr_order_summary( WC_Order $o ): array {
+	$created = $o->get_date_created();
+	return array(
+		'id'             => $o->get_id(),
+		'number'         => (string) $o->get_order_number(),
+		'status'         => $o->get_status(),
+		'status_label'   => wc_get_order_status_name( $o->get_status() ),
+		'date'           => $created ? $created->date( 'c' ) : '',
+		'total'          => (string) $o->get_total(),
+		'currency'       => $o->get_currency(),
+		'item_count'     => (int) $o->get_item_count(),
+		'payment_method' => (string) $o->get_payment_method_title(),
+	);
+}
+
+function akr_order_detail( WC_Order $o ): array {
+	$items = array();
+	foreach ( $o->get_items() as $item ) {
+		$meta = array();
+		foreach ( $item->get_formatted_meta_data() as $m ) {
+			$meta[] = array(
+				'label' => wp_strip_all_tags( (string) $m->display_key ),
+				'value' => wp_strip_all_tags( (string) $m->display_value ),
+			);
+		}
+		$items[] = array(
+			'name'     => $item->get_name(),
+			'quantity' => (int) $item->get_quantity(),
+			'total'    => (string) $item->get_total(),
+			'meta'     => $meta,
+		);
+	}
+	$paid = $o->get_date_paid();
+	return array_merge(
+		akr_order_summary( $o ),
 		array(
-			'hash'    => hash( 'sha256', $key ),
-			'expires' => time() + AKR_VERIFY_TTL,
-			'sent'    => time(),
+			'items'          => $items,
+			'subtotal'       => (string) $o->get_subtotal(),
+			'shipping_total' => (string) $o->get_shipping_total(),
+			'tax_total'      => (string) $o->get_total_tax(),
+			'discount_total' => (string) $o->get_discount_total(),
+			'date_paid'      => $paid ? $paid->date( 'c' ) : '',
+			'note'           => (string) $o->get_customer_note(),
+			'billing'        => $o->get_address( 'billing' ),
+			'shipping'       => $o->get_address( 'shipping' ),
 		)
 	);
-	$url = $base . '/verify-email?key=' . rawurlencode( $key ) . '&login=' . rawurlencode( $user->user_login );
-	wp_mail(
-		$user->user_email,
-		'Verify your Akrinity email',
-		"Welcome to Akrinity.\r\n\r\nConfirm your email to finish creating your account. The link works for 2 days:\r\n{$url}\r\n\r\n"
-		. "If you did not create an account, ignore this email.\r\n"
-	);
 }
 
-/** Marks a new customer unverified and emails the link (after the reply). Skipped when the development switch is off. */
-function akr_start_verification( WP_User $user ): void {
-	// Development switch: define( 'AKRINITY_REQUIRE_VERIFIED_EMAIL', false ) in wp-config.php to skip verification.
-	if ( defined( 'AKRINITY_REQUIRE_VERIFIED_EMAIL' ) && ! AKRINITY_REQUIRE_VERIFIED_EMAIL ) {
-		return;
-	}
-	update_user_meta( $user->ID, 'akr_email_verified', '0' );
-	akr_after_response(
-		function () use ( $user ) {
-			akr_send_verification( $user );
-		}
-	);
-}
-
-// Customers created through the WooCommerce REST API start unverified (older sign-up path).
-add_action(
-	'woocommerce_rest_insert_customer',
-	function ( $user_data, $request, $creating ) {
-		if ( $creating && $user_data instanceof WP_User ) {
-			akr_start_verification( $user_data );
-		}
-	},
-	10,
-	3
-);
-
-// Unverified accounts cannot sign in. Accounts without the flag (existing users) are unaffected.
-add_filter(
-	'authenticate',
-	function ( $user ) {
-		if ( $user instanceof WP_User && '0' === get_user_meta( $user->ID, 'akr_email_verified', true ) ) {
-			return new WP_Error( 'email_not_verified', 'Please verify your email before signing in.' );
-		}
-		return $user;
-	},
-	40
-);
-
-/* ---------- Routes for the account service ---------- */
+/* ---------- Routes ---------- */
 
 add_action(
 	'rest_api_init',
 	function () {
-		$can = function () {
-			return current_user_can( 'manage_woocommerce' );
+		$service  = function ( WP_REST_Request $req ) {
+			return akr_secret_ok( $req );
 		};
-		$route = function ( string $path, callable $cb ) use ( $can ) {
+		$customer = function () {
+			return is_user_logged_in();
+		};
+		$route    = function ( string $path, string $method, callable $cb, callable $permission ) {
 			register_rest_route(
 				'akrinity/v1',
 				$path,
 				array(
-					'methods'             => 'POST',
+					'methods'             => $method,
 					'callback'            => $cb,
-					'permission_callback' => $can,
+					'permission_callback' => $permission,
 				)
 			);
 		};
 
-		// Creates a customer, and only a customer. The storefront's service account (a Shop manager)
-		// cannot create users through the WooCommerce API, and should not be given that power.
+		// ----- service routes (shared secret) -----
+
+		// Creates a customer, and only a customer.
 		$route(
 			'/register',
+			'POST',
 			function ( WP_REST_Request $req ) {
 				$p        = $req->get_json_params();
 				$email    = sanitize_email( (string) ( $p['email'] ?? '' ) );
@@ -176,6 +215,9 @@ add_action(
 				$password = (string) ( $p['password'] ?? '' );
 				if ( ! is_email( $email ) || '' === $name || strlen( $password ) < 8 || strlen( $password ) > 128 ) {
 					return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
+				}
+				if ( email_exists( $email ) ) {
+					return new WP_REST_Response( array( 'code' => 'exists' ), 400 );
 				}
 				$parts = preg_split( '/\s+/', $name, 2 );
 				$id    = wc_create_new_customer(
@@ -191,23 +233,46 @@ add_action(
 				if ( is_wp_error( $id ) ) {
 					return new WP_REST_Response( array( 'code' => 'exists' ), 400 );
 				}
-				if ( '' !== $phone ) {
-					update_user_meta( $id, 'billing_phone', $phone );
-				}
+				// Orders placed earlier as a guest with this email are linked by WooCommerce (woocommerce_created_customer).
 				update_user_meta( $id, 'billing_first_name', $parts[0] );
 				update_user_meta( $id, 'billing_last_name', $parts[1] ?? '' );
 				update_user_meta( $id, 'billing_email', $email );
-				$user = get_user_by( 'id', $id );
-				if ( $user ) {
-					akr_start_verification( $user );
+				if ( '' !== $phone ) {
+					update_user_meta( $id, 'billing_phone', $phone );
 				}
 				return new WP_REST_Response( array( 'id' => $id ), 201 );
-			}
+			},
+			$service
+		);
+
+		// account = has a login, guest = only ordered as a guest before, new = never seen.
+		$route(
+			'/account/status',
+			'POST',
+			function ( WP_REST_Request $req ) {
+				$email = sanitize_email( (string) ( $req->get_json_params()['email'] ?? '' ) );
+				if ( ! is_email( $email ) ) {
+					return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
+				}
+				if ( email_exists( $email ) ) {
+					return array( 'state' => 'account' );
+				}
+				$guest = wc_get_orders(
+					array(
+						'billing_email' => $email,
+						'limit'         => 1,
+						'return'        => 'ids',
+					)
+				);
+				return array( 'state' => empty( $guest ) ? 'new' : 'guest' );
+			},
+			$service
 		);
 
 		// Always answers the same way, so it cannot be used to find out who has an account.
 		$route(
 			'/password/forgot',
+			'POST',
 			function ( WP_REST_Request $req ) {
 				$email = sanitize_email( (string) ( $req->get_json_params()['email'] ?? '' ) );
 				$user  = $email ? get_user_by( 'email', $email ) : false;
@@ -220,11 +285,13 @@ add_action(
 					);
 				}
 				return array( 'ok' => true );
-			}
+			},
+			$service
 		);
 
 		$route(
 			'/password/reset',
+			'POST',
 			function ( WP_REST_Request $req ) {
 				$p        = $req->get_json_params();
 				$login    = sanitize_user( (string) ( $p['login'] ?? '' ) );
@@ -238,46 +305,111 @@ add_action(
 					return new WP_REST_Response( array( 'error' => 'This reset link is invalid or has expired.' ), 400 );
 				}
 				reset_password( $user, $password );
-				// Receiving the reset email proves the address belongs to them.
-				update_user_meta( $user->ID, 'akr_email_verified', '1' );
-				delete_user_meta( $user->ID, 'akr_verify' );
 				return array( 'ok' => true );
-			}
+			},
+			$service
+		);
+
+		// ----- customer routes (the customer's own sign-in token) -----
+
+		$route(
+			'/me',
+			'GET',
+			function () {
+				$user = wp_get_current_user();
+				return array(
+					'id'           => $user->ID,
+					'email'        => $user->user_email,
+					'first_name'   => (string) get_user_meta( $user->ID, 'first_name', true ),
+					'last_name'    => (string) get_user_meta( $user->ID, 'last_name', true ),
+					'display_name' => $user->display_name,
+					'phone'        => (string) get_user_meta( $user->ID, 'billing_phone', true ),
+					'billing'      => akr_read_address( $user->ID, 'billing' ),
+					'shipping'     => akr_read_address( $user->ID, 'shipping' ),
+				);
+			},
+			$customer
 		);
 
 		$route(
-			'/email/verify',
+			'/me',
+			'POST',
 			function ( WP_REST_Request $req ) {
-				$p     = $req->get_json_params();
-				$user  = get_user_by( 'login', sanitize_user( (string) ( $p['login'] ?? '' ) ) );
-				$key   = (string) ( $p['key'] ?? '' );
-				$saved = $user ? get_user_meta( $user->ID, 'akr_verify', true ) : null;
-				if ( ! $user || ! is_array( $saved ) || $saved['expires'] < time() || ! hash_equals( $saved['hash'], hash( 'sha256', $key ) ) ) {
-					return new WP_REST_Response( array( 'error' => 'This verification link is invalid or has expired.' ), 400 );
+				$p    = $req->get_json_params();
+				$user = wp_get_current_user();
+				$id   = $user->ID;
+				$first = array_key_exists( 'first_name', $p ) ? sanitize_text_field( (string) $p['first_name'] ) : (string) get_user_meta( $id, 'first_name', true );
+				$last  = array_key_exists( 'last_name', $p ) ? sanitize_text_field( (string) $p['last_name'] ) : (string) get_user_meta( $id, 'last_name', true );
+				if ( '' === trim( $first . $last ) ) {
+					return new WP_REST_Response( array( 'error' => 'Enter your name.' ), 400 );
 				}
-				update_user_meta( $user->ID, 'akr_email_verified', '1' );
-				delete_user_meta( $user->ID, 'akr_verify' );
+				wp_update_user(
+					array(
+						'ID'           => $id,
+						'first_name'   => $first,
+						'last_name'    => $last,
+						'display_name' => trim( $first . ' ' . $last ),
+					)
+				);
+				if ( array_key_exists( 'phone', $p ) ) {
+					update_user_meta( $id, 'billing_phone', sanitize_text_field( (string) $p['phone'] ) );
+				}
+				akr_save_address( $id, 'billing', $p['billing'] ?? null );
+				akr_save_address( $id, 'shipping', $p['shipping'] ?? null );
 				return array( 'ok' => true );
-			}
+			},
+			$customer
 		);
 
 		$route(
-			'/email/resend',
+			'/me/password',
+			'POST',
 			function ( WP_REST_Request $req ) {
-				$email = sanitize_email( (string) ( $req->get_json_params()['email'] ?? '' ) );
-				$user  = $email ? get_user_by( 'email', $email ) : false;
-				if ( $user && '0' === get_user_meta( $user->ID, 'akr_email_verified', true ) ) {
-					$saved = get_user_meta( $user->ID, 'akr_verify', true );
-					if ( ! is_array( $saved ) || ( $saved['sent'] ?? 0 ) + AKR_RESEND_GAP < time() ) {
-						akr_after_response(
-							function () use ( $user ) {
-								akr_send_verification( $user );
-							}
-						);
-					}
+				$p        = $req->get_json_params();
+				$user     = wp_get_current_user();
+				$current  = (string) ( $p['current'] ?? '' );
+				$password = (string) ( $p['password'] ?? '' );
+				if ( ! wp_check_password( $current, $user->user_pass, $user->ID ) ) {
+					return new WP_REST_Response( array( 'error' => 'Your current password is not correct.' ), 400 );
 				}
+				if ( strlen( $password ) < 8 || strlen( $password ) > 128 ) {
+					return new WP_REST_Response( array( 'error' => 'Use at least 8 characters.' ), 400 );
+				}
+				wp_set_password( $password, $user->ID );
 				return array( 'ok' => true );
-			}
+			},
+			$customer
+		);
+
+		$route(
+			'/orders',
+			'GET',
+			function () {
+				$orders = wc_get_orders(
+					array(
+						'customer_id' => get_current_user_id(),
+						'limit'       => 50,
+						'orderby'     => 'date',
+						'order'       => 'DESC',
+					)
+				);
+				return array( 'orders' => array_map( 'akr_order_summary', $orders ) );
+			},
+			$customer
+		);
+
+		$route(
+			'/orders/(?P<id>\d+)',
+			'GET',
+			function ( WP_REST_Request $req ) {
+				$order = wc_get_order( (int) $req['id'] );
+				// Someone else's order looks exactly like a missing one.
+				if ( ! $order instanceof WC_Order || (int) $order->get_customer_id() !== get_current_user_id() ) {
+					return new WP_REST_Response( array( 'error' => 'Order not found.' ), 404 );
+				}
+				return array( 'order' => akr_order_detail( $order ) );
+			},
+			$customer
 		);
 	}
 );

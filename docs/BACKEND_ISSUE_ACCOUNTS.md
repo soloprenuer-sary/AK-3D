@@ -16,7 +16,7 @@ Creating an account or signing in from the storefront fails. Every account creat
 
 1. `JWT_AUTH_SECRET_KEY` is defined in `wp-config.php`. Copies of a site usually do not carry `wp-config.php` settings. Without it, login fails.
 2. `AKRINITY_FRONTEND_URL` is defined in `wp-config.php` (live storefront address, https, no trailing slash). Without it, verification and reset emails link to the wrong place.
-3. A user `akrinity-auth` exists with the **Shop manager** role and a working **Application Password**. Application passwords need https. The password copied from the local site must not be reused. Create a new one.
+3. The user `claude-agent` has a working **Application Password** (it is the storefront's account).
 4. Outgoing email works (WP Mail SMTP test). Sign-up sends a verification email, and sign-in is blocked until it is clicked.
 5. The mu-plugin `wp-content/mu-plugins/akrinity-headless-auth.php` is the current version from the repo (`wordpress/mu-plugins/`). Its route permission is `manage_woocommerce`.
 6. WordPress is not blocking REST calls from the storefront host (security plugin, firewall or host rules), and the Authorization header reaches PHP.
@@ -24,10 +24,10 @@ Creating an account or signing in from the storefront fails. Every account creat
 
 ## What the frontend does (so you can match it)
 
-- `POST /wp-json/wc/v3/customers` as `akrinity-auth` (Basic auth with the application password). Body includes `email`, `password`, `first_name`, `last_name`, `role: "customer"`, billing phone.
+- `POST /wp-json/wc/v3/customers` as `claude-agent` (Basic auth with the application password). Body includes `email`, `password`, `first_name`, `last_name`, `role: "customer"`, billing phone.
 - The snippet flags the new user unverified and emails a link `AKRINITY_FRONTEND_URL/verify-email?key=…&login=…`.
 - `POST /wp-json/jwt-auth/v1/token` with `username` (email) and `password` for sign-in.
-- `POST /wp-json/akrinity/v1/{password/forgot, password/reset, email/verify, email/resend}` as `akrinity-auth`.
+- `POST /wp-json/akrinity/v1/{password/forgot, password/reset, email/verify, email/resend}` as `claude-agent`.
 
 ## How to verify the fix
 

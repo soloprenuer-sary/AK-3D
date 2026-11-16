@@ -1,25 +1,29 @@
 /**
  * Account API for the storefront (Next.js route handler, runs as a Vercel function). It sits
- * between the browser and WordPress so the browser never holds the WordPress token:
+ * between the browser and WordPress so the browser never holds the WordPress token or the key:
  *
- *   POST /api/auth/register  create a WooCommerce customer in WordPress (sign-in waits for email verification)
- *   POST /api/auth/login     check the password in WordPress (JWT plugin), set a session cookie
- *   GET  /api/auth/me        who is signed in
- *   POST /api/auth/logout    clear the session cookie
- *   POST /api/auth/forgot, reset, verify, resend   password reset and email verification
+ *   POST /api/auth/check      is this email an account, a guest-order email, or new?
+ *   POST /api/auth/register   create a WooCommerce customer in WordPress, then sign in
+ *   POST /api/auth/login      check the password in WordPress (JWT plugin), set a session cookie
+ *   GET  /api/auth/me         the signed-in customer's details and saved addresses
+ *   POST /api/auth/profile    save details and addresses
+ *   POST /api/auth/password   change password
+ *   GET  /api/auth/orders     the customer's orders
+ *   GET  /api/auth/order?id=  one of their orders
+ *   POST /api/auth/forgot, reset, logout
  *
  * Passwords are never stored here: WordPress checks and hashes them. The session token lives in an
- * httpOnly, Secure, SameSite=Strict cookie that page scripts cannot read.
+ * httpOnly, Secure, SameSite=Strict cookie that page scripts cannot read. Calls that create accounts
+ * or reset passwords carry a private shared key (AKRINITY_SHARED_SECRET) that WordPress checks; no
+ * WordPress user or application password is involved.
  *
- * Environment (server only, set in Vercel, never in the repo): WP_URL, WC_APP_USER + WC_APP_PASSWORD
- * (application password of a Shop manager user) or WC_CONSUMER_KEY + WC_CONSUMER_SECRET (https only),
+ * Environment (server only, set in Vercel, never in the repo): WP_URL, AKRINITY_SHARED_SECRET,
  * optional TURNSTILE_SECRET_KEY, optional UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN for
  * rate-limit counters shared across serverless instances, optional AUTH_STATUS=1 (setup check).
  */
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-// WordPress sends emails while it creates an account, so sign-up can take 10 to 20 seconds.
 export const maxDuration = 60;
 
 interface KV {
@@ -29,14 +33,9 @@ interface KV {
 
 interface Env {
   WP_URL: string;
-  /** Production (https): WooCommerce REST key of a shop-manager user. */
-  WC_CONSUMER_KEY?: string;
-  WC_CONSUMER_SECRET?: string;
-  /** Local (http): application password of a shop-manager user. Used first when set. */
-  WC_APP_USER?: string;
-  WC_APP_PASSWORD?: string;
+  AKRINITY_SHARED_SECRET?: string;
   TURNSTILE_SECRET_KEY?: string;
-  /** Extra origins allowed to call this API, comma separated (local development behind a proxy). */
+  /** Extra origins allowed to call this API, comma separated. */
   ALLOWED_ORIGINS?: string;
   /** Set to 1 to turn on GET /api/auth/status, a setup check that shows what is missing (no secrets). */
   AUTH_STATUS?: string;
@@ -75,10 +74,7 @@ function readEnv(): Env {
   const e = process.env;
   return {
     WP_URL: e.WP_URL ?? '',
-    WC_CONSUMER_KEY: e.WC_CONSUMER_KEY,
-    WC_CONSUMER_SECRET: e.WC_CONSUMER_SECRET,
-    WC_APP_USER: e.WC_APP_USER,
-    WC_APP_PASSWORD: e.WC_APP_PASSWORD,
+    AKRINITY_SHARED_SECRET: e.AKRINITY_SHARED_SECRET,
     TURNSTILE_SECRET_KEY: e.TURNSTILE_SECRET_KEY,
     ALLOWED_ORIGINS: e.ALLOWED_ORIGINS,
     AUTH_STATUS: e.AUTH_STATUS,
@@ -99,11 +95,12 @@ function clientIp(request: Request): string {
 }
 
 const COOKIE = 'akr_session';
-const MAX_BODY = 4096;
+const MAX_BODY = 8192;
 const MAX_SESSION_SECONDS = 7 * 24 * 3600;
 
 /** Limits. Window is in seconds. Failures are counted per email and per IP. */
 const LIMITS = {
+  checkIp: { max: 30, window: 900 },
   loginIp: { max: 20, window: 900 },
   loginEmailFail: { max: 5, window: 900 },
   registerIp: { max: 5, window: 3600 },
@@ -111,9 +108,7 @@ const LIMITS = {
   forgotIp: { max: 10, window: 3600 },
   forgotEmail: { max: 3, window: 3600 },
   resetIp: { max: 10, window: 3600 },
-  verifyIp: { max: 20, window: 3600 },
-  resendIp: { max: 10, window: 3600 },
-  resendEmail: { max: 3, window: 3600 },
+  passwordIp: { max: 10, window: 3600 },
 };
 
 // ---------- rate limiting ----------
@@ -149,6 +144,19 @@ async function sha(text: string): Promise<string> {
     .slice(0, 32);
 }
 
+/** Counts a use of an action per visitor address. Returns a 429 reply when the limit is reached. */
+async function limitIp(
+  env: Env,
+  request: Request,
+  name: string,
+  limit: { max: number; window: number },
+): Promise<Response | null> {
+  const key = `${name}:ip:${await sha(clientIp(request))}`;
+  if ((await readCount(env, key)) >= limit.max) return tooMany(limit.window);
+  await bump(env, key, limit.window);
+  return null;
+}
+
 // ---------- responses ----------
 
 function json(body: unknown, status = 200, extra: Record<string, string> = {}): Response {
@@ -180,6 +188,15 @@ function tooMany(windowSec: number): Response {
   );
 }
 
+const unavailable = (what: string): Response =>
+  json(
+    {
+      error: `${what} is temporarily unavailable. Please try again in a few minutes.`,
+      code: 'unavailable',
+    },
+    503,
+  );
+
 function sessionCookie(token: string, maxAge: number): string {
   return `${COOKIE}=${token}; Path=/api/auth; HttpOnly; Secure; SameSite=Strict; Max-Age=${maxAge}`;
 }
@@ -200,6 +217,7 @@ function readCookie(request: Request): string {
 // ---------- input ----------
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^\+?\d{10,13}$/;
 
 async function readJson(request: Request): Promise<Record<string, unknown> | null> {
   if (!(request.headers.get('Content-Type') ?? '').includes('application/json')) return null;
@@ -229,7 +247,7 @@ function sameOrigin(request: Request, env: Env): boolean {
 }
 
 async function verifyTurnstile(env: Env, token: string, ip: string): Promise<boolean> {
-  if (!env.TURNSTILE_SECRET_KEY) return true; // not configured (local development)
+  if (!env.TURNSTILE_SECRET_KEY) return true; // not configured (development)
   if (!token) return false;
   const body = new URLSearchParams({
     secret: env.TURNSTILE_SECRET_KEY,
@@ -253,11 +271,48 @@ async function verifyTurnstile(env: Env, token: string, ip: string): Promise<boo
 const wp = (env: Env, path: string) => `${env.WP_URL.replace(/\/$/, '')}/wp-json${path}`;
 const signal = () => AbortSignal.timeout(25000);
 
-/** Credentials for creating customers: a shop-manager application password, or a WooCommerce key (https only). */
-function wcRequest(env: Env, path: string): { url: string; headers: Record<string, string> } {
-  const user = env.WC_APP_USER || env.WC_CONSUMER_KEY || '';
-  const pass = env.WC_APP_PASSWORD || env.WC_CONSUMER_SECRET || '';
-  return { url: wp(env, path), headers: { Authorization: `Basic ${btoa(`${user}:${pass}`)}` } };
+interface WpReply {
+  /** HTTP status from WordPress, or 0 when it did not answer. */
+  status: number;
+  data: Record<string, unknown>;
+}
+
+async function wpFetch(url: string, init: RequestInit): Promise<WpReply> {
+  try {
+    const res = await fetch(url, { ...init, cache: 'no-store', signal: signal() });
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    return { status: res.status, data };
+  } catch (e) {
+    console.error('wordpress: no answer', String(e));
+    return { status: 0, data: {} };
+  }
+}
+
+/** A call only the storefront may make: it carries the private shared key. */
+function wpService(env: Env, path: string, payload: Record<string, unknown>): Promise<WpReply> {
+  return wpFetch(wp(env, '/akrinity/v1' + path), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Akrinity-Key': env.AKRINITY_SHARED_SECRET ?? '',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
+/** A call made as the signed-in customer, with their own token. */
+function wpCustomer(
+  env: Env,
+  path: string,
+  token: string,
+  method: 'GET' | 'POST',
+  payload?: Record<string, unknown>,
+): Promise<WpReply> {
+  return wpFetch(wp(env, '/akrinity/v1' + path), {
+    method,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: method === 'POST' ? JSON.stringify(payload ?? {}) : undefined,
+  });
 }
 
 interface Jwt {
@@ -266,78 +321,30 @@ interface Jwt {
   user_email?: string;
 }
 
-type LoginResult = Jwt | 'unverified' | 'unavailable' | { lockedSeconds: number } | null;
+type LoginResult = Jwt | 'unavailable' | { lockedSeconds: number } | null;
 
 /** Signs in through WordPress. null means the email or password is wrong. */
 async function wpLogin(env: Env, email: string, password: string): Promise<LoginResult> {
-  try {
-    const res = await fetch(wp(env, '/jwt-auth/v1/token'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: email, password }),
-      signal: signal(),
-    });
-    const data = (await res.json().catch(() => ({}))) as Jwt & { code?: string; message?: string };
-    if (res.ok) return data.token ? data : 'unavailable';
-    const code = String(data.code ?? '');
-    if (code.includes('email_not_verified')) return 'unverified';
-    if (code.includes('too_many_retries')) {
-      // WordPress's login limiter says e.g. "Please try again in 11 minutes".
-      const m = /(\d+)\s*(hour|minute)/i.exec(data.message ?? '');
-      const seconds = m ? Number(m[1]) * (m[2].toLowerCase() === 'hour' ? 3600 : 60) : 900;
-      return { lockedSeconds: seconds };
-    }
-    if (res.status >= 500 || res.status === 404) {
-      console.error('login: WordPress returned', res.status, code);
-      return 'unavailable';
-    }
-    return null;
-  } catch (e) {
-    console.error('login: could not reach WordPress', String(e));
+  const r = await wpFetch(wp(env, '/jwt-auth/v1/token'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: email, password }),
+  });
+  if (r.status === 0) return 'unavailable';
+  if (r.status === 200)
+    return typeof r.data.token === 'string' ? (r.data as unknown as Jwt) : 'unavailable';
+  const code = String(r.data.code ?? '');
+  if (code.includes('too_many_retries')) {
+    // WordPress's login limiter says e.g. "Please try again in 11 minutes".
+    const m = /(\d+)\s*(hour|minute)/i.exec(String(r.data.message ?? ''));
+    const seconds = m ? Number(m[1]) * (m[2].toLowerCase() === 'hour' ? 3600 : 60) : 900;
+    return { lockedSeconds: seconds };
+  }
+  if (r.status >= 500 || r.status === 404) {
+    console.error('login: WordPress returned', r.status, code);
     return 'unavailable';
   }
-}
-
-/** Calls one of the storefront routes added to WordPress by the akrinity-headless-auth snippet. */
-async function wpRoute(
-  env: Env,
-  path: string,
-  payload: Record<string, string>,
-): Promise<{ ok: boolean; error?: string }> {
-  const req = wcRequest(env, '/akrinity/v1' + path);
-  try {
-    const res = await fetch(req.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...req.headers },
-      body: JSON.stringify(payload),
-      signal: signal(),
-    });
-    const data = (await res.json().catch(() => ({}))) as { error?: string };
-    return { ok: res.ok, error: data.error };
-  } catch {
-    return { ok: false, error: 'The account service is busy. Please try again shortly.' };
-  }
-}
-
-/** Creates the customer through the snippet's /register route. status 0 means WordPress did not answer; 404 means the snippet is older. */
-async function registerViaSnippet(
-  env: Env,
-  payload: Record<string, string>,
-): Promise<{ status: number; code: string }> {
-  const req = wcRequest(env, '/akrinity/v1/register');
-  try {
-    const res = await fetch(req.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...req.headers },
-      body: JSON.stringify(payload),
-      signal: signal(),
-    });
-    const data = (await res.json().catch(() => ({}))) as { code?: string };
-    return { status: res.status, code: String(data.code ?? '') };
-  } catch (e) {
-    console.error('register: no answer from WordPress', String(e));
-    return { status: 0, code: '' };
-  }
+  return null;
 }
 
 function tokenSeconds(token: string): number {
@@ -350,9 +357,31 @@ function tokenSeconds(token: string): number {
   }
 }
 
+/** The short name shown in the header, e.g. "Akr Tester". */
+const nameOf = (jwt: Jwt, fallback = ''): string => jwt.user_display_name ?? fallback;
+
 // ---------- handlers ----------
 
 const BAD_LOGIN = 'Email or password is incorrect.';
+
+/** What kind of email is this: an account, someone who ordered as a guest, or new? */
+async function handleCheck(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  const email = str(body?.email, 254).toLowerCase();
+  if (!body || !EMAIL_RE.test(email)) {
+    return json({ error: 'Enter a valid email like name@example.com.', field: 'email' }, 400);
+  }
+  const limited = await limitIp(env, request, 'check', LIMITS.checkIp);
+  if (limited) return limited;
+  const r = await wpService(env, '/account/status', { email });
+  if (r.status === 0) return unavailable('Sign in');
+  if (r.status !== 200 || typeof r.data.state !== 'string') {
+    console.error('check: WordPress returned', r.status, String(r.data.code ?? ''));
+    return unavailable('Sign in');
+  }
+  const state = r.data.state === 'account' || r.data.state === 'guest' ? r.data.state : 'new';
+  return json({ state });
+}
 
 async function handleLogin(request: Request, env: Env): Promise<Response> {
   const body = await readJson(request);
@@ -374,25 +403,8 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
   }
 
   const jwt = await wpLogin(env, email, password);
-  if (jwt === 'unverified') {
-    return json(
-      {
-        error: 'Please verify your email first. We sent you a link when you signed up.',
-        code: 'unverified',
-      },
-      403,
-    );
-  }
-  if (jwt === 'unavailable') {
-    return json(
-      {
-        error: 'Sign in is temporarily unavailable. Please try again in a few minutes.',
-        code: 'unavailable',
-      },
-      503,
-    );
-  }
-  if (jwt && typeof jwt === 'object' && 'lockedSeconds' in jwt) {
+  if (jwt === 'unavailable') return unavailable('Sign in');
+  if (jwt && 'lockedSeconds' in jwt) {
     return json(
       {
         error: `Too many failed sign-in attempts on this account. Try again in ${waitText(jwt.lockedSeconds)}, or reset your password.`,
@@ -407,7 +419,7 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
     await new Promise((r) => setTimeout(r, 400)); // slows guessing a little
     return json({ error: BAD_LOGIN }, 401);
   }
-  return json({ user: { name: jwt.user_display_name ?? '', email } }, 200, {
+  return json({ user: { name: nameOf(jwt), email } }, 200, {
     'Set-Cookie': sessionCookie(jwt.token, tokenSeconds(jwt.token)),
   });
 }
@@ -418,27 +430,35 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
   const email = str(body?.email, 254).toLowerCase();
   const phone = str(body?.phone, 20).replace(/\s+/g, '');
   const password = str(body?.password, 128);
-  if (!body)
+  const confirm = str(body?.confirm, 128);
+  if (!body) {
     return json(
       { error: 'Something went wrong with the form. Reload the page and try again.' },
       400,
     );
+  }
   if (!name) return json({ error: 'Enter your name.', field: 'name' }, 400);
-  if (!EMAIL_RE.test(email))
+  if (!EMAIL_RE.test(email)) {
     return json({ error: 'Enter a valid email like name@example.com.', field: 'email' }, 400);
-  if (phone && !/^\+?\d{10,13}$/.test(phone)) {
+  }
+  if (phone && !PHONE_RE.test(phone)) {
     return json(
       { error: 'Enter a 10-digit mobile number, with or without +91.', field: 'phone' },
       400,
     );
   }
-  if (password.length < 8)
+  if (password.length < 8) {
     return json({ error: 'Use at least 8 characters for your password.', field: 'password' }, 400);
-  if (body.consent !== true)
+  }
+  if (password !== confirm) {
+    return json({ error: 'The two passwords do not match.', field: 'confirm' }, 400);
+  }
+  if (body.consent !== true) {
     return json(
       { error: 'Tick the box to accept the terms and privacy policy.', field: 'consent' },
       400,
     );
+  }
 
   const ip = clientIp(request);
   const ipKey = `reg:ip:${await sha(ip)}`;
@@ -454,130 +474,194 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
     return json({ error: 'Bot check failed. Please try again.' }, 400);
   }
 
-  const [first, ...rest] = name.split(/\s+/);
-  const req = wcRequest(env, '/wc/v3/customers');
-  let created = false;
-  let wpStatus = 0;
-  let wpCode = '';
-  let madeId = 0;
-  const viaSnippet = await registerViaSnippet(env, { name, email, phone, password });
-  if (viaSnippet.status === 0) {
+  const r = await wpService(env, '/register', { name, email, phone, password });
+  if (r.status === 0) {
     return json(
       {
         error:
-          'Sign-up is taking longer than usual. Your account may already be created: check your email for a verification link, or try signing in in a minute.',
+          'Sign-up is taking longer than usual. Your account may already be created: try signing in in a minute.',
         code: 'slow',
       },
       503,
     );
   }
-  if (viaSnippet.status === 201) created = true;
-  else if (viaSnippet.status !== 404) {
-    // 400 means the email is taken or invalid; anything else means WordPress refused the service account.
-    wpStatus = viaSnippet.status;
-    wpCode = viaSnippet.code;
+  if (r.status === 400 && String(r.data.code) === 'exists') {
+    return json(
+      {
+        error: 'An account with this email already exists. Please sign in instead.',
+        code: 'exists',
+      },
+      409,
+    );
   }
-  // The older snippet has no /register route: use the WooCommerce API (needs an account that can create users).
-  if (viaSnippet.status === 404)
-    try {
-      const res = await fetch(req.url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...req.headers },
-        body: JSON.stringify({
-          email,
-          password,
-          first_name: first,
-          last_name: rest.join(' '),
-          role: 'customer', // everyone who signs up on the storefront is saved as a WooCommerce customer
-          billing: { first_name: first, last_name: rest.join(' '), email, phone },
-        }),
-        signal: signal(),
-      });
-      created = res.status === 201;
-      wpStatus = res.status;
-      if (!created)
-        wpCode = String(
-          (
-            (await res
-              .clone()
-              .json()
-              .catch(() => ({}))) as { code?: string }
-          ).code ?? '',
-        );
-      if (created) madeId = ((await res.json()) as { id?: number }).id ?? 0;
-    } catch (e) {
-      console.error('register: no answer from WordPress while creating the account', String(e));
-      return json(
-        {
-          error:
-            'Sign-up is taking longer than usual. Your account may already be created: check your email for a verification link, or try signing in in a minute.',
-          code: 'slow',
-        },
-        503,
-      );
-    }
-  if (!created && (wpStatus === 401 || wpStatus === 403 || wpStatus >= 500 || wpStatus === 404)) {
-    console.error('register: WordPress refused the service account', wpStatus, wpCode);
+  if (r.status !== 201) {
+    // 401 here means the shared key is missing or wrong on one side; 404 means the snippet is not installed.
+    console.error('register: WordPress returned', r.status, String(r.data.code ?? ''));
     return json(
       {
         error: 'Sign-up is temporarily unavailable. Please try again in a few minutes.',
         code: 'unavailable',
-        debug: env.AUTH_STATUS === '1' ? { wpStatus, wpCode } : undefined,
+        debug: env.AUTH_STATUS === '1' ? { wpStatus: r.status, wpCode: r.data.code } : undefined,
       },
       503,
     );
   }
-  // The same message covers "email already used", so the form cannot be used to find out who has an account.
-  if (!created)
-    return json(
-      {
-        error:
-          'We could not create that account. If you already have one, sign in or reset your password.',
-        code: 'exists',
-      },
-      400,
-    );
 
-  // If WordPress requires email verification the sign-in is refused and the visitor must open the emailed link.
-  // If verification is switched off (development), they are signed in straight away.
-  const patch = madeId ? wcRequest(env, `/wp/v2/users/${madeId}`) : null;
-  const [jwt] = await Promise.all([
-    wpLogin(env, email, password),
-    // WooCommerce shows the login name by default; store the real name as the display name.
-    patch
-      ? fetch(patch.url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...patch.headers },
-          body: JSON.stringify({ name }),
-          signal: signal(),
-        }).catch(() => undefined)
-      : Promise.resolve(undefined),
-  ]);
+  // The account exists: sign the new customer in straight away.
+  const jwt = await wpLogin(env, email, password);
   if (jwt && typeof jwt === 'object' && 'token' in jwt) {
-    return json({ created: true, user: { name: jwt.user_display_name ?? name, email } }, 201, {
+    return json({ created: true, user: { name: nameOf(jwt, name), email } }, 201, {
       'Set-Cookie': sessionCookie(jwt.token, tokenSeconds(jwt.token)),
     });
   }
-  return json({ created: true, pendingVerification: true }, 201);
+  return json({ created: true }, 201);
+}
+
+/** The signed-in customer's token, or a reply telling the browser to sign in again. */
+function sessionToken(request: Request): { token: string } | { reply: Response } {
+  const token = readCookie(request);
+  if (!token) return { reply: json({ error: 'Please sign in.', code: 'signed_out' }, 401) };
+  return { token };
+}
+
+/** Passes a WordPress reply for a customer route on to the browser. */
+function customerReply(r: WpReply, ok: (data: Record<string, unknown>) => unknown): Response {
+  if (r.status === 0) return unavailable('Your account');
+  if (r.status === 401 || r.status === 403) {
+    return json(
+      { error: 'Your session has ended. Please sign in again.', code: 'signed_out' },
+      401,
+      {
+        'Set-Cookie': clearCookie(),
+      },
+    );
+  }
+  if (r.status === 404) return json({ error: String(r.data.error ?? 'Not found.') }, 404);
+  if (r.status === 400)
+    return json({ error: String(r.data.error ?? 'Please check your details.') }, 400);
+  if (r.status !== 200) {
+    console.error('customer route: WordPress returned', r.status);
+    return unavailable('Your account');
+  }
+  return json(ok(r.data));
 }
 
 async function handleMe(request: Request, env: Env): Promise<Response> {
   const token = readCookie(request);
   if (!token) return json({ user: null });
-  try {
-    const res = await fetch(wp(env, '/wp/v2/users/me?context=edit'), {
-      headers: { Authorization: `Bearer ${token}` },
-      signal: signal(),
-    });
-    if (!res.ok) return json({ user: null }, 200, { 'Set-Cookie': clearCookie() });
-    const u = (await res.json()) as { name?: string; email?: string };
-    return json({ user: { name: u.name ?? '', email: u.email ?? '' } });
-  } catch {
-    return json({ user: null }, 503);
-  }
+  const r = await wpCustomer(env, '/me', token, 'GET');
+  if (r.status === 401 || r.status === 403)
+    return json({ user: null }, 200, { 'Set-Cookie': clearCookie() });
+  if (r.status !== 200) return json({ user: null }, 503);
+  const d = r.data;
+  return json({
+    user: {
+      name: String(d.display_name ?? ''),
+      email: String(d.email ?? ''),
+      first_name: d.first_name,
+      last_name: d.last_name,
+      phone: d.phone,
+      billing: d.billing,
+      shipping: d.shipping,
+    },
+  });
 }
 
-// ---------- password reset and email verification ----------
+const ADDRESS_FIELDS = [
+  'first_name',
+  'last_name',
+  'company',
+  'address_1',
+  'address_2',
+  'city',
+  'state',
+  'postcode',
+  'country',
+  'email',
+  'phone',
+];
+
+function cleanAddress(value: unknown): Record<string, string> | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const out: Record<string, string> = {};
+  for (const key of ADDRESS_FIELDS) {
+    const v = (value as Record<string, unknown>)[key];
+    if (typeof v === 'string') out[key] = v.trim().slice(0, 200);
+  }
+  return out;
+}
+
+async function handleProfile(request: Request, env: Env): Promise<Response> {
+  const s = sessionToken(request);
+  if ('reply' in s) return s.reply;
+  const body = await readJson(request);
+  if (!body)
+    return json(
+      { error: 'Something went wrong with the form. Reload the page and try again.' },
+      400,
+    );
+  const first = str(body.first_name, 60);
+  const last = str(body.last_name, 60);
+  const phone = str(body.phone, 20).replace(/\s+/g, '');
+  if (!first && !last) return json({ error: 'Enter your name.', field: 'first_name' }, 400);
+  if (phone && !PHONE_RE.test(phone)) {
+    return json(
+      { error: 'Enter a 10-digit mobile number, with or without +91.', field: 'phone' },
+      400,
+    );
+  }
+  const billingEmail = cleanAddress(body.billing)?.email;
+  if (billingEmail && !EMAIL_RE.test(billingEmail)) {
+    return json({ error: 'Enter a valid billing email.', field: 'email' }, 400);
+  }
+  const r = await wpCustomer(env, '/me', s.token, 'POST', {
+    first_name: first,
+    last_name: last,
+    phone,
+    billing: cleanAddress(body.billing),
+    shipping: cleanAddress(body.shipping),
+  });
+  return customerReply(r, () => ({ ok: true }));
+}
+
+async function handlePassword(request: Request, env: Env): Promise<Response> {
+  const s = sessionToken(request);
+  if ('reply' in s) return s.reply;
+  const body = await readJson(request);
+  const current = str(body?.current, 128);
+  const password = str(body?.password, 128);
+  const confirm = str(body?.confirm, 128);
+  if (!body || !current)
+    return json({ error: 'Enter your current password.', field: 'current' }, 400);
+  if (password.length < 8)
+    return json({ error: 'Use at least 8 characters.', field: 'password' }, 400);
+  if (password !== confirm)
+    return json({ error: 'The two passwords do not match.', field: 'confirm' }, 400);
+  const limited = await limitIp(env, request, 'pw', LIMITS.passwordIp);
+  if (limited) return limited;
+  const r = await wpCustomer(env, '/me/password', s.token, 'POST', { current, password });
+  return customerReply(r, () => ({ ok: true }));
+}
+
+async function handleOrders(request: Request, env: Env): Promise<Response> {
+  const s = sessionToken(request);
+  if ('reply' in s) return s.reply;
+  return customerReply(await wpCustomer(env, '/orders', s.token, 'GET'), (d) => ({
+    orders: d.orders ?? [],
+  }));
+}
+
+async function handleOrder(request: Request, env: Env): Promise<Response> {
+  const s = sessionToken(request);
+  if ('reply' in s) return s.reply;
+  const id = new URL(request.url).searchParams.get('id') ?? '';
+  if (!/^\d{1,10}$/.test(id)) return json({ error: 'Order not found.' }, 404);
+  return customerReply(await wpCustomer(env, `/orders/${id}`, s.token, 'GET'), (d) => ({
+    order: d.order,
+  }));
+}
+
+// ---------- password reset ----------
 
 const GENERIC_OK = { ok: true };
 
@@ -595,7 +679,7 @@ async function handleForgot(request: Request, env: Env): Promise<Response> {
   await bump(env, mailKey, LIMITS.forgotEmail.window);
   if (!(await verifyTurnstile(env, str(body.turnstileToken, 2048), ip)))
     return json({ error: 'Bot check failed. Please try again.' }, 400);
-  await wpRoute(env, '/password/forgot', { email });
+  await wpService(env, '/password/forgot', { email });
   return json(GENERIC_OK); // same answer whether or not the email has an account
 }
 
@@ -606,46 +690,13 @@ async function handleReset(request: Request, env: Env): Promise<Response> {
   const password = str(body?.password, 128);
   if (!body || !key || !login || password.length < 8)
     return json({ error: 'This reset link is invalid or has expired.' }, 400);
-  const ip = clientIp(request);
-  const ipKey = `reset:ip:${await sha(ip)}`;
-  if ((await readCount(env, ipKey)) >= LIMITS.resetIp.max) return tooMany(LIMITS.resetIp.window);
-  await bump(env, ipKey, LIMITS.resetIp.window);
-  const r = await wpRoute(env, '/password/reset', { key, login, password });
-  return r.ok
+  const limited = await limitIp(env, request, 'reset', LIMITS.resetIp);
+  if (limited) return limited;
+  const r = await wpService(env, '/password/reset', { key, login, password });
+  if (r.status === 0) return unavailable('Password reset');
+  return r.status === 200
     ? json(GENERIC_OK)
-    : json({ error: r.error ?? 'This reset link is invalid or has expired.' }, 400);
-}
-
-async function handleVerify(request: Request, env: Env): Promise<Response> {
-  const body = await readJson(request);
-  const key = str(body?.key, 100);
-  const login = str(body?.login, 100);
-  if (!body || !key || !login)
-    return json({ error: 'This verification link is invalid or has expired.' }, 400);
-  const ip = clientIp(request);
-  const ipKey = `verify:ip:${await sha(ip)}`;
-  if ((await readCount(env, ipKey)) >= LIMITS.verifyIp.max) return tooMany(LIMITS.verifyIp.window);
-  await bump(env, ipKey, LIMITS.verifyIp.window);
-  const r = await wpRoute(env, '/email/verify', { key, login });
-  return r.ok
-    ? json(GENERIC_OK)
-    : json({ error: r.error ?? 'This verification link is invalid or has expired.' }, 400);
-}
-
-async function handleResend(request: Request, env: Env): Promise<Response> {
-  const body = await readJson(request);
-  const email = str(body?.email, 254).toLowerCase();
-  if (!body || !EMAIL_RE.test(email)) return json({ error: 'Enter a valid email.' }, 400);
-  const ip = clientIp(request);
-  const ipKey = `resend:ip:${await sha(ip)}`;
-  const mailKey = `resend:mail:${await sha(email)}`;
-  if ((await readCount(env, ipKey)) >= LIMITS.resendIp.max) return tooMany(LIMITS.resendIp.window);
-  if ((await readCount(env, mailKey)) >= LIMITS.resendEmail.max)
-    return tooMany(LIMITS.resendEmail.window);
-  await bump(env, ipKey, LIMITS.resendIp.window);
-  await bump(env, mailKey, LIMITS.resendEmail.window);
-  await wpRoute(env, '/email/resend', { email });
-  return json(GENERIC_OK);
+    : json({ error: String(r.data.error ?? 'This reset link is invalid or has expired.') }, 400);
 }
 
 // ---------- setup check ----------
@@ -657,97 +708,73 @@ interface Check {
 }
 
 /** GET /api/auth/status (only when AUTH_STATUS=1). Says what is wrong with the setup, never shows secrets. */
-async function handleStatus(request: Request, env: Env): Promise<Response> {
+async function handleStatus(env: Env): Promise<Response> {
   const checks: Check[] = [];
   const add = (name: string, ok: boolean, fix?: string) =>
     checks.push({ name, ok, fix: ok ? undefined : fix });
   const host = new URL(env.WP_URL).host;
 
   /** Status code of a request that needs no login, or 0 when WordPress did not answer. */
-  const probe = async (path: string, method: 'GET' | 'POST'): Promise<number> => {
-    try {
-      const res = await fetch(wp(env, path), {
+  const probe = async (path: string, method: 'GET' | 'POST'): Promise<number> =>
+    (
+      await wpFetch(wp(env, path), {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: method === 'POST' ? '{}' : undefined,
-        cache: 'no-store',
-        signal: signal(),
-      });
-      return res.status;
-    } catch {
-      return 0;
-    }
-  };
+      })
+    ).status;
 
   const index = await probe('/', 'GET');
   add(
     `WordPress answers at ${host}`,
     index === 200,
     index === 0
-      ? 'WordPress could not be reached. Check WP_URL, DNS and that the site is online.'
+      ? 'WordPress could not be reached. Check WP_URL and that the site is online.'
       : `WordPress answered with status ${index}. Check WP_URL and any firewall rules.`,
   );
-  // A route that exists but needs a login answers 401 or 403. A missing route answers 404.
   const jwt = await probe('/jwt-auth/v1/token', 'POST');
   add(
     'JWT login plugin is active',
     jwt !== 404 && jwt !== 0,
     'Install and activate "JWT Authentication for WP REST API".',
   );
-  const snippet = await probe('/akrinity/v1/email/resend', 'POST');
+  const jwtCfg = await wpFetch(wp(env, '/jwt-auth/v1/token'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'setup-check@example.invalid', password: 'setup-check' }),
+  });
+  add(
+    'JWT secret key is set in wp-config.php',
+    !String(jwtCfg.data.code ?? '').includes('bad_config') && jwtCfg.status !== 404,
+    "Add define( 'JWT_AUTH_SECRET_KEY', '<long random string>' ); to wp-config.php.",
+  );
+  const route = await probe('/akrinity/v1/account/status', 'POST');
   add(
     'Account snippet is installed',
-    snippet === 401 || snippet === 403,
-    `Copy wordpress/mu-plugins/akrinity-headless-auth.php to wp-content/mu-plugins/ (route answered ${snippet}).`,
+    route === 401 || route === 403,
+    `Copy wordpress/mu-plugins/akrinity-headless-auth.php to wp-content/mu-plugins/ (route answered ${route}).`,
   );
+  add(
+    'Shared key is set in Vercel',
+    Boolean(env.AKRINITY_SHARED_SECRET),
+    'Set AKRINITY_SHARED_SECRET in the Vercel environment.',
+  );
+  if (env.AKRINITY_SHARED_SECRET) {
+    const r = await wpService(env, '/account/status', { email: 'setup-check@example.invalid' });
+    add(
+      'Shared key matches WordPress',
+      r.status === 200,
+      r.status === 401 || r.status === 403
+        ? 'WordPress refused the key. Make AKRINITY_SHARED_SECRET in wp-config.php exactly equal to the one in Vercel (40+ characters).'
+        : `WordPress answered ${r.status} to the key test.`,
+    );
+  }
   const store = await probe('/wc/store/v1/products?per_page=1', 'GET');
   add(
     'WooCommerce REST API is on',
     store === 200,
     `Activate WooCommerce (store API answered ${store}).`,
   );
-
-  // JWT secret: a bogus login must be refused as a wrong password, not as a bad configuration.
-  try {
-    const res = await fetch(wp(env, '/jwt-auth/v1/token'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'setup-check@example.invalid', password: 'setup-check' }),
-      signal: signal(),
-    });
-    const data = (await res.json().catch(() => ({}))) as { code?: string };
-    const code = String(data.code ?? '');
-    add(
-      'JWT secret key is set in wp-config.php',
-      !code.includes('bad_config') && res.status !== 404,
-      "Add define( 'JWT_AUTH_SECRET_KEY', '<long random string>' ); to wp-config.php.",
-    );
-  } catch {
-    add('JWT secret key is set in wp-config.php', false, 'The JWT endpoint did not answer.');
-  }
-
-  // Service account: can it create customers?
-  const req = wcRequest(env, '/wp/v2/users/me?context=edit');
-  try {
-    const res = await fetch(req.url, { headers: req.headers, signal: signal() });
-    const me = (await res.json().catch(() => ({}))) as {
-      capabilities?: Record<string, boolean>;
-      roles?: string[];
-    };
-    add(
-      'Service account login works',
-      res.ok,
-      'WC_APP_USER / WC_APP_PASSWORD (or the WooCommerce key pair) are wrong, or application passwords are blocked (needs https on a live site).',
-    );
-    add(
-      'Service account is a shop manager',
-      Boolean(me.capabilities?.manage_woocommerce),
-      'Give that user the Shop manager role.',
-    );
-  } catch {
-    add('Service account login works', false, 'Could not call WordPress with the service account.');
-  }
-
   add(
     'Rate-limit store (Upstash Redis) is set',
     Boolean(env.AUTH_KV),
@@ -758,7 +785,6 @@ async function handleStatus(request: Request, env: Env): Promise<Response> {
     Boolean(env.TURNSTILE_SECRET_KEY),
     'Optional but recommended on a live site: set TURNSTILE_SECRET_KEY.',
   );
-  void request;
   return json({
     ok: checks.filter((c) => !/Turnstile|Upstash/.test(c.name)).every((c) => c.ok),
     checks,
@@ -769,10 +795,13 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   const action = Array.isArray(params.action) ? params.action[0] : params.action;
   if (!env.WP_URL) return json({ error: 'Accounts are not configured.' }, 503);
 
-  if (action === 'status' && request.method === 'GET' && env.AUTH_STATUS === '1') {
-    return handleStatus(request, env);
+  if (request.method === 'GET') {
+    if (action === 'status' && env.AUTH_STATUS === '1') return handleStatus(env);
+    if (action === 'me') return handleMe(request, env);
+    if (action === 'orders') return handleOrders(request, env);
+    if (action === 'order') return handleOrder(request, env);
+    return json({ error: 'Method not allowed.' }, 405, { Allow: 'POST' });
   }
-  if (action === 'me' && request.method === 'GET') return handleMe(request, env);
 
   if (request.method !== 'POST')
     return json({ error: 'Method not allowed.' }, 405, { Allow: 'POST' });
@@ -785,13 +814,20 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
       403,
     );
   }
+  if (
+    !env.AKRINITY_SHARED_SECRET &&
+    ['check', 'register', 'forgot', 'reset'].includes(action ?? '')
+  ) {
+    return json({ error: 'Accounts are not configured.', code: 'unconfigured' }, 503);
+  }
 
+  if (action === 'check') return handleCheck(request, env);
   if (action === 'login') return handleLogin(request, env);
   if (action === 'register') return handleRegister(request, env);
+  if (action === 'profile') return handleProfile(request, env);
+  if (action === 'password') return handlePassword(request, env);
   if (action === 'forgot') return handleForgot(request, env);
   if (action === 'reset') return handleReset(request, env);
-  if (action === 'verify') return handleVerify(request, env);
-  if (action === 'resend') return handleResend(request, env);
   if (action === 'logout') return json({ ok: true }, 200, { 'Set-Cookie': clearCookie() });
   return json({ error: 'Not found.' }, 404);
 }

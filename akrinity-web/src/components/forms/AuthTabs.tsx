@@ -4,18 +4,26 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { SimpleForm } from './SimpleForm';
-import { resendVerification, signIn, signUp } from '@/lib/auth-client';
+import { checkEmail, signIn, signUp } from '@/lib/auth-client';
 
-/** Sign in and create-account forms. They talk to WordPress through the account API. */
+type Mode = 'in' | 'up';
+
+/**
+ * Sign in and create account.
+ * Sign in asks for the email first. A known email asks for the password. An unknown email, or one
+ * that only ordered as a guest, is sent to Create account with the email already filled in.
+ */
 export function AuthTabs() {
-  const [tab, setTab] = useState<'in' | 'up'>('in');
-  const [unverified, setUnverified] = useState('');
-  const [resendNote, setResendNote] = useState('');
   const router = useRouter();
+  const [mode, setMode] = useState<Mode>('in');
+  const [step, setStep] = useState<'email' | 'password'>('email');
+  const [email, setEmail] = useState('');
+  const [notice, setNotice] = useState('');
 
-  const resend = async () => {
-    const error = await resendVerification(unverified);
-    setResendNote(error ?? 'If that account is waiting for verification, we sent a new link.');
+  const go = (next: Mode) => {
+    setMode(next);
+    setStep('email');
+    setNotice('');
   };
 
   return (
@@ -25,9 +33,9 @@ export function AuthTabs() {
           type="button"
           role="tab"
           className="pill"
-          aria-selected={tab === 'in'}
-          aria-pressed={tab === 'in'}
-          onClick={() => setTab('in')}
+          aria-selected={mode === 'in'}
+          aria-pressed={mode === 'in'}
+          onClick={() => go('in')}
         >
           Sign in
         </button>
@@ -35,37 +43,76 @@ export function AuthTabs() {
           type="button"
           role="tab"
           className="pill"
-          aria-selected={tab === 'up'}
-          aria-pressed={tab === 'up'}
-          onClick={() => setTab('up')}
+          aria-selected={mode === 'up'}
+          aria-pressed={mode === 'up'}
+          onClick={() => go('up')}
         >
           Create account
         </button>
       </div>
 
-      {tab === 'in' ? (
+      {notice && (
+        <p className="notice-line" role="status">
+          {notice}
+        </p>
+      )}
+
+      {mode === 'in' && step === 'email' && (
+        <SimpleForm
+          key="in-email"
+          id="signin-email-step"
+          submitLabel="Continue"
+          successNote=""
+          onSubmit={async (v) => {
+            const r = await checkEmail(v.email);
+            if (r.error || !r.state) return r.error;
+            setEmail(v.email);
+            if (r.state === 'account') {
+              setStep('password');
+              return null;
+            }
+            setMode('up');
+            setNotice(
+              r.state === 'guest'
+                ? 'You have ordered with us before as a guest. Create a password to see your orders and sign in next time.'
+                : 'We could not find an account for this email. Fill in the details below to create one.',
+            );
+            return null;
+          }}
+          fields={[
+            {
+              name: 'email',
+              label: 'Email',
+              required: true,
+              rule: 'email',
+              type: 'email',
+              autoComplete: 'email',
+              defaultValue: email,
+            },
+          ]}
+        />
+      )}
+
+      {mode === 'in' && step === 'password' && (
         <>
+          <p className="muted" style={{ margin: '4px 0 0' }}>
+            Signing in as <b>{email}</b>{' '}
+            <button type="button" className="link-btn" onClick={() => setStep('email')}>
+              Change
+            </button>
+          </p>
           <SimpleForm
-            key="in"
+            key="in-password"
             id="signin"
             submitLabel="Sign in"
+            busyLabel="Signing in…"
             successNote="Signed in. Taking you to your account."
             onSubmit={async (v) => {
-              const r = await signIn(v.email, v.password);
-              setUnverified(r.unverified ? v.email : '');
-              setResendNote('');
+              const r = await signIn(email, v.password);
               if (!r.error) router.push('/account');
               return r.error;
             }}
             fields={[
-              {
-                name: 'email',
-                label: 'Email',
-                required: true,
-                rule: 'email',
-                type: 'email',
-                autoComplete: 'email',
-              },
               {
                 name: 'password',
                 label: 'Password',
@@ -75,64 +122,79 @@ export function AuthTabs() {
               },
             ]}
           />
-          {unverified && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-              <button type="button" className="btn btn-wide" onClick={resend}>
-                Resend verification email
-              </button>
-              {resendNote && (
-                <p className="ok" role="status">
-                  {resendNote}
-                </p>
-              )}
-            </div>
-          )}
           <p style={{ marginTop: 14 }}>
             <Link className="link" href="/forgot-password">
               Forgot your password?
             </Link>
           </p>
         </>
-      ) : (
-        <SimpleForm
-          key="up"
-          id="signup"
-          submitLabel="Create account"
-          busyLabel="Creating your account… this can take up to 20 seconds"
-          successNote="Account created. If we asked you to verify your email, open the link we sent, then sign in."
-          consent="I agree to the terms and the privacy policy."
-          onSubmit={async (v) => {
-            const r = await signUp(v);
-            if (!r.error && r.signedIn) router.push('/account');
-            return r.error;
-          }}
-          fields={[
-            { name: 'name', label: 'Name', required: true, autoComplete: 'name' },
-            {
-              name: 'email',
-              label: 'Email',
-              required: true,
-              rule: 'email',
-              type: 'email',
-              autoComplete: 'email',
-            },
-            {
-              name: 'phone',
-              label: 'WhatsApp or phone',
-              rule: 'phone',
-              type: 'tel',
-              autoComplete: 'tel',
-            },
-            {
-              name: 'password',
-              label: 'Password',
-              required: true,
-              rule: 'password',
-              type: 'password',
-              autoComplete: 'new-password',
-            },
-          ]}
-        />
+      )}
+
+      {mode === 'up' && (
+        <>
+          <SimpleForm
+            key={`up-${email}`}
+            id="signup"
+            submitLabel="Create account"
+            busyLabel="Creating your account…"
+            successNote="Account created. Taking you to your account."
+            consent={
+              <>
+                I agree to the <Link href="/terms">terms and conditions</Link> and the{' '}
+                <Link href="/privacy">privacy policy</Link>.
+              </>
+            }
+            onSubmit={async (v) => {
+              const r = await signUp(v);
+              if (!r.error) {
+                if (r.signedIn) router.push('/account');
+                else go('in');
+              }
+              return r.error;
+            }}
+            fields={[
+              { name: 'name', label: 'Full name', required: true, autoComplete: 'name' },
+              {
+                name: 'email',
+                label: 'Email',
+                required: true,
+                rule: 'email',
+                type: 'email',
+                autoComplete: 'email',
+                defaultValue: email,
+              },
+              {
+                name: 'phone',
+                label: 'WhatsApp or phone',
+                rule: 'phone',
+                type: 'tel',
+                autoComplete: 'tel',
+              },
+              {
+                name: 'password',
+                label: 'Create password',
+                required: true,
+                rule: 'password',
+                type: 'password',
+                autoComplete: 'new-password',
+              },
+              {
+                name: 'confirm',
+                label: 'Re-enter password',
+                required: true,
+                type: 'password',
+                autoComplete: 'new-password',
+                match: 'password',
+              },
+            ]}
+          />
+          <p style={{ marginTop: 14 }}>
+            Already have an account?{' '}
+            <button type="button" className="link-btn" onClick={() => go('in')}>
+              Sign in
+            </button>
+          </p>
+        </>
       )}
     </div>
   );

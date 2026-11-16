@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 
 type Rule = 'phone' | 'email' | 'gstin' | 'password';
 
@@ -15,6 +15,10 @@ export interface FieldDef {
   half?: boolean;
   placeholder?: string;
   autoComplete?: string;
+  /** Must equal the value of this other field (for example confirm password). */
+  match?: string;
+  /** Value the field starts with. */
+  defaultValue?: string;
 }
 
 interface SimpleFormProps {
@@ -25,7 +29,7 @@ interface SimpleFormProps {
   /** Shown after a valid submit. Forms are not connected to a backend yet. */
   successNote: string;
   /** Optional tick box the visitor must agree to. */
-  consent?: string;
+  consent?: ReactNode;
   note?: string;
   /** Text on the button while the request runs (default: Please wait…). */
   busyLabel?: string;
@@ -73,6 +77,7 @@ export function SimpleForm({
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setDone(false);
     const f = new FormData(e.currentTarget);
     const next: Record<string, string> = {};
     for (const field of fields) {
@@ -83,6 +88,8 @@ export function SimpleForm({
       }
       if (value && field.rule && !RULES[field.rule].test(value))
         next[field.name] = RULES[field.rule].message;
+      if (field.match && value !== String(f.get(field.match) ?? '').trim())
+        next[field.name] = 'The two passwords do not match.';
     }
     if (consent && !f.get('consent')) next.consent = 'Tick the box to continue.';
     setErrors(next);
@@ -120,6 +127,7 @@ export function SimpleForm({
                   name={field.name}
                   rows={4}
                   placeholder={field.placeholder}
+                  defaultValue={field.defaultValue}
                   aria-invalid={Boolean(errors[field.name])}
                 />
               ) : type === 'select' ? (
@@ -135,6 +143,7 @@ export function SimpleForm({
                   type={type}
                   placeholder={field.placeholder}
                   autoComplete={field.autoComplete}
+                  defaultValue={field.defaultValue}
                   aria-invalid={Boolean(errors[field.name])}
                 />
               )}
@@ -152,7 +161,7 @@ export function SimpleForm({
         <>
           <label className="check">
             <input name="consent" type="checkbox" aria-invalid={Boolean(errors.consent)} />
-            {consent}
+            <span>{consent}</span>
           </label>
           {errors.consent && (
             <p className="err" role="alert">
@@ -171,7 +180,7 @@ export function SimpleForm({
         </p>
       )}
       {note && <p className="meta">{note}</p>}
-      {done && (
+      {done && successNote && (
         <p className="ok" role="status">
           {successNote}
         </p>

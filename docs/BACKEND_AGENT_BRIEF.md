@@ -396,12 +396,14 @@ Rules:
 
 ### B19. Go-live account setup on admin.akrinity.in
 
+**Superseded by `docs/ACCOUNT_SETUP.md` (decision 32): use the shared key, not a service account. Follow that file.**
+
 **Goal:** make sign-up and login work against the live WordPress at `https://admin.akrinity.in`.
 
 Steps (ask the owner before changing the live site):
 1. In `wp-config.php` add `JWT_AUTH_SECRET_KEY` (a new long random value, never reuse the local one) and `AKRINITY_FRONTEND_URL` (the live storefront address, https).
 2. Confirm `wp-content/mu-plugins/akrinity-headless-auth.php` is present and current, and the JWT and Limit Login Attempts plugins are active.
-3. Create a user named `akrinity-auth` with the **Shop manager** role. In its profile create an Application Password. Give it to the owner to store in the Cloudflare Pages environment as `WC_APP_USER` and `WC_APP_PASSWORD`. Never put it in the repo.
+3. The storefront uses the `claude-agent` user. In its profile create an Application Password named "Storefront" and give it to the owner to store in the Vercel environment as `WC_APP_USER=claude-agent` and `WC_APP_PASSWORD`. Never put it in the repo. (Before launch, replace it with a limited account, see the go-live reminder in PROJECT_CONTEXT decision 27.)
 4. Set up outgoing email (WP Mail SMTP is present) and send a test.
 5. In the Vercel project (Settings, Environment Variables, Production and Preview) set: `NEXT_PUBLIC_WC_STORE_API_URL`, `NEXT_PUBLIC_WP_GRAPHQL_URL`, `NEXT_PUBLIC_SITE_URL`, `WP_URL=https://admin.akrinity.in`, `WC_APP_USER` and `WC_APP_PASSWORD` (mark Sensitive), `TURNSTILE_SECRET_KEY`, and `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` (an Upstash Redis database, for shared rate-limit counters). Root Directory is `akrinity-web`. Temporarily set `AUTH_STATUS=1`, open `/api/auth/status`, fix every red item, then remove `AUTH_STATUS` and redeploy.
 6. Create one test account from the storefront. Confirm it appears under Users as **Customer**, the verification email arrives, and sign-in works after verifying. Delete the test user.

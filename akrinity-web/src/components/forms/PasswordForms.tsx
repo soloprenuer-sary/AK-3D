@@ -1,10 +1,10 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { SimpleForm } from './SimpleForm';
-import { requestPasswordReset, resetPassword, verifyEmail } from '@/lib/auth-client';
+import { requestPasswordReset, resetPassword } from '@/lib/auth-client';
 
 /** Asks for an email and sends a reset link. The answer is the same whether or not an account exists. */
 export function ForgotPasswordForm() {
@@ -90,58 +90,6 @@ export function ResetPasswordForm() {
   return (
     <Suspense fallback={<div className="info-card auth-card">Loading…</div>}>
       <ResetInner />
-    </Suspense>
-  );
-}
-
-function VerifyInner() {
-  const params = useSearchParams();
-  const key = params.get('key') ?? '';
-  const login = params.get('login') ?? '';
-  const [state, setState] = useState<'working' | 'ok' | string>(
-    key && login ? 'working' : 'This verification link is incomplete.',
-  );
-
-  useEffect(() => {
-    if (!key || !login) return;
-    let live = true;
-    verifyEmail(key, login).then((error) => {
-      if (live) setState(error ?? 'ok');
-    });
-    return () => {
-      live = false;
-    };
-  }, [key, login]);
-
-  return (
-    <div className="info-card auth-card" aria-live="polite">
-      {state === 'working' && <p>Verifying your email…</p>}
-      {state === 'ok' && (
-        <>
-          <p className="ok">Your email is verified. You can sign in now.</p>
-          <Link className="btn btn-primary btn-wide" href="/login">
-            Sign in
-          </Link>
-        </>
-      )}
-      {state !== 'working' && state !== 'ok' && (
-        <>
-          <p className="err" role="alert">
-            {state}
-          </p>
-          <Link className="btn btn-wide" href="/login">
-            Back to sign in
-          </Link>
-        </>
-      )}
-    </div>
-  );
-}
-
-export function VerifyEmailPanel() {
-  return (
-    <Suspense fallback={<div className="info-card auth-card">Loading…</div>}>
-      <VerifyInner />
     </Suspense>
   );
 }
