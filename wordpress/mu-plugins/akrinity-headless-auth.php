@@ -177,7 +177,7 @@ add_action(
 				if ( ! is_email( $email ) || '' === $name || strlen( $password ) < 8 || strlen( $password ) > 128 ) {
 					return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
 				}
-				$parts = preg_split( '/s+/', $name, 2 );
+				$parts = preg_split( '/\s+/', $name, 2 );
 				$id    = wc_create_new_customer(
 					$email,
 					'',
