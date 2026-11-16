@@ -4,7 +4,7 @@
  * through the cached catalogue proxy (so edits in WordPress show without a rebuild).
  * There is no sample data: callers stop when WordPress cannot be reached (see catalogue.ts).
  */
-import { COLOURS, SHOP_CATEGORIES, SHOP_MATERIALS } from './shop-data';
+import { COLOURS, SHOP_CATEGORIES, SHOP_MATERIALS, SIZE_OPTIONS } from './shop-data';
 import type { ColourKey, ColourMode, Material, ProcessType, ShopProduct } from './shop-data';
 import type { Block, Guide } from './guides-data';
 
@@ -68,7 +68,7 @@ export function mapStoreProduct(p: StoreProduct): ShopProduct {
   // Prefer a category the shop knows; otherwise the first one WooCommerce lists.
   const category = names.find((n) => SHOP_CATEGORIES.includes(n)) ?? names[0] ?? 'Home decor';
 
-  const material = terms(p, /^material$/i)
+  const materials = terms(p, /^material$/i)
     .map((t) =>
       SHOP_MATERIALS.find(
         (m) =>
@@ -76,7 +76,12 @@ export function mapStoreProduct(p: StoreProduct): ShopProduct {
           (t.toLowerCase() === 'pla' && m === 'PLA+'),
       ),
     )
-    .find(Boolean) as Material | undefined;
+    .filter((m, i, all): m is Material => Boolean(m) && all.indexOf(m) === i);
+  const sizes = terms(p, /^size/i)
+    .map((t) => SIZE_OPTIONS.find((x) => x.toLowerCase() === t.toLowerCase()))
+    .filter((x): x is string => Boolean(x));
+  materials.sort((a, b) => SHOP_MATERIALS.indexOf(a) - SHOP_MATERIALS.indexOf(b));
+  sizes.sort((a, b) => SIZE_OPTIONS.indexOf(a) - SIZE_OPTIONS.indexOf(b));
   const processValue = terms(p, /process/i)[0];
   const process = (['FDM', 'Multi-filament FDM', 'Resin'] as ProcessType[]).find(
     (x) => x.toLowerCase() === (processValue ?? '').toLowerCase(),
@@ -84,9 +89,10 @@ export function mapStoreProduct(p: StoreProduct): ShopProduct {
   const colours = terms(p, /^colou?rs?$/i)
     .map((t) => t.toLowerCase())
     .filter((t): t is ColourKey => t in COLOURS);
-  const modes = terms(p, /colou?r mode/i).map((t): ColourMode =>
-    /multi/i.test(t) ? 'multi' : /paint/i.test(t) ? 'painted' : 'single',
-  );
+  const modeOrder: ColourMode[] = ['single', 'multi', 'painted'];
+  const modes = terms(p, /colou?r (mode|option)/i)
+    .map((t): ColourMode => (/multi/i.test(t) ? 'multi' : /paint/i.test(t) ? 'painted' : 'single'))
+    .sort((a, b) => modeOrder.indexOf(a) - modeOrder.indexOf(b));
 
   const onSale =
     Boolean(p.on_sale) &&
@@ -101,7 +107,9 @@ export function mapStoreProduct(p: StoreProduct): ShopProduct {
     // Out of stock and "on backorder" both mean made to order.
     inStock: Boolean(p.is_in_stock) && !p.is_on_backorder,
     // Options not stored in WooCommerce yet fall back to these defaults.
-    material: material ?? 'PLA+',
+    material: materials[0] ?? 'PLA+',
+    materials: materials.length ? materials : undefined,
+    sizes: sizes.length ? sizes : undefined,
     process: process ?? 'FDM',
     colours: colours.length ? colours : ['black'],
     modes: modes.length ? modes : ['single'],

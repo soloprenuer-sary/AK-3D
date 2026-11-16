@@ -27,6 +27,8 @@ interface SimpleFormProps {
   /** Optional tick box the visitor must agree to. */
   consent?: string;
   note?: string;
+  /** Text on the button while the request runs (default: Please wait…). */
+  busyLabel?: string;
   /**
    * Optional real submit. Receives the checked values and returns an error message to show, or
    * null on success. Without it the form only checks the fields (no backend is connected).
@@ -61,6 +63,7 @@ export function SimpleForm({
   successNote,
   consent,
   note,
+  busyLabel,
   onSubmit: send,
 }: SimpleFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -160,7 +163,7 @@ export function SimpleForm({
       )}
 
       <button className="btn btn-primary btn-wide" type="submit" disabled={busy} aria-busy={busy}>
-        {busy ? 'Please wait…' : submitLabel}
+        {busy ? (busyLabel ?? 'Please wait…') : submitLabel}
       </button>
       {serverError && (
         <p className="err" role="alert">

@@ -98,6 +98,7 @@ export function AuthTabs() {
           key="up"
           id="signup"
           submitLabel="Create account"
+          busyLabel="Creating your account… this can take up to 20 seconds"
           successNote="Account created. If we asked you to verify your email, open the link we sent, then sign in."
           consent="I agree to the terms and the privacy policy."
           onSubmit={async (v) => {

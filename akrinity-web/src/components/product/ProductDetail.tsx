@@ -51,7 +51,9 @@ export function ProductDetail({
   const [material, setMaterial] = useState<Material>(product.material);
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
   const [mode, setMode] = useState<ColourMode>(product.modes[0]);
-  const [size, setSize] = useState<Size>('Medium');
+  const sizeList = (product.sizes?.length ? product.sizes : [...SIZES]) as Size[];
+  const materialList = product.materials?.length ? product.materials : SHOP_MATERIALS;
+  const [size, setSize] = useState<Size>(sizeList.includes('Medium') ? 'Medium' : sizeList[0]);
   const [personal, setPersonal] = useState('');
   const [personalError, setPersonalError] = useState('');
   const [qty, setQty] = useState(1);
@@ -262,7 +264,7 @@ export function ProductDetail({
           <fieldset className="opt">
             <legend>Material</legend>
             <div className="pills" role="group" aria-label="Material">
-              {SHOP_MATERIALS.map((m) => (
+              {materialList.map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -301,7 +303,7 @@ export function ProductDetail({
           <fieldset className="opt">
             <legend>Size</legend>
             <div className="pills" role="group" aria-label="Size">
-              {SIZES.map((s) => (
+              {sizeList.map((s) => (
                 <button
                   key={s}
                   type="button"

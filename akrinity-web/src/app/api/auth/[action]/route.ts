@@ -19,6 +19,8 @@
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+// WordPress sends emails while it creates an account, so sign-up can take 10 to 20 seconds.
+export const maxDuration = 60;
 
 interface KV {
   get(key: string): Promise<string | null>;
@@ -436,6 +438,7 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
   let created = false;
   let wpStatus = 0;
   let wpCode = '';
+  let madeId = 0;
   try {
     const res = await fetch(req.url, {
       method: 'POST',
@@ -461,25 +464,14 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
             .catch(() => ({}))) as { code?: string }
         ).code ?? '',
       );
-    if (created) {
-      // WooCommerce shows the login name by default; store the real name as the display name.
-      const made = (await res.json()) as { id?: number };
-      if (made.id) {
-        const patch = wcRequest(env, `/wp/v2/users/${made.id}`);
-        await fetch(patch.url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...patch.headers },
-          body: JSON.stringify({ name }),
-          signal: signal(),
-        }).catch(() => undefined);
-      }
-    }
+    if (created) madeId = ((await res.json()) as { id?: number }).id ?? 0;
   } catch (e) {
-    console.error('register: could not reach WordPress', String(e));
+    console.error('register: no answer from WordPress while creating the account', String(e));
     return json(
       {
-        error: 'Sign-up is temporarily unavailable. Please try again in a few minutes.',
-        code: 'unavailable',
+        error:
+          'Sign-up is taking longer than usual. Your account may already be created: check your email for a verification link, or try signing in in a minute.',
+        code: 'slow',
       },
       503,
     );
@@ -490,6 +482,7 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
       {
         error: 'Sign-up is temporarily unavailable. Please try again in a few minutes.',
         code: 'unavailable',
+        debug: env.AUTH_STATUS === '1' ? { wpStatus, wpCode } : undefined,
       },
       503,
     );
@@ -507,7 +500,19 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
 
   // If WordPress requires email verification the sign-in is refused and the visitor must open the emailed link.
   // If verification is switched off (development), they are signed in straight away.
-  const jwt = await wpLogin(env, email, password);
+  const patch = madeId ? wcRequest(env, `/wp/v2/users/${madeId}`) : null;
+  const [jwt] = await Promise.all([
+    wpLogin(env, email, password),
+    // WooCommerce shows the login name by default; store the real name as the display name.
+    patch
+      ? fetch(patch.url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...patch.headers },
+          body: JSON.stringify({ name }),
+          signal: signal(),
+        }).catch(() => undefined)
+      : Promise.resolve(undefined),
+  ]);
   if (jwt && typeof jwt === 'object' && 'token' in jwt) {
     return json({ created: true, user: { name: jwt.user_display_name ?? name, email } }, 201, {
       'Set-Cookie': sessionCookie(jwt.token, tokenSeconds(jwt.token)),

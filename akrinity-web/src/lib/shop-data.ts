@@ -36,18 +36,31 @@ export const CATEGORIES: ShopCategory[] = [
   {
     name: 'Home decor',
     description: 'Vases, planters, lamps, wall art and small storage for every room.',
-    subs: ['Vases & planters', 'Lamps & lighting', 'Wall art & hooks', 'Trays & storage', 'Clocks & frames'],
+    subs: [
+      'Vases & planters',
+      'Lamps & lighting',
+      'Wall art & hooks',
+      'Trays & storage',
+      'Clocks & frames',
+    ],
     tone: 'var(--accent)',
   },
   {
     name: 'Desk & gadgets',
     description: 'Organisers, stands and desk pieces that keep a workspace tidy.',
-    subs: ['Desk organisers', 'Phone & tablet stands', 'Monitor stands', 'Cable management', 'Desk toys'],
+    subs: [
+      'Desk organisers',
+      'Phone & tablet stands',
+      'Monitor stands',
+      'Cable management',
+      'Desk toys',
+    ],
     tone: 'var(--violet)',
   },
   {
     name: 'Kitchen',
-    description: 'Non-food-contact kitchen pieces: egg trays, spoon and knife holders. Not for storing food.',
+    description:
+      'Non-food-contact kitchen pieces: egg trays, spoon and knife holders. Not for storing food.',
     subs: ['Egg trays', 'Spoon holders', 'Knife holders', 'Drawer dividers'],
     tone: 'var(--orange)',
   },
@@ -66,7 +79,12 @@ export const CATEGORIES: ShopCategory[] = [
   {
     name: 'Experimental & art',
     description: 'Geometric, organic, parametric and print-in-place designs for collectors.',
-    subs: ['Geometric & organic art', 'Parametric designs', 'Print-in-place & mechanical', 'Abstract sculptures'],
+    subs: [
+      'Geometric & organic art',
+      'Parametric designs',
+      'Print-in-place & mechanical',
+      'Abstract sculptures',
+    ],
     tone: 'var(--violet)',
   },
   {
@@ -90,6 +108,7 @@ export const CATEGORIES: ShopCategory[] = [
 ];
 
 export const SHOP_CATEGORIES = CATEGORIES.map((c) => c.name);
+export const SIZE_OPTIONS = ['Small', 'Medium', 'Large'];
 export const SHOP_MATERIALS: Material[] = ['PLA+', 'PETG', 'ABS / ASA', 'Resin'];
 
 export interface ShopProduct {
@@ -103,6 +122,10 @@ export interface ShopProduct {
   material: Material;
   process: ProcessType;
   colours: ColourKey[];
+  /** Materials offered on this product (WooCommerce attribute Material). Empty means all four. */
+  materials?: Material[];
+  /** Sizes offered on this product (WooCommerce attribute Size). Empty means Small, Medium and Large. */
+  sizes?: string[];
   /** Colour options offered on this product. The first one is the default. */
   modes: ColourMode[];
   /** Product photos from /public or WordPress (first image is the main one). Optional. */
