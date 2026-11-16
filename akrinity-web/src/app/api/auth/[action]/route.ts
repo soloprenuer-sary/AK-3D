@@ -618,30 +618,49 @@ async function handleStatus(request: Request, env: Env): Promise<Response> {
     checks.push({ name, ok, fix: ok ? undefined : fix });
   const host = new URL(env.WP_URL).host;
 
-  let namespaces: string[] = [];
-  try {
-    const res = await fetch(wp(env, '/'), { signal: signal() });
-    const data = (await res.json()) as { namespaces?: string[] };
-    namespaces = data.namespaces ?? [];
-    add(`WordPress answers at ${host}`, res.ok, 'Check WP_URL and that the site is online.');
-  } catch {
-    add(
-      `WordPress answers at ${host}`,
-      false,
-      'WordPress could not be reached. Check WP_URL, DNS and that the site is online.',
-    );
-  }
+  /** Status code of a request that needs no login, or 0 when WordPress did not answer. */
+  const probe = async (path: string, method: 'GET' | 'POST'): Promise<number> => {
+    try {
+      const res = await fetch(wp(env, path), {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: method === 'POST' ? '{}' : undefined,
+        cache: 'no-store',
+        signal: signal(),
+      });
+      return res.status;
+    } catch {
+      return 0;
+    }
+  };
+
+  const index = await probe('/', 'GET');
+  add(
+    `WordPress answers at ${host}`,
+    index === 200,
+    index === 0
+      ? 'WordPress could not be reached. Check WP_URL, DNS and that the site is online.'
+      : `WordPress answered with status ${index}. Check WP_URL and any firewall rules.`,
+  );
+  // A route that exists but needs a login answers 401 or 403. A missing route answers 404.
+  const jwt = await probe('/jwt-auth/v1/token', 'POST');
   add(
     'JWT login plugin is active',
-    namespaces.includes('jwt-auth/v1'),
+    jwt !== 404 && jwt !== 0,
     'Install and activate "JWT Authentication for WP REST API".',
   );
+  const snippet = await probe('/akrinity/v1/email/resend', 'POST');
   add(
     'Account snippet is installed',
-    namespaces.includes('akrinity/v1'),
-    'Copy wordpress/mu-plugins/akrinity-headless-auth.php to wp-content/mu-plugins/.',
+    snippet === 401 || snippet === 403,
+    `Copy wordpress/mu-plugins/akrinity-headless-auth.php to wp-content/mu-plugins/ (route answered ${snippet}).`,
   );
-  add('WooCommerce REST API is on', namespaces.includes('wc/v3'), 'Activate WooCommerce.');
+  const store = await probe('/wc/store/v1/products?per_page=1', 'GET');
+  add(
+    'WooCommerce REST API is on',
+    store === 200,
+    `Activate WooCommerce (store API answered ${store}).`,
+  );
 
   // JWT secret: a bogus login must be refused as a wrong password, not as a bad configuration.
   try {
