@@ -29,6 +29,8 @@ interface Env {
   WC_APP_USER?: string;
   WC_APP_PASSWORD?: string;
   TURNSTILE_SECRET_KEY?: string;
+  /** Extra origins allowed to call this API, comma separated (local development behind a proxy). */
+  ALLOWED_ORIGINS?: string;
   AUTH_KV?: KV;
 }
 
@@ -103,10 +105,21 @@ function json(body: unknown, status = 200, extra: Record<string, string> = {}): 
   });
 }
 
+function waitText(seconds: number): string {
+  if (seconds >= 3600) return 'about an hour';
+  const minutes = Math.max(1, Math.ceil(seconds / 60));
+  return `about ${minutes} minute${minutes === 1 ? '' : 's'}`;
+}
+
 function tooMany(windowSec: number): Response {
-  return json({ error: 'Too many attempts. Please wait a few minutes and try again.' }, 429, {
-    'Retry-After': String(windowSec),
-  });
+  return json(
+    {
+      error: `Too many attempts. Please try again in ${waitText(windowSec)}.`,
+      code: 'rate_limited',
+    },
+    429,
+    { 'Retry-After': String(windowSec) },
+  );
 }
 
 function sessionCookie(token: string, maxAge: number): string {
@@ -146,9 +159,15 @@ const str = (v: unknown, max: number): string =>
   typeof v === 'string' ? v.trim().slice(0, max) : '';
 
 /** Cross-site requests are refused: the Origin header must match this site. */
-function sameOrigin(request: Request): boolean {
+function sameOrigin(request: Request, env: Env): boolean {
   const origin = request.headers.get('Origin');
-  return origin !== null && origin === new URL(request.url).origin;
+  if (origin === null) return false;
+  if (origin === new URL(request.url).origin) return true;
+  return (env.ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean)
+    .includes(origin);
 }
 
 async function verifyTurnstile(env: Env, token: string, ip: string): Promise<boolean> {
@@ -174,7 +193,7 @@ async function verifyTurnstile(env: Env, token: string, ip: string): Promise<boo
 // ---------- WordPress ----------
 
 const wp = (env: Env, path: string) => `${env.WP_URL.replace(/\/$/, '')}/wp-json${path}`;
-const signal = () => AbortSignal.timeout(8000);
+const signal = () => AbortSignal.timeout(25000);
 
 /** Credentials for creating customers: a shop-manager application password, or a WooCommerce key (https only). */
 function wcRequest(env: Env, path: string): { url: string; headers: Record<string, string> } {
@@ -189,12 +208,10 @@ interface Jwt {
   user_email?: string;
 }
 
-/** Signs in through WordPress. Returns the token, "unverified" when the email is not verified yet, or null. */
-async function wpLogin(
-  env: Env,
-  email: string,
-  password: string,
-): Promise<Jwt | 'unverified' | null> {
+type LoginResult = Jwt | 'unverified' | 'unavailable' | { lockedSeconds: number } | null;
+
+/** Signs in through WordPress. null means the email or password is wrong. */
+async function wpLogin(env: Env, email: string, password: string): Promise<LoginResult> {
   try {
     const res = await fetch(wp(env, '/jwt-auth/v1/token'), {
       method: 'POST',
@@ -202,12 +219,24 @@ async function wpLogin(
       body: JSON.stringify({ username: email, password }),
       signal: signal(),
     });
-    const data = (await res.json().catch(() => ({}))) as Jwt & { code?: string };
-    if (!res.ok)
-      return String(data.code ?? '').includes('email_not_verified') ? 'unverified' : null;
-    return data.token ? data : null;
-  } catch {
+    const data = (await res.json().catch(() => ({}))) as Jwt & { code?: string; message?: string };
+    if (res.ok) return data.token ? data : 'unavailable';
+    const code = String(data.code ?? '');
+    if (code.includes('email_not_verified')) return 'unverified';
+    if (code.includes('too_many_retries')) {
+      // WordPress's login limiter says e.g. "Please try again in 11 minutes".
+      const m = /(\d+)\s*(hour|minute)/i.exec(data.message ?? '');
+      const seconds = m ? Number(m[1]) * (m[2].toLowerCase() === 'hour' ? 3600 : 60) : 900;
+      return { lockedSeconds: seconds };
+    }
+    if (res.status >= 500 || res.status === 404) {
+      console.error('login: WordPress returned', res.status, code);
+      return 'unavailable';
+    }
     return null;
+  } catch (e) {
+    console.error('login: could not reach WordPress', String(e));
+    return 'unavailable';
   }
 }
 
@@ -275,6 +304,25 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
       403,
     );
   }
+  if (jwt === 'unavailable') {
+    return json(
+      {
+        error: 'Sign in is temporarily unavailable. Please try again in a few minutes.',
+        code: 'unavailable',
+      },
+      503,
+    );
+  }
+  if (jwt && typeof jwt === 'object' && 'lockedSeconds' in jwt) {
+    return json(
+      {
+        error: `Too many failed sign-in attempts on this account. Try again in ${waitText(jwt.lockedSeconds)}, or reset your password.`,
+        code: 'locked',
+      },
+      429,
+      { 'Retry-After': String(jwt.lockedSeconds) },
+    );
+  }
   if (!jwt) {
     await bump(env, mailKey, LIMITS.loginEmailFail.window);
     await new Promise((r) => setTimeout(r, 400)); // slows guessing a little
@@ -291,16 +339,27 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
   const email = str(body?.email, 254).toLowerCase();
   const phone = str(body?.phone, 20).replace(/\s+/g, '');
   const password = str(body?.password, 128);
-  if (
-    !body ||
-    !name ||
-    !EMAIL_RE.test(email) ||
-    password.length < 8 ||
-    (phone && !/^\+?\d{10,13}$/.test(phone)) ||
-    body.consent !== true
-  ) {
-    return json({ error: 'Please check your details and try again.' }, 400);
+  if (!body)
+    return json(
+      { error: 'Something went wrong with the form. Reload the page and try again.' },
+      400,
+    );
+  if (!name) return json({ error: 'Enter your name.', field: 'name' }, 400);
+  if (!EMAIL_RE.test(email))
+    return json({ error: 'Enter a valid email like name@example.com.', field: 'email' }, 400);
+  if (phone && !/^\+?\d{10,13}$/.test(phone)) {
+    return json(
+      { error: 'Enter a 10-digit mobile number, with or without +91.', field: 'phone' },
+      400,
+    );
   }
+  if (password.length < 8)
+    return json({ error: 'Use at least 8 characters for your password.', field: 'password' }, 400);
+  if (body.consent !== true)
+    return json(
+      { error: 'Tick the box to accept the terms and privacy policy.', field: 'consent' },
+      400,
+    );
 
   const ip = request.headers.get('CF-Connecting-IP') ?? 'local';
   const ipKey = `reg:ip:${await sha(ip)}`;
@@ -319,6 +378,8 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
   const [first, ...rest] = name.split(/\s+/);
   const req = wcRequest(env, '/wc/v3/customers');
   let created = false;
+  let wpStatus = 0;
+  let wpCode = '';
   try {
     const res = await fetch(req.url, {
       method: 'POST',
@@ -333,6 +394,16 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
       signal: signal(),
     });
     created = res.status === 201;
+    wpStatus = res.status;
+    if (!created)
+      wpCode = String(
+        (
+          (await res
+            .clone()
+            .json()
+            .catch(() => ({}))) as { code?: string }
+        ).code ?? '',
+      );
     if (created) {
       // WooCommerce shows the login name by default; store the real name as the display name.
       const made = (await res.json()) as { id?: number };
@@ -346,13 +417,34 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
         }).catch(() => undefined);
       }
     }
-  } catch {
-    return json({ error: 'The account service is busy. Please try again shortly.' }, 503);
+  } catch (e) {
+    console.error('register: could not reach WordPress', String(e));
+    return json(
+      {
+        error: 'Sign-up is temporarily unavailable. Please try again in a few minutes.',
+        code: 'unavailable',
+      },
+      503,
+    );
+  }
+  if (!created && (wpStatus === 401 || wpStatus === 403 || wpStatus >= 500 || wpStatus === 404)) {
+    console.error('register: WordPress refused the service account', wpStatus, wpCode);
+    return json(
+      {
+        error: 'Sign-up is temporarily unavailable. Please try again in a few minutes.',
+        code: 'unavailable',
+      },
+      503,
+    );
   }
   // The same message covers "email already used", so the form cannot be used to find out who has an account.
   if (!created)
     return json(
-      { error: 'We could not create that account. If you already have one, sign in instead.' },
+      {
+        error:
+          'We could not create that account. If you already have one, sign in or reset your password.',
+        code: 'exists',
+      },
       400,
     );
 
@@ -455,7 +547,15 @@ export const onRequest = async ({ request, env, params }: Ctx): Promise<Response
 
   if (request.method !== 'POST')
     return json({ error: 'Method not allowed.' }, 405, { Allow: 'POST' });
-  if (!sameOrigin(request)) return json({ error: 'Request refused.' }, 403);
+  if (!sameOrigin(request, env)) {
+    return json(
+      {
+        error: 'This request was blocked for your safety. Reload the page and try again.',
+        code: 'blocked',
+      },
+      403,
+    );
+  }
 
   if (action === 'login') return handleLogin(request, env);
   if (action === 'register') return handleRegister(request, env);
