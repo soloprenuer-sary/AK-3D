@@ -69,7 +69,10 @@ export async function signIn(
   };
 }
 
-export async function signUp(values: Record<string, string>): Promise<string | null> {
+/** error is a message to show, or null on success. signedIn is true when the account can be used straight away. */
+export async function signUp(
+  values: Record<string, string>,
+): Promise<{ error: string | null; signedIn: boolean }> {
   const r = await call('register', {
     name: values.name,
     email: values.email,
@@ -77,9 +80,12 @@ export async function signUp(values: Record<string, string>): Promise<string | n
     password: values.password,
     consent: values.consent === 'true',
   });
-  return r.ok
-    ? null
-    : explain(r, 'We could not create your account. Check your details and try again.');
+  if (!r.ok)
+    return {
+      error: explain(r, 'We could not create your account. Check your details and try again.'),
+      signedIn: false,
+    };
+  return { error: null, signedIn: Boolean(r.data.user) };
 }
 
 export async function currentUser(): Promise<AuthUser | null> {

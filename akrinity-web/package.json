@@ -6,15 +6,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "npx serve out",
+    "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:e2e": "playwright test",
-    "pages:dev": "wrangler pages dev out",
-    "auth:dev": "npm run build && wrangler pages dev out --port 8788",
-    "auth:service": "wrangler pages dev out --port 8788",
     "check": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {

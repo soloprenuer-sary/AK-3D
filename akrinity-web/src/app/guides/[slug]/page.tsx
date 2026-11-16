@@ -6,6 +6,9 @@ import { GuideCard } from '@/components/guides/GuideCard';
 import { getGuides } from '@/lib/catalogue';
 import type { Block, Guide } from '@/lib/guides-data';
 
+/** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
+export const revalidate = 60;
+
 type Params = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {

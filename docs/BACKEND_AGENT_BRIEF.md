@@ -403,7 +403,7 @@ Steps (ask the owner before changing the live site):
 2. Confirm `wp-content/mu-plugins/akrinity-headless-auth.php` is present and current, and the JWT and Limit Login Attempts plugins are active.
 3. Create a user named `akrinity-auth` with the **Shop manager** role. In its profile create an Application Password. Give it to the owner to store in the Cloudflare Pages environment as `WC_APP_USER` and `WC_APP_PASSWORD`. Never put it in the repo.
 4. Set up outgoing email (WP Mail SMTP is present) and send a test.
-5. In Cloudflare Pages set: `WP_URL=https://admin.akrinity.in`, the two values above, `ALLOWED_ORIGINS` only if needed, a KV namespace bound as `AUTH_KV`, and `TURNSTILE_SECRET_KEY`. Temporarily set `AUTH_STATUS=1`, open `/api/auth/status`, fix every red item, then remove `AUTH_STATUS`.
+5. In the Vercel project (Settings, Environment Variables, Production and Preview) set: `NEXT_PUBLIC_WC_STORE_API_URL`, `NEXT_PUBLIC_WP_GRAPHQL_URL`, `NEXT_PUBLIC_SITE_URL`, `WP_URL=https://admin.akrinity.in`, `WC_APP_USER` and `WC_APP_PASSWORD` (mark Sensitive), `TURNSTILE_SECRET_KEY`, and `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` (an Upstash Redis database, for shared rate-limit counters). Root Directory is `akrinity-web`. Temporarily set `AUTH_STATUS=1`, open `/api/auth/status`, fix every red item, then remove `AUTH_STATUS` and redeploy.
 6. Create one test account from the storefront. Confirm it appears under Users as **Customer**, the verification email arrives, and sign-in works after verifying. Delete the test user.
 
 **Done when:** the status page is all green and a new storefront sign-up appears in WordPress as a Customer.

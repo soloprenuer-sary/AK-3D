@@ -13,6 +13,9 @@ import { KnowledgeHub } from '@/components/home/KnowledgeHub';
 
 import { getGuides, getProducts } from '@/lib/catalogue';
 
+/** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
+export const revalidate = 60;
+
 export default async function HomePage() {
   const [guides, products] = await Promise.all([getGuides(), getProducts()]);
   return (

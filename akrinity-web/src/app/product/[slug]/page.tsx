@@ -4,6 +4,9 @@ import { ProductDetail } from '@/components/product/ProductDetail';
 import { getProducts } from '@/lib/catalogue';
 import { productSlug, type ShopProduct } from '@/lib/shop-data';
 
+/** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
+export const revalidate = 60;
+
 type Params = { params: Promise<{ slug: string }> };
 
 function findProduct(products: ShopProduct[], slug: string): ShopProduct | undefined {

@@ -1,19 +1,24 @@
 /**
- * Account API for the storefront (Cloudflare Pages Function). It sits between the browser and
- * WordPress so the browser never holds the WordPress token:
+ * Account API for the storefront (Next.js route handler, runs as a Vercel function). It sits
+ * between the browser and WordPress so the browser never holds the WordPress token:
  *
- *   POST /api/auth/register  create a WooCommerce customer in WordPress, then sign in
+ *   POST /api/auth/register  create a WooCommerce customer in WordPress (sign-in waits for email verification)
  *   POST /api/auth/login     check the password in WordPress (JWT plugin), set a session cookie
  *   GET  /api/auth/me        who is signed in
  *   POST /api/auth/logout    clear the session cookie
+ *   POST /api/auth/forgot, reset, verify, resend   password reset and email verification
  *
  * Passwords are never stored here: WordPress checks and hashes them. The session token lives in an
  * httpOnly, Secure, SameSite=Strict cookie that page scripts cannot read.
  *
- * Environment (server only, never in the repo): WP_URL, then WC_APP_USER + WC_APP_PASSWORD (local)
- * or WC_CONSUMER_KEY + WC_CONSUMER_SECRET (production, https),
- * optional TURNSTILE_SECRET_KEY, optional KV binding AUTH_KV for rate-limit counters.
+ * Environment (server only, set in Vercel, never in the repo): WP_URL, WC_APP_USER + WC_APP_PASSWORD
+ * (application password of a Shop manager user) or WC_CONSUMER_KEY + WC_CONSUMER_SECRET (https only),
+ * optional TURNSTILE_SECRET_KEY, optional UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN for
+ * rate-limit counters shared across serverless instances, optional AUTH_STATUS=1 (setup check).
  */
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 interface KV {
   get(key: string): Promise<string | null>;
@@ -40,6 +45,55 @@ interface Ctx {
   request: Request;
   env: Env;
   params: { action?: string | string[] };
+}
+
+/** Rate-limit counters in Upstash Redis (REST), so every serverless instance sees the same numbers. */
+function upstash(url: string, token: string): KV {
+  const headers = { Authorization: `Bearer ${token}` };
+  return {
+    async get(key) {
+      const res = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
+        headers,
+        cache: 'no-store',
+      });
+      const data = (await res.json().catch(() => ({}))) as { result?: string | null };
+      return data.result ?? null;
+    },
+    async put(key, value, options) {
+      const ttl = options?.expirationTtl ?? 3600;
+      await fetch(`${url}/set/${encodeURIComponent(key)}/${encodeURIComponent(value)}?EX=${ttl}`, {
+        headers,
+        cache: 'no-store',
+      });
+    },
+  };
+}
+
+function readEnv(): Env {
+  const e = process.env;
+  return {
+    WP_URL: e.WP_URL ?? '',
+    WC_CONSUMER_KEY: e.WC_CONSUMER_KEY,
+    WC_CONSUMER_SECRET: e.WC_CONSUMER_SECRET,
+    WC_APP_USER: e.WC_APP_USER,
+    WC_APP_PASSWORD: e.WC_APP_PASSWORD,
+    TURNSTILE_SECRET_KEY: e.TURNSTILE_SECRET_KEY,
+    ALLOWED_ORIGINS: e.ALLOWED_ORIGINS,
+    AUTH_STATUS: e.AUTH_STATUS,
+    AUTH_KV:
+      e.UPSTASH_REDIS_REST_URL && e.UPSTASH_REDIS_REST_TOKEN
+        ? upstash(e.UPSTASH_REDIS_REST_URL, e.UPSTASH_REDIS_REST_TOKEN)
+        : undefined,
+  };
+}
+
+/** The visitor's address as Vercel reports it. */
+function clientIp(request: Request): string {
+  return (
+    request.headers.get('x-real-ip') ??
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    'local'
+  );
 }
 
 const COOKIE = 'akr_session';
@@ -283,7 +337,7 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
   const password = str(body?.password, 128);
   if (!body || !EMAIL_RE.test(email) || !password) return json({ error: BAD_LOGIN }, 400);
 
-  const ip = request.headers.get('CF-Connecting-IP') ?? 'local';
+  const ip = clientIp(request);
   const ipKey = `login:ip:${await sha(ip)}`;
   const mailKey = `login:fail:${await sha(email)}`;
 
@@ -363,7 +417,7 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
       400,
     );
 
-  const ip = request.headers.get('CF-Connecting-IP') ?? 'local';
+  const ip = clientIp(request);
   const ipKey = `reg:ip:${await sha(ip)}`;
   const mailKey = `reg:mail:${await sha(email)}`;
   if ((await readCount(env, ipKey)) >= LIMITS.registerIp.max)
@@ -451,7 +505,14 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
       400,
     );
 
-  // WordPress has emailed a verification link. The account cannot sign in until it is clicked.
+  // If WordPress requires email verification the sign-in is refused and the visitor must open the emailed link.
+  // If verification is switched off (development), they are signed in straight away.
+  const jwt = await wpLogin(env, email, password);
+  if (jwt && typeof jwt === 'object' && 'token' in jwt) {
+    return json({ created: true, user: { name: jwt.user_display_name ?? name, email } }, 201, {
+      'Set-Cookie': sessionCookie(jwt.token, tokenSeconds(jwt.token)),
+    });
+  }
   return json({ created: true, pendingVerification: true }, 201);
 }
 
@@ -479,7 +540,7 @@ async function handleForgot(request: Request, env: Env): Promise<Response> {
   const body = await readJson(request);
   const email = str(body?.email, 254).toLowerCase();
   if (!body || !EMAIL_RE.test(email)) return json({ error: 'Enter a valid email.' }, 400);
-  const ip = request.headers.get('CF-Connecting-IP') ?? 'local';
+  const ip = clientIp(request);
   const ipKey = `forgot:ip:${await sha(ip)}`;
   const mailKey = `forgot:mail:${await sha(email)}`;
   if ((await readCount(env, ipKey)) >= LIMITS.forgotIp.max) return tooMany(LIMITS.forgotIp.window);
@@ -500,7 +561,7 @@ async function handleReset(request: Request, env: Env): Promise<Response> {
   const password = str(body?.password, 128);
   if (!body || !key || !login || password.length < 8)
     return json({ error: 'This reset link is invalid or has expired.' }, 400);
-  const ip = request.headers.get('CF-Connecting-IP') ?? 'local';
+  const ip = clientIp(request);
   const ipKey = `reset:ip:${await sha(ip)}`;
   if ((await readCount(env, ipKey)) >= LIMITS.resetIp.max) return tooMany(LIMITS.resetIp.window);
   await bump(env, ipKey, LIMITS.resetIp.window);
@@ -516,7 +577,7 @@ async function handleVerify(request: Request, env: Env): Promise<Response> {
   const login = str(body?.login, 100);
   if (!body || !key || !login)
     return json({ error: 'This verification link is invalid or has expired.' }, 400);
-  const ip = request.headers.get('CF-Connecting-IP') ?? 'local';
+  const ip = clientIp(request);
   const ipKey = `verify:ip:${await sha(ip)}`;
   if ((await readCount(env, ipKey)) >= LIMITS.verifyIp.max) return tooMany(LIMITS.verifyIp.window);
   await bump(env, ipKey, LIMITS.verifyIp.window);
@@ -530,7 +591,7 @@ async function handleResend(request: Request, env: Env): Promise<Response> {
   const body = await readJson(request);
   const email = str(body?.email, 254).toLowerCase();
   if (!body || !EMAIL_RE.test(email)) return json({ error: 'Enter a valid email.' }, 400);
-  const ip = request.headers.get('CF-Connecting-IP') ?? 'local';
+  const ip = clientIp(request);
   const ipKey = `resend:ip:${await sha(ip)}`;
   const mailKey = `resend:mail:${await sha(email)}`;
   if ((await readCount(env, ipKey)) >= LIMITS.resendIp.max) return tooMany(LIMITS.resendIp.window);
@@ -624,9 +685,9 @@ async function handleStatus(request: Request, env: Env): Promise<Response> {
   }
 
   add(
-    'Rate-limit store (KV) is bound',
+    'Rate-limit store (Upstash Redis) is set',
     Boolean(env.AUTH_KV),
-    'Bind a Cloudflare KV namespace named AUTH_KV so limits are shared across requests.',
+    'Add Upstash Redis (UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN) so limits are shared across serverless instances.',
   );
   add(
     'Bot check key is set (Turnstile)',
@@ -635,12 +696,12 @@ async function handleStatus(request: Request, env: Env): Promise<Response> {
   );
   void request;
   return json({
-    ok: checks.filter((c) => !/Turnstile|KV/.test(c.name)).every((c) => c.ok),
+    ok: checks.filter((c) => !/Turnstile|Upstash/.test(c.name)).every((c) => c.ok),
     checks,
   });
 }
 
-export const onRequest = async ({ request, env, params }: Ctx): Promise<Response> => {
+async function handle({ request, env, params }: Ctx): Promise<Response> {
   const action = Array.isArray(params.action) ? params.action[0] : params.action;
   if (!env.WP_URL) return json({ error: 'Accounts are not configured.' }, 503);
 
@@ -669,4 +730,14 @@ export const onRequest = async ({ request, env, params }: Ctx): Promise<Response
   if (action === 'resend') return handleResend(request, env);
   if (action === 'logout') return json({ ok: true }, 200, { 'Set-Cookie': clearCookie() });
   return json({ error: 'Not found.' }, 404);
-};
+}
+
+type RouteContext = { params: Promise<{ action: string }> };
+
+export async function GET(request: Request, ctx: RouteContext): Promise<Response> {
+  return handle({ request, env: readEnv(), params: await ctx.params });
+}
+
+export async function POST(request: Request, ctx: RouteContext): Promise<Response> {
+  return handle({ request, env: readEnv(), params: await ctx.params });
+}

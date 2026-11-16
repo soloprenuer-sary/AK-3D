@@ -5,6 +5,9 @@ import { ShopBrowser } from '@/components/shop/ShopBrowser';
 import { CATEGORIES, categorySlug, findCategory } from '@/lib/shop-data';
 import { getProducts } from '@/lib/catalogue';
 
+/** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
+export const revalidate = 60;
+
 type Params = { params: Promise<{ category: string }> };
 
 export function generateStaticParams() {

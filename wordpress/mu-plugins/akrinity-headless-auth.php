@@ -82,6 +82,10 @@ add_action(
 		if ( ! $creating || ! ( $user_data instanceof WP_User ) ) {
 			return;
 		}
+		// Development switch: define( 'AKRINITY_REQUIRE_VERIFIED_EMAIL', false ) in wp-config.php to skip verification.
+		if ( defined( 'AKRINITY_REQUIRE_VERIFIED_EMAIL' ) && ! AKRINITY_REQUIRE_VERIFIED_EMAIL ) {
+			return;
+		}
 		update_user_meta( $user_data->ID, 'akr_email_verified', '0' );
 		akr_send_verification( $user_data );
 	},

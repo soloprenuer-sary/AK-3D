@@ -98,9 +98,13 @@ export function AuthTabs() {
           key="up"
           id="signup"
           submitLabel="Create account"
-          successNote="Account created. We sent a verification link to your email. Open it, then sign in."
+          successNote="Account created. If we asked you to verify your email, open the link we sent, then sign in."
           consent="I agree to the terms and the privacy policy."
-          onSubmit={(v) => signUp(v)}
+          onSubmit={async (v) => {
+            const r = await signUp(v);
+            if (!r.error && r.signedIn) router.push('/account');
+            return r.error;
+          }}
           fields={[
             { name: 'name', label: 'Name', required: true, autoComplete: 'name' },
             {
