@@ -194,6 +194,32 @@ export async function fetchOrder(
   return { order: r.data.order, error: null };
 }
 
+// ---------- business quote requests ----------
+
+/** Sends a bulk quote request. error is a message to show, or null on success. */
+export async function sendBusinessRequest(
+  values: Record<string, string>,
+): Promise<{ error: string | null; reference: string }> {
+  const r = await call('business', {
+    company: values.company,
+    gstin: values.gstin,
+    name: values.name,
+    phone: values.phone,
+    email: values.email,
+    need: values.need,
+    quantity: values.quantity,
+    notes: values.notes,
+    product: values.product,
+  });
+  if (!r.ok) {
+    return {
+      error: explain(r, 'We could not send your request. Please try again.'),
+      reference: '',
+    };
+  }
+  return { error: null, reference: String((r.data as { reference?: string }).reference ?? '') };
+}
+
 // ---------- password reset ----------
 
 /** Asks WordPress to email a reset link. Always looks successful, so it cannot reveal who has an account. */

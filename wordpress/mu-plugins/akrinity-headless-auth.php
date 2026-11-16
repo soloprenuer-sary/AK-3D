@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Akrinity headless account
- * Description: Customer sign-up, account details and orders for the headless storefront. The one approved WordPress snippet (decisions 20 and 32).
- * Version: 2.0.0
+ * Description: Customer sign-up, account details and orders, bulk prices and bulk quote requests for the headless storefront. The one approved WordPress snippet (decisions 20, 32 and 34).
+ * Version: 2.1.0
  *
  * Install: copy this file to wp-content/mu-plugins/ and add to wp-config.php:
  *   define( 'AKRINITY_FRONTEND_URL', 'https://www.example.com' );
@@ -20,6 +20,8 @@
  *      POST /me/password       change password
  *      GET /orders             their orders
  *      GET /orders/{id}        one of their orders
+ *  - Bulk prices: ACF fields on the product, in pairs of MOQ and price (MOQ-1 with price-moq-1, and so on), appear in the Store API as extensions.akrinity.bulk_tiers.
+ *  - POST /business-request (shared secret): saves a bulk quote request under Quote requests and emails the admin and the customer.
  *  - Password-reset emails link to the storefront, and slow emails are sent after the reply.
  */
 
@@ -410,6 +412,300 @@ add_action(
 				return array( 'order' => akr_order_detail( $order ) );
 			},
 			$customer
+		);
+	}
+);
+
+/* ---------- Bulk pricing (ACF fields on the product) ---------- */
+
+/** Lower-case a field name and turn every run of other characters into one underscore: "price-moq-1" becomes "price_moq_1". */
+function akr_norm_key( $key ): string {
+	return trim( preg_replace( '/[^a-z0-9]+/', '_', strtolower( (string) $key ) ), '_' );
+}
+
+/**
+ * Every plain value saved on a product, with group fields opened up and names normalised.
+ * Works whether the fields sit inside an ACF group (such as "bulk-quote") or stand alone.
+ */
+function akr_flat_fields( int $product_id ): array {
+	$flat = array();
+	if ( function_exists( 'get_fields' ) ) {
+		$all = get_fields( $product_id );
+		if ( is_array( $all ) ) {
+			foreach ( $all as $key => $value ) {
+				if ( is_array( $value ) && ! isset( $value[0] ) ) {
+					foreach ( $value as $inner_key => $inner_value ) {
+						$flat[ akr_norm_key( $inner_key ) ] = $inner_value;
+					}
+				} else {
+					$flat[ akr_norm_key( $key ) ] = $value;
+				}
+			}
+		}
+	}
+	// Also the raw custom fields (a group saves them as bulk_quote_moq_1 and so on).
+	foreach ( (array) get_post_meta( $product_id ) as $key => $values ) {
+		$name = akr_norm_key( $key );
+		if ( '' === (string) $key || '_' === substr( (string) $key, 0, 1 ) || isset( $flat[ $name ] ) ) {
+			continue;
+		}
+		$flat[ $name ] = is_array( $values ) ? ( $values[0] ?? '' ) : $values;
+	}
+	return $flat;
+}
+
+/** One price range, or null when it is not filled in properly. */
+function akr_tier( $from, $to, $price ): ?array {
+	$from  = (int) $from;
+	$to    = ( null === $to || '' === (string) $to ) ? null : (int) $to;
+	$price = (float) $price;
+	if ( $from < 1 || $price <= 0 || ( null !== $to && $to < $from ) ) {
+		return null;
+	}
+	return array(
+		'from'  => $from,
+		'to'    => $to,
+		'price' => (string) $price,
+	);
+}
+
+/**
+ * Bulk price ranges for a product, lowest quantity first. They are filled in with ACF fields on
+ * the product, in pairs: a minimum order quantity (MOQ) and the price per piece from that quantity.
+ * Any field name that contains "moq" and ends in a number is read, for example MOQ-1 with
+ * price-moq-1, MOQ-2 with price-moq-2. A range runs up to the next MOQ; the last one is "and up".
+ */
+function akr_bulk_tiers( int $product_id ): array {
+	$from  = array();
+	$price = array();
+	foreach ( akr_flat_fields( $product_id ) as $key => $value ) {
+		if ( is_array( $value ) || false === strpos( $key, 'moq' ) || ! preg_match( '/(\d+)$/', $key, $m ) ) {
+			continue;
+		}
+		if ( false !== strpos( $key, 'price' ) ) {
+			$price[ (int) $m[1] ] = $value;
+		} else {
+			$from[ (int) $m[1] ] = $value;
+		}
+	}
+	$starts = array();
+	foreach ( $from as $i => $quantity ) {
+		if ( isset( $price[ $i ] ) && akr_tier( $quantity, null, $price[ $i ] ) ) {
+			$starts[] = array(
+				'from'  => (int) $quantity,
+				'price' => $price[ $i ],
+			);
+		}
+	}
+	usort(
+		$starts,
+		function ( $a, $b ) {
+			return $a['from'] <=> $b['from'];
+		}
+	);
+	$tiers = array();
+	foreach ( $starts as $n => $start ) {
+		$to      = isset( $starts[ $n + 1 ] ) ? $starts[ $n + 1 ]['from'] - 1 : null;
+		$tiers[] = akr_tier( $start['from'], $to, $start['price'] );
+	}
+	return array_values( array_filter( $tiers ) );
+}
+
+// The ranges ride along on each product in the WooCommerce Store API, under extensions.akrinity.bulk_tiers.
+add_action(
+	'woocommerce_blocks_loaded',
+	function () {
+		if ( ! function_exists( 'woocommerce_store_api_register_endpoint_data' ) ) {
+			return;
+		}
+		$endpoint = class_exists( '\Automattic\WooCommerce\StoreApi\Schemas\V1\ProductSchema' )
+			? \Automattic\WooCommerce\StoreApi\Schemas\V1\ProductSchema::IDENTIFIER
+			: 'product';
+		woocommerce_store_api_register_endpoint_data(
+			array(
+				'endpoint'        => $endpoint,
+				'namespace'       => 'akrinity',
+				'data_callback'   => function ( $product ) {
+					return array( 'bulk_tiers' => akr_bulk_tiers( (int) $product->get_id() ) );
+				},
+				'schema_callback' => function () {
+					return array(
+						'bulk_tiers' => array(
+							'description' => 'Bulk price ranges for this product.',
+							'type'        => 'array',
+							'context'     => array( 'view' ),
+							'readonly'    => true,
+						),
+					);
+				},
+				'schema_type'     => ARRAY_A,
+			)
+		);
+	}
+);
+
+/* ---------- Bulk quote requests ---------- */
+
+// Requests are kept in WordPress under "Quote requests" in the admin menu, so none is lost.
+add_action(
+	'init',
+	function () {
+		register_post_type(
+			'akr_request',
+			array(
+				'labels'          => array(
+					'name'          => 'Quote requests',
+					'singular_name' => 'Quote request',
+				),
+				'public'          => false,
+				'show_ui'         => true,
+				'show_in_menu'    => true,
+				'menu_icon'       => 'dashicons-email-alt',
+				'supports'        => array( 'title' ),
+				'capability_type' => 'post',
+				'capabilities'    => array( 'create_posts' => 'do_not_allow' ),
+				'map_meta_cap'    => true,
+			)
+		);
+	}
+);
+
+add_action(
+	'add_meta_boxes',
+	function () {
+		add_meta_box(
+			'akr_request_details',
+			'Request details',
+			function ( $post ) {
+				$rows = array(
+					'Company'  => 'company',
+					'GSTIN'    => 'gstin',
+					'Contact'  => 'name',
+					'Phone'    => 'phone',
+					'Email'    => 'email',
+					'Needs'    => 'need',
+					'Quantity' => 'quantity',
+					'Product'  => 'product_name',
+					'Notes'    => 'notes',
+				);
+				echo '<table class="widefat striped"><tbody>';
+				foreach ( $rows as $label => $key ) {
+					printf(
+						'<tr><th style="width:140px">%s</th><td>%s</td></tr>',
+						esc_html( $label ),
+						nl2br( esc_html( (string) get_post_meta( $post->ID, 'akr_' . $key, true ) ) )
+					);
+				}
+				echo '</tbody></table>';
+			},
+			'akr_request',
+			'normal',
+			'high'
+		);
+	}
+);
+
+/** Saves a business quote request, then emails the admin and sends the customer a copy. */
+function akr_handle_business_request( WP_REST_Request $req ) {
+	$p = $req->get_json_params();
+	$f = array(
+		'company'  => sanitize_text_field( (string) ( $p['company'] ?? '' ) ),
+		'gstin'    => strtoupper( sanitize_text_field( (string) ( $p['gstin'] ?? '' ) ) ),
+		'name'     => sanitize_text_field( (string) ( $p['name'] ?? '' ) ),
+		'phone'    => sanitize_text_field( (string) ( $p['phone'] ?? '' ) ),
+		'email'    => sanitize_email( (string) ( $p['email'] ?? '' ) ),
+		'need'     => sanitize_text_field( (string) ( $p['need'] ?? '' ) ),
+		'quantity' => sanitize_text_field( (string) ( $p['quantity'] ?? '' ) ),
+		'notes'    => sanitize_textarea_field( (string) ( $p['notes'] ?? '' ) ),
+	);
+	if ( '' === $f['company'] || '' === $f['name'] || '' === $f['phone'] || ! is_email( $f['email'] ) ) {
+		return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
+	}
+
+	// The product the request came from, if it is a real published product.
+	$product_name = '';
+	$product_url  = '';
+	$slug         = sanitize_title( (string) ( $p['product'] ?? '' ) );
+	if ( '' !== $slug ) {
+		$post = get_page_by_path( $slug, OBJECT, 'product' );
+		if ( $post && 'publish' === $post->post_status ) {
+			$product_name = get_the_title( $post );
+			$product_url  = akr_frontend_url() . '/product/' . $slug;
+		}
+	}
+
+	$id = wp_insert_post(
+		array(
+			'post_type'   => 'akr_request',
+			'post_status' => 'publish',
+			'post_title'  => 'Bulk quote: ' . $f['company'] . ' (' . $f['name'] . ')',
+		)
+	);
+	if ( is_wp_error( $id ) || ! $id ) {
+		return new WP_REST_Response( array( 'code' => 'save_failed' ), 500 );
+	}
+	foreach ( $f as $key => $value ) {
+		update_post_meta( $id, 'akr_' . $key, $value );
+	}
+	update_post_meta( $id, 'akr_product_name', $product_name );
+	update_post_meta( $id, 'akr_product_url', $product_url );
+
+	$ref   = 'BQ-' . $id;
+	$lines = array(
+		'Reference: ' . $ref,
+		'Company: ' . $f['company'],
+		'GSTIN: ' . ( '' !== $f['gstin'] ? $f['gstin'] : 'not given' ),
+		'Contact: ' . $f['name'],
+		'Phone: ' . $f['phone'],
+		'Email: ' . $f['email'],
+		'What they need: ' . $f['need'],
+		'Quantity: ' . ( '' !== $f['quantity'] ? $f['quantity'] : 'not given' ),
+		'Product: ' . ( '' !== $product_name ? $product_name . ' (' . $product_url . ')' : 'none chosen' ),
+		'Notes: ' . ( '' !== $f['notes'] ? $f['notes'] : 'none' ),
+	);
+	$summary = implode( "\r\n", $lines );
+	$admin   = get_option( 'admin_email' );
+	$reply   = 'Reply-To: ' . str_replace( array( "\r", "\n", '<', '>' ), '', $f['name'] ) . ' <' . $f['email'] . '>';
+	$email   = $f['email'];
+
+	akr_after_response(
+		function () use ( $admin, $email, $ref, $summary, $reply, $product_name ) {
+			wp_mail(
+				$admin,
+				'New bulk quote request ' . $ref . ( '' !== $product_name ? ' for ' . $product_name : '' ),
+				"A business sent a bulk quote request.\r\n\r\n" . $summary . "\r\n",
+				array( $reply )
+			);
+			wp_mail(
+				$email,
+				'We received your bulk quote request (' . $ref . ')',
+				"Thank you. We have received your bulk quote request and will reply with a quote.\r\n\r\nHere is what you sent us:\r\n\r\n" . $summary . "\r\n\r\nIf anything is wrong, just reply to this email.\r\n"
+			);
+		}
+	);
+
+	return new WP_REST_Response(
+		array(
+			'id'        => $id,
+			'reference' => $ref,
+		),
+		201
+	);
+}
+
+add_action(
+	'rest_api_init',
+	function () {
+		register_rest_route(
+			'akrinity/v1',
+			'/business-request',
+			array(
+				'methods'             => 'POST',
+				'callback'            => 'akr_handle_business_request',
+				'permission_callback' => function ( WP_REST_Request $req ) {
+					return akr_secret_ok( $req );
+				},
+			)
 		);
 	}
 );

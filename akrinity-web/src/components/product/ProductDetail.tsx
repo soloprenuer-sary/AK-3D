@@ -47,7 +47,6 @@ export function ProductDetail({
     .map((r) => live.find((p) => p.id === r.id))
     .filter((p): p is ShopProduct => Boolean(p));
   const [view, setView] = useState<'photo' | '3d'>('photo');
-  const [thumb, setThumb] = useState(0);
   const [material, setMaterial] = useState<Material>(product.material);
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
   const [mode, setMode] = useState<ColourMode>(product.modes[0]);
@@ -108,7 +107,8 @@ export function ProductDetail({
     });
   };
 
-  const thumbs = product.images?.length ? product.images.map((_, i) => i) : [0, 1, 2, 3];
+  const photos = product.images ?? [];
+  const bulkTiers = product.bulkTiers ?? [];
 
   return (
     <main id="main">
@@ -153,25 +153,44 @@ export function ProductDetail({
             id="pv-photo"
             role="tabpanel"
             aria-labelledby="tab-photo"
-            className="main-img"
+            className="gal-stack"
             hidden={view !== 'photo'}
-            style={product.images?.length ? { background: '#FFFFFF' } : artStyle}
           >
-            {product.images?.length ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={product.images[thumb] ?? product.images[0]}
-                alt={`${product.name}, photo ${thumb + 1} of ${product.images.length}`}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  borderRadius: 28,
-                  padding: 16,
-                }}
-              />
+            {photos.length ? (
+              <>
+                <figure className="gal-hero">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={photos[0]} alt={`${product.name}, photo 1 of ${photos.length}`} />
+                </figure>
+                {photos.length > 1 && (
+                  <div className="gal-grid">
+                    {photos.slice(1).map((src, i) => (
+                      <figure className="gal-tile" key={src + i}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={src}
+                          alt={`${product.name}, photo ${i + 2} of ${photos.length}`}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </figure>
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="pc-obj" aria-hidden="true" />
+              <>
+                <div className="gal-hero gal-empty" style={artStyle} aria-hidden="true">
+                  <div className="pc-obj" />
+                </div>
+                <div className="gal-grid" aria-hidden="true">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div className="gal-tile gal-empty" style={artStyle} key={i}>
+                      <div className="pc-obj" />
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
@@ -183,28 +202,6 @@ export function ProductDetail({
             hidden={view !== '3d'}
           >
             {view === '3d' && <ModelViewer product={product} modelUrl={DEV_MODEL_URL} />}
-          </div>
-
-          <div className="thumbs" role="group" aria-label="Photos">
-            {thumbs.map((i) => (
-              <button
-                key={i}
-                type="button"
-                className="thumb"
-                aria-label={`Photo ${i + 1}`}
-                aria-pressed={thumb === i}
-                onClick={() => setThumb(i)}
-                style={
-                  product.images?.[i]
-                    ? {
-                        backgroundImage: `url(${product.images[i]})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                      }
-                    : undefined
-                }
-              />
-            ))}
           </div>
         </div>
 
@@ -418,21 +415,21 @@ export function ProductDetail({
 
           <div className="bulk">
             <span className="label">Buying in bulk?</span>
-            <div className="tiers">
-              <div>
-                <span>1 to 9</span>
-                <b>{product.price ?? '₹[price]'}</b>
+            {bulkTiers.length > 0 && (
+              <div className="tiers">
+                {bulkTiers.map((t) => (
+                  <div key={t.from}>
+                    <span>{t.to ? `${t.from} to ${t.to}` : `${t.from} and up`}</span>
+                    <b>{t.price}</b>
+                    <small>per piece</small>
+                  </div>
+                ))}
               </div>
-              <div>
-                <span>10 to 49</span>
-                <b>{product.price ?? '₹[price]'}</b>
-              </div>
-              <div>
-                <span>50 and up</span>
-                <b>{product.price ?? '₹[price]'}</b>
-              </div>
-            </div>
-            <Link className="link" href="/business">
+            )}
+            <Link
+              className="link"
+              href={`/business?product=${encodeURIComponent(productSlug(product))}`}
+            >
               Request a bulk quote →
             </Link>
           </div>

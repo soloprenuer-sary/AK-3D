@@ -661,6 +661,92 @@ async function handleOrder(request: Request, env: Env): Promise<Response> {
   }));
 }
 
+// ---------- business quote requests ----------
+
+const GSTIN_RE = /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+/** A bulk quote request from the business page. WordPress saves it and emails the admin and the customer. */
+async function handleBusiness(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  if (!body) {
+    return json(
+      { error: 'Something went wrong with the form. Reload the page and try again.' },
+      400,
+    );
+  }
+  const company = str(body.company, 120);
+  const name = str(body.name, 80);
+  const phone = str(body.phone, 20).replace(/\s+/g, '');
+  const email = str(body.email, 254).toLowerCase();
+  const need = str(body.need, 80);
+  const quantity = str(body.quantity, 12);
+  const notes = str(body.notes, 1500);
+  const gstin = str(body.gstin, 15).toUpperCase();
+  const product = str(body.product, 100);
+
+  if (!company) return json({ error: 'Enter your company name.', field: 'company' }, 400);
+  if (gstin && !GSTIN_RE.test(gstin)) {
+    return json(
+      { error: 'GSTIN should be 15 characters, for example 27ABCDE1234F1Z5.', field: 'gstin' },
+      400,
+    );
+  }
+  if (!name) return json({ error: 'Enter the contact name.', field: 'name' }, 400);
+  if (!PHONE_RE.test(phone)) {
+    return json(
+      { error: 'Enter a 10-digit mobile number, with or without +91.', field: 'phone' },
+      400,
+    );
+  }
+  if (!EMAIL_RE.test(email)) {
+    return json({ error: 'Enter a valid email like name@example.com.', field: 'email' }, 400);
+  }
+  if (quantity && !/^\d{1,9}$/.test(quantity)) {
+    return json({ error: 'Enter the quantity as a number.', field: 'quantity' }, 400);
+  }
+
+  const ip = clientIp(request);
+  const limited = await limitIp(env, request, 'biz', { max: 5, window: 3600 });
+  if (limited) return limited;
+  if (!(await verifyTurnstile(env, str(body.turnstileToken, 2048), ip))) {
+    return json({ error: 'Bot check failed. Please try again.' }, 400);
+  }
+
+  const r = await wpService(env, '/business-request', {
+    company,
+    gstin,
+    name,
+    phone,
+    email,
+    need,
+    quantity,
+    notes,
+    product,
+  });
+  if (r.status === 0) {
+    return json(
+      {
+        error:
+          'The request is taking longer than usual. Please wait a minute, then check your email before sending it again.',
+        code: 'slow',
+      },
+      503,
+    );
+  }
+  if (r.status !== 201) {
+    console.error('business: WordPress returned', r.status, String(r.data.code ?? ''));
+    return json(
+      {
+        error: 'We could not send your request right now. Please try again in a few minutes.',
+        code: 'unavailable',
+        debug: env.AUTH_STATUS === '1' ? { wpStatus: r.status, wpCode: r.data.code } : undefined,
+      },
+      503,
+    );
+  }
+  return json({ ok: true, reference: String(r.data.reference ?? '') }, 201);
+}
+
 // ---------- password reset ----------
 
 const GENERIC_OK = { ok: true };
@@ -816,7 +902,7 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   }
   if (
     !env.AKRINITY_SHARED_SECRET &&
-    ['check', 'register', 'forgot', 'reset'].includes(action ?? '')
+    ['check', 'register', 'forgot', 'reset', 'business'].includes(action ?? '')
   ) {
     return json({ error: 'Accounts are not configured.', code: 'unconfigured' }, 503);
   }
@@ -826,6 +912,7 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   if (action === 'register') return handleRegister(request, env);
   if (action === 'profile') return handleProfile(request, env);
   if (action === 'password') return handlePassword(request, env);
+  if (action === 'business') return handleBusiness(request, env);
   if (action === 'forgot') return handleForgot(request, env);
   if (action === 'reset') return handleReset(request, env);
   if (action === 'logout') return json({ ok: true }, 200, { 'Set-Cookie': clearCookie() });

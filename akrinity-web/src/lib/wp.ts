@@ -30,6 +30,8 @@ export interface StoreProduct {
   images: { src: string; alt: string }[];
   categories: { id: number; name: string }[];
   attributes?: { name: string; terms: { name: string }[] }[];
+  /** Added by the Akrinity WordPress snippet: bulk price ranges from ACF fields. */
+  extensions?: { akrinity?: { bulk_tiers?: { from: number; to: number | null; price: string }[] } };
 }
 
 /** Decode the HTML entities WordPress uses in names and excerpts (e.g. &amp;, &#8217;). */
@@ -46,7 +48,7 @@ function stripTags(html: string): string {
   return decode(
     html
       .replace(/<[^>]+>/g, ' ')
-      .replace(/s+/g, ' ')
+      .replace(/\s+/g, ' ')
       .trim(),
   );
 }
@@ -72,7 +74,7 @@ export function mapStoreProduct(p: StoreProduct): ShopProduct {
     .map((t) =>
       SHOP_MATERIALS.find(
         (m) =>
-          m.toLowerCase().replace(/W/g, '') === t.toLowerCase().replace(/W/g, '') ||
+          m.toLowerCase().replace(/\W/g, '') === t.toLowerCase().replace(/\W/g, '') ||
           (t.toLowerCase() === 'pla' && m === 'PLA+'),
       ),
     )
@@ -115,6 +117,20 @@ export function mapStoreProduct(p: StoreProduct): ShopProduct {
     modes: modes.length ? modes : ['single'],
     images: p.images.map((i) => i.src),
     price: formatRupees(p.prices.price, p.prices.currency_minor_unit),
+    bulkTiers: (p.extensions?.akrinity?.bulk_tiers ?? [])
+      .filter((t) => t && t.from >= 1 && Number(t.price) > 0)
+      .sort((x, y) => x.from - y.from)
+      .map((t) => ({
+        from: t.from,
+        to: t.to ?? null,
+        // The price is in rupees; keep paise when there are any (for example ₹99.50).
+        price:
+          '₹' +
+          Number(t.price).toLocaleString('en-IN', {
+            minimumFractionDigits: Number.isInteger(Number(t.price)) ? 0 : 2,
+            maximumFractionDigits: 2,
+          }),
+      })),
     regularPrice: onSale
       ? formatRupees(p.prices.regular_price as string, p.prices.currency_minor_unit)
       : undefined,

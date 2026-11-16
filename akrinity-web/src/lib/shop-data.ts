@@ -111,6 +111,14 @@ export const SHOP_CATEGORIES = CATEGORIES.map((c) => c.name);
 export const SIZE_OPTIONS = ['Small', 'Medium', 'Large'];
 export const SHOP_MATERIALS: Material[] = ['PLA+', 'PETG', 'ABS / ASA', 'Resin'];
 
+/** One bulk price range set on the product in WordPress. to is null for "and up". */
+export interface BulkTier {
+  from: number;
+  to: number | null;
+  /** Price per piece, for example "₹449". */
+  price: string;
+}
+
 export interface ShopProduct {
   id: string;
   /** WooCommerce slug (the page address). Falls back to a slug made from the name. */
@@ -132,6 +140,8 @@ export interface ShopProduct {
   images?: string[];
   /** Price as shown to customers, e.g. "₹499". Sample products use a placeholder when unset. */
   price?: string;
+  /** Bulk price ranges from WordPress (ACF fields on the product). Empty or missing means none. */
+  bulkTiers?: BulkTier[];
   /** Normal price shown struck through when the product is on sale. */
   regularPrice?: string;
   /** Short description from WordPress. Sample products use a placeholder when unset. */

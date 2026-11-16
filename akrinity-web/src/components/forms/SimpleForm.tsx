@@ -33,6 +33,8 @@ interface SimpleFormProps {
   note?: string;
   /** Text on the button while the request runs (default: Please wait…). */
   busyLabel?: string;
+  /** Shown at the top of the form, above the fields. */
+  lead?: ReactNode;
   /**
    * Optional real submit. Receives the checked values and returns an error message to show, or
    * null on success. Without it the form only checks the fields (no backend is connected).
@@ -68,6 +70,7 @@ export function SimpleForm({
   consent,
   note,
   busyLabel,
+  lead,
   onSubmit: send,
 }: SimpleFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -111,6 +114,7 @@ export function SimpleForm({
 
   return (
     <form className="quote-form simple-form" onSubmit={onSubmit} noValidate>
+      {lead}
       <div className="form-grid">
         {fields.map((field) => {
           const fid = `${id}-${field.name}`;
