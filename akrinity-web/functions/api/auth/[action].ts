@@ -31,6 +31,8 @@ interface Env {
   TURNSTILE_SECRET_KEY?: string;
   /** Extra origins allowed to call this API, comma separated (local development behind a proxy). */
   ALLOWED_ORIGINS?: string;
+  /** Set to 1 to turn on GET /api/auth/status, a setup check that shows what is missing (no secrets). */
+  AUTH_STATUS?: string;
   AUTH_KV?: KV;
 }
 
@@ -389,6 +391,7 @@ async function handleRegister(request: Request, env: Env): Promise<Response> {
         password,
         first_name: first,
         last_name: rest.join(' '),
+        role: 'customer', // everyone who signs up on the storefront is saved as a WooCommerce customer
         billing: { first_name: first, last_name: rest.join(' '), email, phone },
       }),
       signal: signal(),
@@ -539,10 +542,111 @@ async function handleResend(request: Request, env: Env): Promise<Response> {
   return json(GENERIC_OK);
 }
 
+// ---------- setup check ----------
+
+interface Check {
+  name: string;
+  ok: boolean;
+  fix?: string;
+}
+
+/** GET /api/auth/status (only when AUTH_STATUS=1). Says what is wrong with the setup, never shows secrets. */
+async function handleStatus(request: Request, env: Env): Promise<Response> {
+  const checks: Check[] = [];
+  const add = (name: string, ok: boolean, fix?: string) =>
+    checks.push({ name, ok, fix: ok ? undefined : fix });
+  const host = new URL(env.WP_URL).host;
+
+  let namespaces: string[] = [];
+  try {
+    const res = await fetch(wp(env, '/'), { signal: signal() });
+    const data = (await res.json()) as { namespaces?: string[] };
+    namespaces = data.namespaces ?? [];
+    add(`WordPress answers at ${host}`, res.ok, 'Check WP_URL and that the site is online.');
+  } catch {
+    add(
+      `WordPress answers at ${host}`,
+      false,
+      'WordPress could not be reached. Check WP_URL, DNS and that the site is online.',
+    );
+  }
+  add(
+    'JWT login plugin is active',
+    namespaces.includes('jwt-auth/v1'),
+    'Install and activate "JWT Authentication for WP REST API".',
+  );
+  add(
+    'Account snippet is installed',
+    namespaces.includes('akrinity/v1'),
+    'Copy wordpress/mu-plugins/akrinity-headless-auth.php to wp-content/mu-plugins/.',
+  );
+  add('WooCommerce REST API is on', namespaces.includes('wc/v3'), 'Activate WooCommerce.');
+
+  // JWT secret: a bogus login must be refused as a wrong password, not as a bad configuration.
+  try {
+    const res = await fetch(wp(env, '/jwt-auth/v1/token'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'setup-check@example.invalid', password: 'setup-check' }),
+      signal: signal(),
+    });
+    const data = (await res.json().catch(() => ({}))) as { code?: string };
+    const code = String(data.code ?? '');
+    add(
+      'JWT secret key is set in wp-config.php',
+      !code.includes('bad_config') && res.status !== 404,
+      "Add define( 'JWT_AUTH_SECRET_KEY', '<long random string>' ); to wp-config.php.",
+    );
+  } catch {
+    add('JWT secret key is set in wp-config.php', false, 'The JWT endpoint did not answer.');
+  }
+
+  // Service account: can it create customers?
+  const req = wcRequest(env, '/wp/v2/users/me?context=edit');
+  try {
+    const res = await fetch(req.url, { headers: req.headers, signal: signal() });
+    const me = (await res.json().catch(() => ({}))) as {
+      capabilities?: Record<string, boolean>;
+      roles?: string[];
+    };
+    add(
+      'Service account login works',
+      res.ok,
+      'WC_APP_USER / WC_APP_PASSWORD (or the WooCommerce key pair) are wrong, or application passwords are blocked (needs https on a live site).',
+    );
+    add(
+      'Service account is a shop manager',
+      Boolean(me.capabilities?.manage_woocommerce),
+      'Give that user the Shop manager role.',
+    );
+  } catch {
+    add('Service account login works', false, 'Could not call WordPress with the service account.');
+  }
+
+  add(
+    'Rate-limit store (KV) is bound',
+    Boolean(env.AUTH_KV),
+    'Bind a Cloudflare KV namespace named AUTH_KV so limits are shared across requests.',
+  );
+  add(
+    'Bot check key is set (Turnstile)',
+    Boolean(env.TURNSTILE_SECRET_KEY),
+    'Optional but recommended on a live site: set TURNSTILE_SECRET_KEY.',
+  );
+  void request;
+  return json({
+    ok: checks.filter((c) => !/Turnstile|KV/.test(c.name)).every((c) => c.ok),
+    checks,
+  });
+}
+
 export const onRequest = async ({ request, env, params }: Ctx): Promise<Response> => {
   const action = Array.isArray(params.action) ? params.action[0] : params.action;
   if (!env.WP_URL) return json({ error: 'Accounts are not configured.' }, 503);
 
+  if (action === 'status' && request.method === 'GET' && env.AUTH_STATUS === '1') {
+    return handleStatus(request, env);
+  }
   if (action === 'me' && request.method === 'GET') return handleMe(request, env);
 
   if (request.method !== 'POST')

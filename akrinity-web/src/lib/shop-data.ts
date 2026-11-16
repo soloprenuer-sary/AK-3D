@@ -94,6 +94,8 @@ export const SHOP_MATERIALS: Material[] = ['PLA+', 'PETG', 'ABS / ASA', 'Resin']
 
 export interface ShopProduct {
   id: string;
+  /** WooCommerce slug (the page address). Falls back to a slug made from the name. */
+  slug?: string;
   name: string;
   category: string;
   sub: string;
@@ -107,6 +109,8 @@ export interface ShopProduct {
   images?: string[];
   /** Price as shown to customers, e.g. "₹499". Sample products use a placeholder when unset. */
   price?: string;
+  /** Normal price shown struck through when the product is on sale. */
+  regularPrice?: string;
   /** Short description from WordPress. Sample products use a placeholder when unset. */
   description?: string;
 }
@@ -121,7 +125,7 @@ export function slugify(s: string): string {
 }
 
 export function productSlug(p: ShopProduct): string {
-  return slugify(p.name);
+  return p.slug || slugify(p.name);
 }
 
 export function categorySlug(c: ShopCategory): string {
@@ -131,25 +135,3 @@ export function categorySlug(c: ShopCategory): string {
 export function findCategory(slug: string): ShopCategory | undefined {
   return CATEGORIES.find((c) => categorySlug(c) === slug);
 }
-
-export const SHOP_PRODUCTS: ShopProduct[] = [
-  { id: 'p01', name: 'Layered vase', category: 'Home decor', sub: 'Vases & planters', inStock: true, material: 'PLA+', process: 'FDM', colours: ['violet', 'lime', 'black'], modes: ['single', 'multi'] },
-  { id: 'p02', name: 'Desk cable organiser', category: 'Desk & gadgets', sub: 'Cable management', inStock: true, material: 'PETG', process: 'FDM', colours: ['black', 'white', 'orange'], modes: ['single'] },
-  { id: 'p03', name: 'Phone stand', category: 'Desk & gadgets', sub: 'Phone & tablet stands', inStock: true, material: 'PLA+', process: 'FDM', colours: ['lime', 'violet', 'black'], modes: ['single', 'painted'] },
-  { id: 'p04', name: 'Miniature knight', category: 'Figurines & miniatures', sub: 'Tabletop miniatures', inStock: false, material: 'Resin', process: 'Resin', colours: ['white', 'black'], modes: ['single', 'painted'] },
-  { id: 'p05', name: 'Name plate', category: 'Gifts & personalised', sub: 'Name plates', inStock: false, material: 'PLA+', process: 'Multi-filament FDM', colours: ['orange', 'violet', 'lime', 'black'], modes: ['single', 'multi'] },
-  { id: 'p06', name: 'Planter with drainage', category: 'Home decor', sub: 'Vases & planters', inStock: true, material: 'PLA+', process: 'FDM', colours: ['orange', 'white', 'violet'], modes: ['single', 'multi'] },
-  { id: 'p07', name: 'Replacement knob', category: 'Spare parts', sub: 'Knobs & handles', inStock: true, material: 'ABS / ASA', process: 'FDM', colours: ['black', 'white'], modes: ['single'] },
-  { id: 'p08', name: 'Dice tower', category: 'Hobby & cosplay', sub: 'Board game accessories', inStock: false, material: 'PETG', process: 'FDM', colours: ['violet', 'black', 'orange'], modes: ['single', 'multi'] },
-  { id: 'p09', name: 'Keychain set', category: 'Gifts & personalised', sub: 'Keychains & tags', inStock: true, material: 'PLA+', process: 'Multi-filament FDM', colours: ['lime', 'orange', 'violet'], modes: ['single', 'multi'] },
-  { id: 'p10', name: 'Wall hook trio', category: 'Home decor', sub: 'Wall art & hooks', inStock: true, material: 'PETG', process: 'FDM', colours: ['black', 'lime'], modes: ['single'] },
-  { id: 'p11', name: 'Cosplay badge', category: 'Hobby & cosplay', sub: 'Cosplay badges', inStock: false, material: 'Resin', process: 'Resin', colours: ['orange', 'black'], modes: ['single', 'painted'] },
-  { id: 'p12', name: 'Shelf bracket', category: 'Spare parts', sub: 'Brackets & clips', inStock: true, material: 'PETG', process: 'FDM', colours: ['white', 'black'], modes: ['single'] },
-  { id: 'p13', name: 'Rectangular twisted lamp', category: 'Home decor', sub: 'Lamps & lighting', inStock: false, material: 'PLA+', process: 'FDM', colours: ['white'], modes: ['single'], images: ['/products/rectangular-twisted-lamp/1.png', '/products/rectangular-twisted-lamp/2.png', '/products/rectangular-twisted-lamp/3.png', '/products/rectangular-twisted-lamp/4.png', '/products/rectangular-twisted-lamp/5.png'] },
-  { id: 'p14', name: 'Egg tray (6 eggs)', category: 'Kitchen', sub: 'Egg trays', inStock: true, material: 'PLA+', process: 'FDM', colours: ['white', 'lime'], modes: ['single', 'multi'] },
-  { id: 'p15', name: 'Spoon holder', category: 'Kitchen', sub: 'Spoon holders', inStock: true, material: 'PETG', process: 'FDM', colours: ['black', 'white'], modes: ['single'] },
-  { id: 'p16', name: 'Knife holder', category: 'Kitchen', sub: 'Knife holders', inStock: false, material: 'PETG', process: 'FDM', colours: ['black'], modes: ['single'] },
-  { id: 'p17', name: 'Chibi figure', category: 'Original characters', sub: 'Chibi figures', inStock: false, material: 'Resin', process: 'Resin', colours: ['white', 'violet'], modes: ['single', 'painted'] },
-  { id: 'p18', name: 'Geometric vase art', category: 'Experimental & art', sub: 'Geometric & organic art', inStock: true, material: 'PLA+', process: 'FDM', colours: ['violet', 'white', 'black'], modes: ['single', 'multi'] },
-  { id: 'p19', name: 'Portrait bust', category: 'Figurines & miniatures', sub: 'Busts & portraits', inStock: false, material: 'Resin', process: 'Resin', colours: ['white'], modes: ['single', 'painted'] },
-];

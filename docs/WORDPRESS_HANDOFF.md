@@ -33,7 +33,7 @@ All data is read **at build time**. The browser does not call WordPress for prod
 | Articles (knowledge hub) | WPGraphQL: `POST {NEXT_PUBLIC_WP_GRAPHQL_URL}` with `posts(first: 50)` | `akrinity-web/src/lib/wp.ts` (`fetchPosts`) |
 | Merge and fallback | `getProducts()` and `getGuides()` | `akrinity-web/src/lib/catalogue.ts` |
 
-Fallback: if WordPress is unreachable during the build, the frontend uses its built-in sample catalogue. The build always succeeds. That is why a missing or broken WordPress can look like "sample data is showing".
+There is no sample data. If WordPress is unreachable during the build, the build stops with a clear message and the last good deploy stays live.
 
 **Changes in WordPress do not appear on the live site until the frontend is rebuilt** (`npm run build` in `akrinity-web`, then redeploy). There is no webhook or automatic revalidation yet. `REVALIDATE_SECRET` is listed in `.env.example` but is not implemented (VERIFY).
 
@@ -80,13 +80,13 @@ From WPGraphQL `posts`:
 - Category name `Materials` or `Design` gets that label. Any other category is shown as "Guides".
 - Only the first 50 posts are read.
 
-### 2.3 Two products are local to the frontend
+### 2.3 The twisted lamp
 
-The **Rectangular twisted lamp** and its photos live in the frontend code (`LOCAL_PRODUCTS` in `catalogue.ts`). They show even when WordPress is connected, and they are skipped if a WooCommerce product with the same name exists. Once the lamp is created in WooCommerce with its photos, remove it from the frontend code (VERIFY with the frontend owner first).
+The Rectangular twisted lamp is not in WooCommerce yet, so it is not on the site. Create it in WooCommerce with its photos (renders are in `akrinity-web/public/products/rectangular-twisted-lamp/`) and it appears after the next rebuild.
 
 ## 3. Environment variables (names only, no values here)
 
-Set in `akrinity-web/.env.local` for local work. Never commit that file. `.env.example` has placeholders only.
+Set in `akrinity-web/.env.local` for development and in the Cloudflare Pages environment for production. Never commit that file. `.env.example` has placeholders only.
 
 | Variable | Purpose | Scope |
 |---|---|---|
@@ -97,18 +97,15 @@ Set in `akrinity-web/.env.local` for local work. Never commit that file. `.env.e
 | `WC_CONSUMER_KEY`, `WC_CONSUMER_SECRET` | WooCommerce REST keys for server use only | Server only, set in Cloudflare |
 | `R2_*`, `TURNSTILE_SECRET_KEY`, `REVALIDATE_SECRET` | File storage, bot check, rebuild trigger | Server only |
 
-Local URLs for development: the local WordPress site is `http://akrinity-3d.local` (see section 4). Its endpoints are in `akrinity-web/.env.local`. Do not copy those values into docs.
+All environments use the live WordPress at `https://admin.akrinity.in`. Do not copy secrets into docs.
 
-## 4. Local WordPress site
+## 4. The WordPress backend
 
-- Site name: `akrinity-3d`, created in **Local by Flywheel**. Files are in `C:\Users\shiro\Local Sites\akrinity-3d\`, WordPress root `app\public\`.
-- URL: `http://akrinity-3d.local`. Admin is at `/wp-admin`. Admin login is held by the owner. Do not record it anywhere in the repo.
-- Versions: WordPress 7.1.4, PHP 8.2.29, MySQL 8.4.0, nginx 1.26.1.
-- **Local services run only while the Local app is open.** At the time of writing, the Store API and GraphQL endpoints did not answer, so the Local site was not running. Open Local and start the site before testing (VERIFY).
-- Other Local sites on the same machine (`bhakti-samagra-uat`, `great-andhra-test`, `iimb-eep-local`) are unrelated. Do not touch them.
-- WP-CLI works through Local's PHP and its generated `php.ini`. Paths are in `docs/PROJECT_CONTEXT.md` section 6. Run commands only against `akrinity-3d`.
+- **Live only:** `https://admin.akrinity.in`, admin at `/wp-admin`. The old local test site (`akrinity-3d`) is retired; do not use it. Admin login is held by the owner and is never recorded in the repo.
+- Take a backup and ask the owner before changing the live site.
+- Versions and plugins: check on the live site (VERIFY).
 
-### 4.1 Current state of the local site (VERIFY before relying on it)
+### 4.1 State of the backend (VERIFY before relying on it)
 
 - Content created so far (per the project log): **5 sample products** in Home decor, Desk & gadgets and Kitchen, and **5 sample articles**. Prices and stock are placeholders.
 - Installed earlier and **pending removal** (needs the owner's yes): **Elementor 4.4.0**, **Header Footer Elementor / Ultimate Addons 2.9.7**, theme **Hello Elementor 3.5.2**. The headless design does not use them.
@@ -192,8 +189,8 @@ Priority order proposed in the project log, with the WordPress-specific items ad
 ## 10. How to start
 
 1. Read this file, then `docs/PROJECT_CONTEXT.md`, `docs/BRAND_GUIDELINE.md`, `docs/WEBSITE_GUIDELINE.md`.
-2. Confirm the Local site is running and the endpoints in `akrinity-web/.env.local` answer.
+2. Confirm the live endpoints answer (`/wp-json/`, `/wp-json/wc/store/v1/products`, `/graphql`).
 3. Check the plugin list and WooCommerce version. Report what you find before changing anything.
-4. Propose the next step with options. Do not install or change the local site until the owner confirms.
+4. Propose the next step with options. Do not install or change anything on the live site until the owner confirms.
 5. After any change that affects the frontend data, rebuild `akrinity-web` (`npm run build`) and check the shop and articles pages.
 6. Log every decision in `docs/PROJECT_CONTEXT.md`.

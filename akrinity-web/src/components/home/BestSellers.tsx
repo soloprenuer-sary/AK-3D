@@ -1,8 +1,12 @@
+'use client';
+
 import Link from 'next/link';
+import { useLiveProducts } from '@/lib/live-catalogue';
 import { productSlug, type ShopProduct } from '@/lib/shop-data';
 
 /** Four products from the catalogue, in-stock ones first. */
-export function BestSellers({ products }: { products: ShopProduct[] }) {
+export function BestSellers({ products: builtProducts }: { products: ShopProduct[] }) {
+  const products = useLiveProducts(builtProducts);
   const picks = [...products].sort((a, b) => Number(b.inStock) - Number(a.inStock)).slice(0, 4);
   return (
     <section className="sec" style={{ paddingTop: 24 }}>

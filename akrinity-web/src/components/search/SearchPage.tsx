@@ -2,6 +2,7 @@
 
 import { useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import { useLiveGuides, useLiveProducts } from '@/lib/live-catalogue';
 import { GuideCard } from '@/components/guides/GuideCard';
 import type { Guide } from '@/lib/guides-data';
 import { CATEGORIES, categorySlug, productSlug, type ShopProduct } from '@/lib/shop-data';
@@ -23,7 +24,9 @@ interface SearchPageProps {
 }
 
 /** Search across products, categories and articles. Runs in the browser on the loaded data. */
-export function SearchPage({ products: allProducts, guides: allGuides }: SearchPageProps) {
+export function SearchPage({ products: builtProducts, guides: builtGuides }: SearchPageProps) {
+  const allProducts = useLiveProducts(builtProducts);
+  const allGuides = useLiveGuides(builtGuides);
   // The search term lives in the URL (?q=) so a search can be shared and the back button works.
   const q = useSyncExternalStore(subscribeUrl, readQuery, noQuery);
   const setQ = (value: string) => {
@@ -45,12 +48,16 @@ export function SearchPage({ products: allProducts, guides: allGuides }: SearchP
 
   const categories = useMemo(() => {
     if (!term) return [];
-    return CATEGORIES.filter((c) => [c.name, c.description, ...c.subs].join(' ').toLowerCase().includes(term));
+    return CATEGORIES.filter((c) =>
+      [c.name, c.description, ...c.subs].join(' ').toLowerCase().includes(term),
+    );
   }, [term]);
 
   const guides = useMemo(() => {
     if (!term) return [];
-    return allGuides.filter((g) => [g.title, g.summary, g.type].join(' ').toLowerCase().includes(term));
+    return allGuides.filter((g) =>
+      [g.title, g.summary, g.type].join(' ').toLowerCase().includes(term),
+    );
   }, [term, allGuides]);
 
   const total = products.length + categories.length + guides.length;
@@ -81,7 +88,11 @@ export function SearchPage({ products: allProducts, guides: allGuides }: SearchP
           />
         </form>
         <p className="result" role="status" aria-live="polite" style={{ marginTop: 14 }}>
-          {term ? (total === 1 ? '1 result' : `${total} results for “${q.trim()}”`) : 'Type to search products, categories and articles.'}
+          {term
+            ? total === 1
+              ? '1 result'
+              : `${total} results for “${q.trim()}”`
+            : 'Type to search products, categories and articles.'}
         </p>
       </div>
 
@@ -108,12 +119,16 @@ export function SearchPage({ products: allProducts, guides: allGuides }: SearchP
             {products.map((p) => (
               <Link key={p.id} className="card-p" href={`/product/${productSlug(p)}`}>
                 <div className="img stripes">
-                  <span className={p.inStock ? 'tag accent' : 'tag'}>{p.inStock ? 'In stock' : 'Made to order'}</span>
+                  <span className={p.inStock ? 'tag accent' : 'tag'}>
+                    {p.inStock ? 'In stock' : 'Made to order'}
+                  </span>
                 </div>
                 <div className="row">
                   <div>
                     <div className="name">{p.name}</div>
-                    <div className="price">{p.material} · {p.sub}</div>
+                    <div className="price">
+                      {p.material} · {p.sub}
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -132,7 +147,9 @@ export function SearchPage({ products: allProducts, guides: allGuides }: SearchP
               <Link key={c.name} className="cat-card" href={`/shop/${categorySlug(c)}`}>
                 <span className="cat-card-name">{c.name}</span>
                 <span className="cat-card-sub">{c.description}</span>
-                <span className="arrow" aria-hidden="true">→</span>
+                <span className="arrow" aria-hidden="true">
+                  →
+                </span>
               </Link>
             ))}
           </div>

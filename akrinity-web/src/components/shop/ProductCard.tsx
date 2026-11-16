@@ -2,7 +2,13 @@
 
 import { useState, type CSSProperties, type PointerEvent } from 'react';
 import Link from 'next/link';
-import { COLOURS, MODE_LABEL, productSlug, type ColourKey, type ShopProduct } from '@/lib/shop-data';
+import {
+  COLOURS,
+  MODE_LABEL,
+  productSlug,
+  type ColourKey,
+  type ShopProduct,
+} from '@/lib/shop-data';
 
 interface ProductCardProps {
   product: ShopProduct;
@@ -59,7 +65,16 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
             onSave(product, next);
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#0B0B0C"
+            strokeWidth="2"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
             <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
           </svg>
         </button>
@@ -70,7 +85,16 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
           aria-label={`Quick view ${product.name}`}
           onClick={() => onQuickView(product)}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#0B0B0C"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
             <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
             <circle cx="12" cy="12" r="3" />
           </svg>
@@ -90,7 +114,11 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
           ))}
         </div>
 
-        <button type="button" className={justAdded ? 'pc-add done' : 'pc-add'} onClick={() => onAdd(product)}>
+        <button
+          type="button"
+          className={justAdded ? 'pc-add done' : 'pc-add'}
+          onClick={() => onAdd(product)}
+        >
           {justAdded ? 'Added ✓' : 'Quick add'}
         </button>
       </div>
@@ -104,7 +132,14 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
             {product.material} · {product.sub}
           </span>
         </div>
-        <span className="pc-price">{product.price ?? '₹[price]'}</span>
+        <span className="pc-price">
+          {product.regularPrice && (
+            <s style={{ opacity: 0.55, fontSize: '0.7em', marginRight: 6 }}>
+              {product.regularPrice}
+            </s>
+          )}
+          {product.price ?? '₹[price]'}
+        </span>
       </div>
     </article>
   );

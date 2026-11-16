@@ -1,24 +1,35 @@
 /**
  * Connection to WordPress + WooCommerce. Products come from the WooCommerce Store API, articles
- * from WPGraphQL. Both run at build time, so the static site contains the data. If WordPress
- * cannot be reached, callers fall back to the sample catalogue (see catalogue.ts).
+ * from WPGraphQL. They are read at build time (so the HTML is complete) and again in the browser
+ * through the cached catalogue proxy (so edits in WordPress show without a rebuild).
+ * There is no sample data: callers stop when WordPress cannot be reached (see catalogue.ts).
  */
-import type { ColourMode, Material, ShopProduct } from './shop-data';
+import { COLOURS, SHOP_CATEGORIES, SHOP_MATERIALS } from './shop-data';
+import type { ColourKey, ColourMode, Material, ProcessType, ShopProduct } from './shop-data';
 import type { Block, Guide } from './guides-data';
 
 const STORE_API = process.env.NEXT_PUBLIC_WC_STORE_API_URL ?? '';
 const GRAPHQL = process.env.NEXT_PUBLIC_WP_GRAPHQL_URL ?? '';
 
 /** WooCommerce Store API product (only the fields we use). */
-interface StoreProduct {
+export interface StoreProduct {
   id: number;
   name: string;
+  slug?: string;
   short_description?: string;
   description?: string;
-  prices: { price: string; currency_minor_unit: number };
+  on_sale?: boolean;
+  prices: {
+    price: string;
+    regular_price?: string;
+    sale_price?: string;
+    currency_minor_unit: number;
+  };
   is_in_stock: boolean;
+  is_on_backorder?: boolean;
   images: { src: string; alt: string }[];
   categories: { id: number; name: string }[];
+  attributes?: { name: string; terms: { name: string }[] }[];
 }
 
 /** Decode the HTML entities WordPress uses in names and excerpts (e.g. &amp;, &#8217;). */
@@ -32,7 +43,12 @@ function decode(s: string): string {
 }
 
 function stripTags(html: string): string {
-  return decode(html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+  return decode(
+    html
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/s+/g, ' ')
+      .trim(),
+  );
 }
 
 function formatRupees(price: string, minorUnit: number): string {
@@ -40,37 +56,84 @@ function formatRupees(price: string, minorUnit: number): string {
   return `₹${Math.round(value).toLocaleString('en-IN')}`;
 }
 
-/** Products from the Store API, or null if WordPress cannot be reached. */
+/** Terms of the first product attribute whose name matches, e.g. "Material". */
+function terms(p: StoreProduct, pattern: RegExp): string[] {
+  const attr = (p.attributes ?? []).find((a) => pattern.test(a.name));
+  return attr ? attr.terms.map((t) => decode(t.name)) : [];
+}
+
+/** Turns one WooCommerce product into the shape the pages use. Pure: also used in the browser. */
+export function mapStoreProduct(p: StoreProduct): ShopProduct {
+  const names = p.categories.map((c) => decode(c.name));
+  // Prefer a category the shop knows; otherwise the first one WooCommerce lists.
+  const category = names.find((n) => SHOP_CATEGORIES.includes(n)) ?? names[0] ?? 'Home decor';
+
+  const material = terms(p, /^material$/i)
+    .map((t) =>
+      SHOP_MATERIALS.find(
+        (m) =>
+          m.toLowerCase().replace(/W/g, '') === t.toLowerCase().replace(/W/g, '') ||
+          (t.toLowerCase() === 'pla' && m === 'PLA+'),
+      ),
+    )
+    .find(Boolean) as Material | undefined;
+  const processValue = terms(p, /process/i)[0];
+  const process = (['FDM', 'Multi-filament FDM', 'Resin'] as ProcessType[]).find(
+    (x) => x.toLowerCase() === (processValue ?? '').toLowerCase(),
+  );
+  const colours = terms(p, /^colou?rs?$/i)
+    .map((t) => t.toLowerCase())
+    .filter((t): t is ColourKey => t in COLOURS);
+  const modes = terms(p, /colou?r mode/i).map((t): ColourMode =>
+    /multi/i.test(t) ? 'multi' : /paint/i.test(t) ? 'painted' : 'single',
+  );
+
+  const onSale =
+    Boolean(p.on_sale) &&
+    Boolean(p.prices.regular_price) &&
+    p.prices.regular_price !== p.prices.price;
+  return {
+    id: `wc-${p.id}`,
+    slug: p.slug || undefined,
+    name: decode(p.name),
+    category,
+    sub: category,
+    // Out of stock and "on backorder" both mean made to order.
+    inStock: Boolean(p.is_in_stock) && !p.is_on_backorder,
+    // Options not stored in WooCommerce yet fall back to these defaults.
+    material: material ?? 'PLA+',
+    process: process ?? 'FDM',
+    colours: colours.length ? colours : ['black'],
+    modes: modes.length ? modes : ['single'],
+    images: p.images.map((i) => i.src),
+    price: formatRupees(p.prices.price, p.prices.currency_minor_unit),
+    regularPrice: onSale
+      ? formatRupees(p.prices.regular_price as string, p.prices.currency_minor_unit)
+      : undefined,
+    description: stripTags(p.short_description || p.description || '') || undefined,
+  };
+}
+
+/** Every product from the Store API (all pages), or null if WordPress cannot be reached. */
 export async function fetchStoreProducts(): Promise<ShopProduct[] | null> {
   if (!STORE_API) return null;
   try {
-    const res = await fetch(`${STORE_API}/products?per_page=100`);
-    if (!res.ok) return null;
-    const data = (await res.json()) as StoreProduct[];
-    return data.map((p) => {
-      const category = decode(p.categories[0]?.name ?? 'Home decor');
-      return {
-        id: `wc-${p.id}`,
-        name: decode(p.name),
-        category,
-        sub: category,
-        inStock: Boolean(p.is_in_stock),
-        // Material, process and colour options are not stored in WooCommerce yet; defaults apply.
-        material: 'PLA+' as Material,
-        process: 'FDM',
-        colours: ['black'],
-        modes: ['single'] as ColourMode[],
-        images: p.images.map((i) => i.src),
-        price: formatRupees(p.prices.price, p.prices.currency_minor_unit),
-        description: stripTags(p.short_description || p.description || '') || undefined,
-      };
-    });
+    const all: StoreProduct[] = [];
+    for (let page = 1; page <= 20; page++) {
+      const res = await fetch(`${STORE_API}/products?per_page=100&page=${page}`);
+      if (!res.ok) return page === 1 ? null : all.map(mapStoreProduct);
+      const data = (await res.json()) as StoreProduct[];
+      all.push(...data);
+      const pages = Number(res.headers.get('x-wp-totalpages') ?? 1);
+      if (page >= pages || data.length === 0) break;
+    }
+    return all.map(mapStoreProduct);
   } catch {
     return null;
   }
 }
 
-interface GqlPost {
+export interface GqlPost {
   databaseId: number;
   slug: string;
   title: string;
@@ -80,7 +143,7 @@ interface GqlPost {
   categories: { nodes: { name: string }[] };
 }
 
-const POSTS_QUERY = `{
+export const POSTS_QUERY = `{
   posts(first: 50) {
     nodes {
       databaseId slug title excerpt content date
@@ -98,7 +161,9 @@ function postToGuide(p: GqlPost): Guide {
     .split(/<\/p>/i)
     .map((chunk) => stripTags(chunk))
     .filter((t) => t.length > 0);
-  const body: Block[] = paragraphs.length ? paragraphs.map((t) => ({ t: 'p', text: t })) : [{ t: 'p', text }];
+  const body: Block[] = paragraphs.length
+    ? paragraphs.map((t) => ({ t: 'p', text: t }))
+    : [{ t: 'p', text }];
   return {
     slug: p.slug,
     title: decode(p.title),
@@ -108,6 +173,11 @@ function postToGuide(p: GqlPost): Guide {
     minutes: Math.max(2, Math.round(words / 200)),
     body,
   };
+}
+
+/** Turns GraphQL posts into articles. WordPress ships a default "Hello world!" post; it is not an article. */
+export function mapPosts(nodes: GqlPost[]): Guide[] {
+  return nodes.filter((n) => n.slug !== 'hello-world').map(postToGuide);
 }
 
 /** Published posts from WPGraphQL, or null if WordPress cannot be reached. */
@@ -123,8 +193,7 @@ export async function fetchPosts(): Promise<Guide[] | null> {
     const json = (await res.json()) as { data?: { posts?: { nodes: GqlPost[] } } };
     const nodes = json.data?.posts?.nodes;
     if (!nodes) return null;
-    // WordPress ships a default "Hello world!" post. It is not an article for the site.
-    return nodes.filter((n) => n.slug !== 'hello-world').map(postToGuide);
+    return mapPosts(nodes);
   } catch {
     return null;
   }

@@ -44,12 +44,9 @@ You configure WordPress with plugins and settings. You write **no custom backend
 
 ## 3. Environment
 
-- Local site: `akrinity-3d`, created in Local by Flywheel. Files are in `C:\Users\shiro\Local Sites\akrinity-3d\`, WordPress root `app\public\`. URL `http://akrinity-3d.local`, admin at `/wp-admin`.
-- Local services run only while the Local app is open. Open it first. The site did not answer when last checked.
-- WordPress 7.1.4, PHP 8.2.29, MySQL 8.4.0, nginx 1.26.1 (per the project log; VERIFY on first check).
-- WP-CLI works through Local's PHP and its generated `php.ini`. Paths are in `docs/PROJECT_CONTEXT.md` section 6. Use them, but do not copy the database credentials anywhere.
-- Other Local sites on this machine (`bhakti-samagra-uat`, `great-andhra-test`, `iimb-eep-local`) are unrelated. Do not touch them.
-- Frontend endpoints for testing are in `akrinity-web/.env.local` (`NEXT_PUBLIC_WC_STORE_API_URL`, `NEXT_PUBLIC_WP_GRAPHQL_URL`). Read the URLs from there. Do not paste them into docs.
+- **Live backend only:** WordPress is at `https://admin.akrinity.in` (admin at `/wp-admin`). The frontend reads and writes data only there. There is no local WordPress for this project any more. Ask the owner before changing anything on it, and take a backup first.
+- Keep database credentials, application passwords and keys out of the repo and docs.
+- Frontend endpoints are set in `akrinity-web/.env.local` and in the Cloudflare Pages environment (`NEXT_PUBLIC_WC_STORE_API_URL`, `NEXT_PUBLIC_WP_GRAPHQL_URL`, `WP_URL`).
 
 ---
 
@@ -396,6 +393,20 @@ Rules:
 - Put it in a single file under version control in the repo only if the owner asks. Otherwise keep the file in the local site's plugin folder and record it in the project log.
 
 **Done when:** the owner approved the snippet, it does only the one job, and it is written up in the project log.
+
+### B19. Go-live account setup on admin.akrinity.in
+
+**Goal:** make sign-up and login work against the live WordPress at `https://admin.akrinity.in`.
+
+Steps (ask the owner before changing the live site):
+1. In `wp-config.php` add `JWT_AUTH_SECRET_KEY` (a new long random value, never reuse the local one) and `AKRINITY_FRONTEND_URL` (the live storefront address, https).
+2. Confirm `wp-content/mu-plugins/akrinity-headless-auth.php` is present and current, and the JWT and Limit Login Attempts plugins are active.
+3. Create a user named `akrinity-auth` with the **Shop manager** role. In its profile create an Application Password. Give it to the owner to store in the Cloudflare Pages environment as `WC_APP_USER` and `WC_APP_PASSWORD`. Never put it in the repo.
+4. Set up outgoing email (WP Mail SMTP is present) and send a test.
+5. In Cloudflare Pages set: `WP_URL=https://admin.akrinity.in`, the two values above, `ALLOWED_ORIGINS` only if needed, a KV namespace bound as `AUTH_KV`, and `TURNSTILE_SECRET_KEY`. Temporarily set `AUTH_STATUS=1`, open `/api/auth/status`, fix every red item, then remove `AUTH_STATUS`.
+6. Create one test account from the storefront. Confirm it appears under Users as **Customer**, the verification email arrives, and sign-in works after verifying. Delete the test user.
+
+**Done when:** the status page is all green and a new storefront sign-up appears in WordPress as a Customer.
 
 ### B18. Acceptance pass
 

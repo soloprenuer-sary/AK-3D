@@ -1,26 +1,28 @@
 /**
- * The data the pages use. WordPress is the source when it is reachable at build time; otherwise
- * the sample catalogue and articles are used, so the site always builds.
+ * The data the pages use. Products and articles come straight from WordPress (the live backend)
+ * at build time. There is no sample data: if WordPress cannot be reached the build stops with a
+ * clear message, so a broken backend can never publish an empty or out-of-date site.
  */
 import { fetchPosts, fetchStoreProducts } from './wp';
-import { GUIDES, type Guide } from './guides-data';
-import { SHOP_PRODUCTS, type ShopProduct } from './shop-data';
-
-/**
- * Products that live in the code, not in WordPress yet: the ones with real product photos (for
- * example the twisted lamp). They are added after the WordPress products so they stay on the site
- * until they are created in WooCommerce. A WordPress product with the same name wins.
- */
-const LOCAL_PRODUCTS = SHOP_PRODUCTS.filter((p) => p.images && p.images.length > 0);
+import type { Guide } from './guides-data';
+import type { ShopProduct } from './shop-data';
 
 export async function getProducts(): Promise<ShopProduct[]> {
-  const live = await fetchStoreProducts();
-  if (!live || live.length === 0) return SHOP_PRODUCTS;
-  const names = new Set(live.map((p) => p.name.toLowerCase()));
-  return [...live, ...LOCAL_PRODUCTS.filter((p) => !names.has(p.name.toLowerCase()))];
+  const products = await fetchStoreProducts();
+  if (products === null) {
+    throw new Error(
+      'Could not read products from WordPress. Check NEXT_PUBLIC_WC_STORE_API_URL and that the backend is online.',
+    );
+  }
+  return products;
 }
 
 export async function getGuides(): Promise<Guide[]> {
-  const live = await fetchPosts();
-  return live && live.length > 0 ? live : GUIDES;
+  const posts = await fetchPosts();
+  if (posts === null) {
+    throw new Error(
+      'Could not read articles from WordPress. Check NEXT_PUBLIC_WP_GRAPHQL_URL and that the backend is online.',
+    );
+  }
+  return posts;
 }

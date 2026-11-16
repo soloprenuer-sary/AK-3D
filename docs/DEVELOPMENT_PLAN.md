@@ -39,7 +39,7 @@ Notes from setup: the package registry on this machine rejected some newer versi
 Goal: prove the risky parts before building pages.
 
 1. Git repo for `akrinity-web` (private), first commit, branch protection on `main`.
-2. Local WordPress backend (the existing `akrinity-3d` site) with WooCommerce, WPGraphQL, WooGraphQL, ACF + WPGraphQL for ACF, the custom-order-status plugin, Razorpay, COD rules, Shiprocket, PDF invoices, JWT auth, and a minimal headless theme with CORS.
+2. WordPress backend (the live site at `admin.akrinity.in`) with WooCommerce, WPGraphQL, WooGraphQL, ACF + WPGraphQL for ACF, the custom-order-status plugin, Razorpay, COD rules, Shiprocket, PDF invoices, JWT auth, and a minimal headless theme with CORS.
 3. Run the nine spikes (listed in section 3). Each spike has a pass or fail result written into `docs/SPIKE_RESULTS.md`.
 4. Design sign-off for the missing pages: cart and mini-cart, checkout, order confirmation, account, order tracking, quote states, policy template, 404, search, login, emails, mobile drawer, and the motion spec.
 

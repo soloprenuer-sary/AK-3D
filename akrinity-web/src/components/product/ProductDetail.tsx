@@ -1,5 +1,6 @@
 'use client';
 
+import { useLiveProducts } from '@/lib/live-catalogue';
 import { useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { ModelViewer } from '@/components/three/ModelViewer';
@@ -35,7 +36,16 @@ interface ProductDetailProps {
   related: ShopProduct[];
 }
 
-export function ProductDetail({ product, related }: ProductDetailProps) {
+export function ProductDetail({
+  product: builtProduct,
+  related: builtRelated,
+}: ProductDetailProps) {
+  // Fresh data from WooCommerce replaces the built copy once it arrives (price, stock, photos, text).
+  const live = useLiveProducts([builtProduct, ...builtRelated]);
+  const product = live.find((p) => p.id === builtProduct.id) ?? builtProduct;
+  const related = builtRelated
+    .map((r) => live.find((p) => p.id === r.id))
+    .filter((p): p is ShopProduct => Boolean(p));
   const [view, setView] = useState<'photo' | '3d'>('photo');
   const [thumb, setThumb] = useState(0);
   const [material, setMaterial] = useState<Material>(product.material);
@@ -150,7 +160,13 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
               <img
                 src={product.images[thumb] ?? product.images[0]}
                 alt={`${product.name}, photo ${thumb + 1} of ${product.images.length}`}
-                style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 28, padding: 16 }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  borderRadius: 28,
+                  padding: 16,
+                }}
               />
             ) : (
               <div className="pc-obj" aria-hidden="true" />
@@ -178,7 +194,11 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
                 onClick={() => setThumb(i)}
                 style={
                   product.images?.[i]
-                    ? { backgroundImage: `url(${product.images[i]})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                    ? {
+                        backgroundImage: `url(${product.images[i]})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }
                     : undefined
                 }
               />
@@ -196,13 +216,21 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
             {product.name}
           </h1>
           <div className="price">
-            <span className="amt">{product.price ?? '₹[price]'}</span>
+            <span className="amt">
+              {product.regularPrice && (
+                <s style={{ opacity: 0.5, fontSize: '0.6em', marginRight: 10 }}>
+                  {product.regularPrice}
+                </s>
+              )}
+              {product.price ?? '₹[price]'}
+            </span>
             <span className="muted" style={{ fontSize: 14, fontWeight: 500 }}>
               incl. GST
             </span>
           </div>
           <p className="desc">
-            {product.description ?? '[Two or three lines on what this is, who it is for and what makes it good.]'}
+            {product.description ??
+              '[Two or three lines on what this is, who it is for and what makes it good.]'}
           </p>
 
           <fieldset className="opt">
@@ -251,7 +279,9 @@ export function ProductDetail({ product, related }: ProductDetailProps) {
           <fieldset className="opt">
             <legend>
               Colour:{' '}
-              <span style={{ fontWeight: 500, letterSpacing: 0, textTransform: 'none' }}>{colour}</span>
+              <span style={{ fontWeight: 500, letterSpacing: 0, textTransform: 'none' }}>
+                {colour}
+              </span>
             </legend>
             <div className="swatches" role="group" aria-label="Colour">
               {product.colours.map((key) => (

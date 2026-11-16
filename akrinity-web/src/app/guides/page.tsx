@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { GuideCard } from '@/components/guides/GuideCard';
+import { GuideGrid } from '@/components/guides/GuideGrid';
 import { getGuides } from '@/lib/catalogue';
 
 export const metadata: Metadata = {
@@ -32,12 +32,7 @@ export default async function KnowledgeHubPage() {
       </div>
 
       <section className="wrap" style={{ marginTop: 8, paddingBottom: 'var(--sec)' }} aria-label="All articles">
-        <div className="post-grid" style={{ paddingBottom: 16 }}>
-          {guides.map((g) => (
-            <GuideCard key={g.slug} guide={g} />
-          ))}
-        </div>
-        <p className="hub-note">Sample articles. Text is a template until the studio writes the final content.</p>
+        <GuideGrid guides={guides} />
       </section>
     </main>
   );

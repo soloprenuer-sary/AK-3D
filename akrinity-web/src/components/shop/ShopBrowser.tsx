@@ -1,5 +1,6 @@
 'use client';
 
+import { useLiveProducts } from '@/lib/live-catalogue';
 import { useEffect, useRef, useState } from 'react';
 import {
   MODE_LABEL,
@@ -39,7 +40,12 @@ interface ShopBrowserProps {
   subcategories?: string[];
 }
 
-export function ShopBrowser({ products, categoryName, subcategories = [] }: ShopBrowserProps) {
+export function ShopBrowser({
+  products: builtProducts,
+  categoryName,
+  subcategories = [],
+}: ShopBrowserProps) {
+  const products = useLiveProducts(builtProducts);
   const fixed = Boolean(categoryName);
   const [category, setCategory] = useState<string>(categoryName ?? 'All');
   const [sub, setSub] = useState<string>('All');
@@ -121,7 +127,8 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
   if (sort === 'stock') list = [...list].sort((a, b) => Number(b.inStock) - Number(a.inStock));
 
   const activeChips: { label: string; remove: () => void }[] = [];
-  if (!fixed && category !== 'All') activeChips.push({ label: category, remove: () => setCategory('All') });
+  if (!fixed && category !== 'All')
+    activeChips.push({ label: category, remove: () => setCategory('All') });
   if (sub !== 'All') activeChips.push({ label: sub, remove: () => setSub('All') });
   if (availability !== 'all')
     activeChips.push({
@@ -150,15 +157,26 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
       )}
 
       <div className="wrap shop-layout">
-        {filtersOpen && <div className="side-backdrop" onClick={() => setFiltersOpen(false)} aria-hidden="true" />}
-        <aside className={filtersOpen ? 'side open' : 'side'} id="shop-filters" aria-label="Filters">
+        {filtersOpen && (
+          <div className="side-backdrop" onClick={() => setFiltersOpen(false)} aria-hidden="true" />
+        )}
+        <aside
+          className={filtersOpen ? 'side open' : 'side'}
+          id="shop-filters"
+          aria-label="Filters"
+        >
           <div className="side-top">
             <h2>Filters</h2>
             <span className="side-actions">
               <button type="button" className="link-btn" onClick={clearAll}>
                 Clear all
               </button>
-              <button type="button" className="side-close" aria-label="Close filters" onClick={() => setFiltersOpen(false)}>
+              <button
+                type="button"
+                className="side-close"
+                aria-label="Close filters"
+                onClick={() => setFiltersOpen(false)}
+              >
                 ×
               </button>
             </span>
@@ -166,10 +184,14 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
 
           {!fixed && (
             <div className="side-sec">
-              <span className="label" id="cat-label">Category</span>
+              <span className="label" id="cat-label">
+                Category
+              </span>
               <div role="group" aria-labelledby="cat-label">
                 {['All', ...SHOP_CATEGORIES].map((c) => {
-                  const count = products.filter((p) => (c === 'All' || p.category === c) && matches(p, true)).length;
+                  const count = products.filter(
+                    (p) => (c === 'All' || p.category === c) && matches(p, true),
+                  ).length;
                   return (
                     <button
                       key={c}
@@ -188,10 +210,18 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
           )}
 
           <div className="side-sec">
-            <span className="label" id="mode-label">Colour option</span>
+            <span className="label" id="mode-label">
+              Colour option
+            </span>
             <div className="seg" role="group" aria-labelledby="mode-label">
               {MODE_FILTERS.map((m) => (
-                <button key={m.value} type="button" className="pill" aria-pressed={mode === m.value} onClick={() => setMode(m.value)}>
+                <button
+                  key={m.value}
+                  type="button"
+                  className="pill"
+                  aria-pressed={mode === m.value}
+                  onClick={() => setMode(m.value)}
+                >
                   {m.label}
                 </button>
               ))}
@@ -199,10 +229,18 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
           </div>
 
           <div className="side-sec">
-            <span className="label" id="avail-label">Availability</span>
+            <span className="label" id="avail-label">
+              Availability
+            </span>
             <div className="seg" role="group" aria-labelledby="avail-label">
               {AVAILABILITY.map((a) => (
-                <button key={a.value} type="button" className="pill" aria-pressed={availability === a.value} onClick={() => setAvailability(a.value)}>
+                <button
+                  key={a.value}
+                  type="button"
+                  className="pill"
+                  aria-pressed={availability === a.value}
+                  onClick={() => setAvailability(a.value)}
+                >
                   {a.label}
                 </button>
               ))}
@@ -210,11 +248,17 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
           </div>
 
           <div className="side-sec">
-            <span className="label" id="mat-label">Material</span>
+            <span className="label" id="mat-label">
+              Material
+            </span>
             <div role="group" aria-labelledby="mat-label">
               {SHOP_MATERIALS.map((m) => (
                 <label key={m} className="mat-row">
-                  <input type="checkbox" checked={materials.includes(m)} onChange={() => toggleMaterial(m)} />
+                  <input
+                    type="checkbox"
+                    checked={materials.includes(m)}
+                    onChange={() => toggleMaterial(m)}
+                  />
                   <span>{m}</span>
                 </label>
               ))}
@@ -222,15 +266,27 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
           </div>
 
           <div className="side-sec">
-            <label className="label" htmlFor="sort">Sort by</label>
-            <select id="sort" className="select" style={{ width: '100%' }} value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+            <label className="label" htmlFor="sort">
+              Sort by
+            </label>
+            <select
+              id="sort"
+              className="select"
+              style={{ width: '100%' }}
+              value={sort}
+              onChange={(e) => setSort(e.target.value as Sort)}
+            >
               <option value="featured">Featured</option>
               <option value="name">Name A to Z</option>
               <option value="stock">In stock first</option>
             </select>
           </div>
 
-          <button type="button" className="btn btn-primary side-apply" onClick={() => setFiltersOpen(false)}>
+          <button
+            type="button"
+            className="btn btn-primary side-apply"
+            onClick={() => setFiltersOpen(false)}
+          >
             Show {list.length} {list.length === 1 ? 'product' : 'products'}
           </button>
         </aside>
@@ -253,7 +309,11 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
               {activeChips.map((chip) => (
                 <span key={chip.label} className="achip">
                   {chip.label}
-                  <button type="button" aria-label={`Remove filter ${chip.label}`} onClick={chip.remove}>
+                  <button
+                    type="button"
+                    aria-label={`Remove filter ${chip.label}`}
+                    onClick={chip.remove}
+                  >
                     ×
                   </button>
                 </span>
@@ -269,7 +329,9 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
                 justAdded={justAdded === p.id}
                 onQuickView={setQuick}
                 onAdd={addToCart}
-                onSave={(product, saved) => notify(saved ? `${product.name} saved` : `${product.name} removed from saved`)}
+                onSave={(product, saved) =>
+                  notify(saved ? `${product.name} saved` : `${product.name} removed from saved`)
+                }
               />
             ))}
           </div>
@@ -292,7 +354,6 @@ export function ShopBrowser({ products, categoryName, subcategories = [] }: Shop
       <div className="toast" role="status" aria-live="polite" style={{ opacity: toast ? 1 : 0 }}>
         {toast}
       </div>
-
     </>
   );
 }

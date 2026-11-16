@@ -1,8 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import { GuideCard } from '@/components/guides/GuideCard';
+import { useLiveGuides } from '@/lib/live-catalogue';
 import type { Guide } from '@/lib/guides-data';
 
-export function KnowledgeHub({ guides }: { guides: Guide[] }) {
+export function KnowledgeHub({ guides: builtGuides }: { guides: Guide[] }) {
+  const guides = useLiveGuides(builtGuides);
   return (
     <section className="sec" aria-labelledby="hub-h">
       <div className="wrap">
