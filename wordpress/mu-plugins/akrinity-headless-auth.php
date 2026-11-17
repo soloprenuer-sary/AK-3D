@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Akrinity headless account
  * Description: Customer sign-up, account details and orders, bulk prices and bulk quote requests for the headless storefront. The one approved WordPress snippet (decisions 20, 32 and 34).
- * Version: 2.1.0
+ * Version: 2.2.0
  *
  * Install: copy this file to wp-content/mu-plugins/ and add to wp-config.php:
  *   define( 'AKRINITY_FRONTEND_URL', 'https://www.example.com' );
@@ -526,12 +526,29 @@ add_action(
 				'endpoint'        => $endpoint,
 				'namespace'       => 'akrinity',
 				'data_callback'   => function ( $product ) {
-					return array( 'bulk_tiers' => akr_bulk_tiers( (int) $product->get_id() ) );
+					return array(
+						'bulk_tiers'    => akr_bulk_tiers( (int) $product->get_id() ),
+						// Product ids from the "Linked products" box (Upsells and Cross-sells) on the product.
+						'cross_sell_ids' => array_values( array_map( 'intval', $product->get_cross_sell_ids() ) ),
+						'upsell_ids'     => array_values( array_map( 'intval', $product->get_upsell_ids() ) ),
+					);
 				},
 				'schema_callback' => function () {
 					return array(
 						'bulk_tiers' => array(
 							'description' => 'Bulk price ranges for this product.',
+							'type'        => 'array',
+							'context'     => array( 'view' ),
+							'readonly'    => true,
+						),
+						'cross_sell_ids' => array(
+							'description' => 'Cross-sell product ids set on this product.',
+							'type'        => 'array',
+							'context'     => array( 'view' ),
+							'readonly'    => true,
+						),
+						'upsell_ids' => array(
+							'description' => 'Upsell product ids set on this product.',
 							'type'        => 'array',
 							'context'     => array( 'view' ),
 							'readonly'    => true,

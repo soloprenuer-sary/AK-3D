@@ -6,6 +6,7 @@ import { CartThumb } from '@/components/cart/CartThumb';
 import { formatRupees, useCart } from '@/lib/cart-store';
 import type { MenuCategory } from '@/lib/category-content';
 import { MegaNav, MobileMenu } from './MegaMenu';
+import { SearchOverlay } from './SearchOverlay';
 
 const NAV = [
   { href: '/shop', label: 'Shop' },
@@ -19,6 +20,7 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
   const { lines, count, subtotal, remove, clear, modeLabel } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const cartDialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -32,7 +34,8 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
     <header className="site">
       <div className="wrap bar">
         <Link className="logo" href="/" aria-label="Akrinity home">
-          Akrinity<i aria-hidden="true" />
+          Akrinity
+          <i aria-hidden="true" />
         </Link>
 
         <nav className="main" aria-label="Main">
@@ -44,25 +47,62 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
         </nav>
 
         <div className="hdr-actions">
-          <Link className="circle" href="/search" aria-label="Search the site">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <button
+            className="circle"
+            type="button"
+            aria-label="Search the site"
+            aria-haspopup="dialog"
+            aria-expanded={searchOpen}
+            onClick={() => setSearchOpen(true)}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#0B0B0C"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
               <circle cx="11" cy="11" r="7" />
               <path d="M20 20l-4-4" />
             </svg>
-          </Link>
+          </button>
           <Link className="circle acct" href="/account" aria-label="Account">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#0B0B0C"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
               <circle cx="12" cy="8" r="4" />
               <path d="M4 21c1-4 4-6 8-6s7 2 8 6" />
             </svg>
           </Link>
-          <button className="circle" type="button" aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`} onClick={() => setCartOpen(true)}>
+          <button
+            className="circle"
+            type="button"
+            aria-label={`Cart, ${count} ${count === 1 ? 'item' : 'items'}`}
+            onClick={() => setCartOpen(true)}
+          >
             {count}
           </button>
           <Link className="btn btn-dark btn-sm" href="/quote">
             Get a quote
           </Link>
-          <button className="circle menu-btn" type="button" aria-expanded={menuOpen} aria-controls="mobile-menu" aria-label={menuOpen ? 'Close menu' : 'Open menu'} onClick={() => setMenuOpen((o) => !o)}>
+          <button
+            className="circle menu-btn"
+            type="button"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
             {menuOpen ? '×' : '☰'}
           </button>
         </div>
@@ -71,6 +111,8 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
       <MegaNav menu={menu} />
 
       {menuOpen && <MobileMenu menu={menu} onClose={() => setMenuOpen(false)} />}
+
+      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <dialog
         ref={cartDialog}
@@ -86,7 +128,12 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
             <h2 id="cart-title" className="d" style={{ fontSize: 40 }}>
               Your <span className="hl">cart</span>
             </h2>
-            <button className="qv-close" type="button" aria-label="Close cart" onClick={() => cartDialog.current?.close()}>
+            <button
+              className="qv-close"
+              type="button"
+              aria-label="Close cart"
+              onClick={() => cartDialog.current?.close()}
+            >
               ×
             </button>
           </div>
@@ -106,7 +153,12 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
                       {l.price ? ` · ${l.price}` : ''}
                     </div>
                   </div>
-                  <button type="button" className="link-btn" onClick={() => remove(l.key)} aria-label={`Remove ${l.name}`}>
+                  <button
+                    type="button"
+                    className="link-btn"
+                    onClick={() => remove(l.key)}
+                    aria-label={`Remove ${l.name}`}
+                  >
                     Remove
                   </button>
                 </li>
@@ -115,7 +167,8 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
           )}
           {lines.length > 0 && (
             <p className="meta" style={{ marginTop: 16 }}>
-              Subtotal: <b>{subtotal === null ? '₹[price]' : formatRupees(subtotal)}</b> · shipping is shown at checkout.
+              Subtotal: <b>{subtotal === null ? '₹[price]' : formatRupees(subtotal)}</b> · shipping
+              is shown at checkout.
             </p>
           )}
           <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
@@ -126,7 +179,11 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
               View cart
             </Link>
             {lines.length > 0 && (
-              <Link className="btn btn-primary" href="/checkout" onClick={() => cartDialog.current?.close()}>
+              <Link
+                className="btn btn-primary"
+                href="/checkout"
+                onClick={() => cartDialog.current?.close()}
+              >
                 Checkout
               </Link>
             )}

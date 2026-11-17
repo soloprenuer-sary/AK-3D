@@ -52,7 +52,13 @@ function decode(s: string): string {
     .replace(/&#0?39;/g, "'");
 }
 
-const stripTags = (s: string) => decode(s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+const stripTags = (s: string) =>
+  decode(
+    s
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim(),
+  );
 
 const text = (v: unknown): string | undefined =>
   typeof v === 'string' && v.trim() ? decode(v.trim()) : undefined;
@@ -70,7 +76,9 @@ function imageUrl(v: unknown): string | undefined {
 export function parseCopy(raw: unknown): CategoryCopy | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const a = raw as Record<string, unknown>;
-  const facts = [1, 2, 3].map((n) => text(a[`cat_fact_${n}`])).filter((x): x is string => Boolean(x));
+  const facts = [1, 2, 3]
+    .map((n) => text(a[`cat_fact_${n}`]))
+    .filter((x): x is string => Boolean(x));
   const tips = [1, 2, 3]
     .map((n) => ({ title: text(a[`cat_tip_${n}_title`]), text: text(a[`cat_tip_${n}_text`]) }))
     .filter((t): t is { title: string; text: string } => Boolean(t.title && t.text));
@@ -98,14 +106,21 @@ export function parseCopy(raw: unknown): CategoryCopy | null {
     seoDescription: text(a.cat_seo_description),
     menuLabel: text(a.cat_menu_label),
     menuGroup: text(a.cat_menu_group),
-    popular: a.cat_popular === true || a.cat_popular === 1 || a.cat_popular === '1' ? true : undefined,
-    menuOrder: a.cat_menu_order !== undefined && a.cat_menu_order !== '' && Number.isFinite(order) ? order : undefined,
+    popular:
+      a.cat_popular === true || a.cat_popular === 1 || a.cat_popular === '1' ? true : undefined,
+    menuOrder:
+      a.cat_menu_order !== undefined && a.cat_menu_order !== '' && Number.isFinite(order)
+        ? order
+        : undefined,
   };
 }
 
 async function getJson(url: string): Promise<unknown> {
   try {
-    const res = await fetch(url, { next: { revalidate: REVALIDATE }, signal: AbortSignal.timeout(15000) });
+    const res = await fetch(url, {
+      next: { revalidate: REVALIDATE },
+      signal: AbortSignal.timeout(15000),
+    });
     return res.ok ? await res.json() : null;
   } catch {
     return null;
@@ -120,7 +135,8 @@ async function fetchCategoryData(): Promise<{
   if (!STORE_API) return { cats: null, copy: new Map() };
   const wpV2 = STORE_API.replace(/\/wc\/store\/v1\/?$/, '/wp/v2');
   const [cats, acf] = await Promise.all([
-    getJson(`${STORE_API}/products/categories?per_page=100`),
+    // hide_empty=false: the Store API hides categories with no products by default
+    getJson(`${STORE_API}/products/categories?per_page=100&hide_empty=false`),
     getJson(`${wpV2}/product_cat?per_page=100&_fields=id,acf`),
   ]);
   const copy = new Map<number, CategoryCopy>();
@@ -146,7 +162,8 @@ export async function getCategoryTree(): Promise<ShopCategory[]> {
   if (!mains.some((m) => kids.some((k) => k.parent === m.id))) return CATEGORIES;
 
   const order = (c: StoreCategory) => copy.get(c.id)?.menuOrder ?? 100;
-  const byOrder = (a: StoreCategory, b: StoreCategory) => order(a) - order(b) || a.name.localeCompare(b.name);
+  const byOrder = (a: StoreCategory, b: StoreCategory) =>
+    order(a) - order(b) || a.name.localeCompare(b.name);
 
   return [...mains].sort(byOrder).map((m, i) => {
     const subs = kids.filter((k) => k.parent === m.id).sort(byOrder);
@@ -204,7 +221,12 @@ export interface MenuCategory {
 
 export function buildMenu(tree: ShopCategory[]): MenuCategory[] {
   return tree.map((c) => {
-    const items = c.subInfo.map((s) => ({ name: s.name, slug: s.slug, image: s.image, group: s.group ?? '' }));
+    const items = c.subInfo.map((s) => ({
+      name: s.name,
+      slug: s.slug,
+      image: s.image,
+      group: s.group ?? '',
+    }));
     const groups: MenuCategory['groups'] = [];
     for (const it of items) {
       let g = groups.find((x) => x.title === it.group);

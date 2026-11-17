@@ -40,7 +40,13 @@ export interface StoreProduct {
   categories: { id: number; name: string }[];
   attributes?: { name: string; terms: { name: string }[] }[];
   /** Added by the Akrinity WordPress snippet: bulk price ranges from ACF fields. */
-  extensions?: { akrinity?: { bulk_tiers?: { from: number; to: number | null; price: string }[] } };
+  extensions?: {
+    akrinity?: {
+      bulk_tiers?: { from: number; to: number | null; price: string }[];
+      cross_sell_ids?: number[];
+      upsell_ids?: number[];
+    };
+  };
 }
 
 /** Decode the HTML entities WordPress uses in names and excerpts (e.g. &amp;, &#8217;). */
@@ -158,6 +164,8 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
     description: stripTags(p.short_description || p.description || '') || undefined,
     rating: Number(p.average_rating) > 0 ? Number(p.average_rating) : undefined,
     reviewCount: p.review_count && p.review_count > 0 ? p.review_count : undefined,
+    crossSellIds: p.extensions?.akrinity?.cross_sell_ids?.map((n) => `wc-${n}`),
+    upsellIds: p.extensions?.akrinity?.upsell_ids?.map((n) => `wc-${n}`),
   };
 }
 

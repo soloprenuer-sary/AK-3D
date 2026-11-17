@@ -105,7 +105,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   kitchen: {
     art: 'kitchen',
-    layout: 'center',
+    layout: 'split-left',
     pattern: 'eggs',
     bg: '#FF6A1F',
     fg: '#0B0B0C',
@@ -162,7 +162,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   'original-characters': {
     art: 'character',
-    layout: 'poster',
+    layout: 'split-right',
     pattern: 'rays',
     bg: '#F3F1EA',
     fg: '#0B0B0C',

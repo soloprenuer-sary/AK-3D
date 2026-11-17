@@ -1,7 +1,7 @@
 'use client';
 
 import { useLiveProducts } from '@/lib/live-catalogue';
-import { useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { ModelViewer } from '@/components/three/ModelViewer';
 import {
@@ -33,19 +33,75 @@ const PERSONAL_MESSAGE = 'Use letters, numbers and spaces only.';
 
 interface ProductDetailProps {
   product: ShopProduct;
+  /** Cross-sell row (goes well with this product). */
+  crossSells: ShopProduct[];
+  /** Suggested row (more like this). */
   related: ShopProduct[];
+}
+
+/** One product in a suggestion row. */
+function SuggestCard({ p }: { p: ShopProduct }) {
+  return (
+    <Link className="card-p" href={`/product/${productSlug(p)}`}>
+      <div className="img stripes">
+        {p.images?.[0] && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={p.images[0]} alt="" loading="lazy" />
+        )}
+        <span className={p.inStock ? 'tag accent' : 'tag'}>
+          {p.inStock ? 'In stock' : 'Made to order'}
+        </span>
+      </div>
+      <div className="row">
+        <div>
+          <div className="name">{p.name}</div>
+          <div className="price">{p.price ?? '₹[price]'}</div>
+        </div>
+        <span className="add" aria-hidden="true">
+          +
+        </span>
+      </div>
+    </Link>
+  );
 }
 
 export function ProductDetail({
   product: builtProduct,
+  crossSells: builtCross,
   related: builtRelated,
 }: ProductDetailProps) {
   // Fresh data from WooCommerce replaces the built copy once it arrives (price, stock, photos, text).
-  const live = useLiveProducts([builtProduct, ...builtRelated]);
+  const live = useLiveProducts([builtProduct, ...builtCross, ...builtRelated]);
   const product = live.find((p) => p.id === builtProduct.id) ?? builtProduct;
-  const related = builtRelated
-    .map((r) => live.find((p) => p.id === r.id))
-    .filter((p): p is ShopProduct => Boolean(p));
+  const refresh = (list: ShopProduct[]) =>
+    list.map((r) => live.find((p) => p.id === r.id)).filter((p): p is ShopProduct => Boolean(p));
+  const crossSells = refresh(builtCross);
+  const related = refresh(builtRelated);
+  const buyRef = useRef<HTMLDivElement>(null);
+
+  // Desktop: the details stay in place while the photos scroll, then move on with the page at the
+  // end of the photos. A panel taller than the screen is pinned by its bottom edge instead, so all
+  // of it can be read while the photos scroll. There is no scrolling inside the panel.
+  useEffect(() => {
+    const el = buyRef.current;
+    if (!el) return;
+    const place = () => {
+      if (window.innerWidth < 940) {
+        el.style.top = '';
+        return;
+      }
+      const top = Math.min(104, window.innerHeight - el.offsetHeight - 24);
+      el.style.top = `${top}px`;
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(el);
+    window.addEventListener('resize', place);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', place);
+    };
+  }, []);
   const [view, setView] = useState<'photo' | '3d'>('photo');
   const [material, setMaterial] = useState<Material>(product.material);
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
@@ -205,7 +261,7 @@ export function ProductDetail({
           </div>
         </div>
 
-        <div className="buy">
+        <div className="buy" ref={buyRef}>
           <div>
             <span className={product.inStock ? 'tag accent' : 'tag'}>
               {product.inStock ? 'In stock' : 'Made to order'}
@@ -460,33 +516,35 @@ export function ProductDetail({
         <ProductReviews productName={product.name} />
       </div>
 
-      <section className="related">
-        <div className="wrap">
-          <h2 className="d">
-            You may also <span className="hl">like</span>
-          </h2>
-          <div className="grid4">
-            {related.map((p) => (
-              <Link className="card-p" href={`/product/${productSlug(p)}`} key={p.id}>
-                <div className="img stripes">
-                  <span className={p.inStock ? 'tag accent' : 'tag'}>
-                    {p.inStock ? 'In stock' : 'Made to order'}
-                  </span>
-                </div>
-                <div className="row">
-                  <div>
-                    <div className="name">{p.name}</div>
-                    <div className="price">{p.price ?? '₹[price]'}</div>
-                  </div>
-                  <span className="add" aria-hidden="true">
-                    +
-                  </span>
-                </div>
-              </Link>
-            ))}
+      {crossSells.length > 0 && (
+        <section className="related" aria-labelledby="cross-h">
+          <div className="wrap">
+            <h2 className="d" id="cross-h">
+              Goes well <span className="hl">together</span>
+            </h2>
+            <div className="grid4">
+              {crossSells.map((p) => (
+                <SuggestCard key={p.id} p={p} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {related.length > 0 && (
+        <section className="related" aria-labelledby="like-h">
+          <div className="wrap">
+            <h2 className="d" id="like-h">
+              You may also <span className="hl">like</span>
+            </h2>
+            <div className="grid4">
+              {related.map((p) => (
+                <SuggestCard key={p.id} p={p} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

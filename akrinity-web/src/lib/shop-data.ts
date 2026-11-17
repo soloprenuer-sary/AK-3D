@@ -193,6 +193,9 @@ export interface ShopProduct {
   /** Average star rating from WooCommerce's own reviews (0 to 5) and how many reviews. */
   rating?: number;
   reviewCount?: number;
+  /** Products set as cross-sells and upsells on this product in WordPress ("wc-<id>"). */
+  crossSellIds?: string[];
+  upsellIds?: string[];
 }
 
 /** URL slug from a name, e.g. "Home decor" -> "home-decor", "Desk & gadgets" -> "desk-gadgets". */
