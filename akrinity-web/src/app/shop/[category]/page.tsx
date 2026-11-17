@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ShopBrowser } from '@/components/shop/ShopBrowser';
+import { CategoryExtras, CategoryHero } from '@/components/category/CategoryHero';
 import { CATEGORIES, categorySlug, findCategory } from '@/lib/shop-data';
+import { themeFor } from '@/lib/category-themes';
 import { getProducts } from '@/lib/catalogue';
 
 /** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
@@ -24,7 +26,10 @@ export default async function CategoryPage({ params }: Params) {
   const { category } = await params;
   const cat = findCategory(category);
   if (!cat) notFound();
+  const theme = themeFor(category);
+  if (!theme) notFound();
   const products = await getProducts();
+  const count = products.filter((p) => p.category === cat.name).length;
 
   return (
     <main id="main">
@@ -36,16 +41,13 @@ export default async function CategoryPage({ params }: Params) {
         <span aria-current="page">{cat.name}</span>
       </nav>
 
-      <div className="wrap page-title">
-        <h1 className="d">
-          {cat.name.split(' ').slice(0, -1).join(' ') || cat.name}{' '}
-          {cat.name.split(' ').length > 1 && <span className="hl">{cat.name.split(' ').slice(-1)[0]}</span>}
-        </h1>
-        <p>{cat.description}</p>
-        <p className="sample-note">Sample products. Names, prices and availability are placeholders.</p>
+      <CategoryHero category={cat} theme={theme} count={count} />
+
+      <div id="products">
+        <ShopBrowser products={products} categoryName={cat.name} subcategories={cat.subs} />
       </div>
 
-      <ShopBrowser products={products} categoryName={cat.name} subcategories={cat.subs} />
+      <CategoryExtras theme={theme} />
     </main>
   );
 }
