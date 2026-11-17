@@ -488,6 +488,37 @@ function Parts() {
   );
 }
 
+/** A wall rack holding a racket, a ball and a bottle. */
+function Sports() {
+  return (
+    <g>
+      <Ground />
+      <rect x={60} y={70} width={320} height={230} rx={18} fill={C.paper} {...line} />
+      <rect x={60} y={268} width={320} height={34} rx={10} fill={C.violet} {...line} />
+      <rect x={96} y={254} width={14} height={20} fill={C.ink} />
+      <rect x={330} y={254} width={14} height={20} fill={C.ink} />
+      {/* racket */}
+      <ellipse cx={150} cy={140} rx={54} ry={66} fill="none" stroke={C.ink} strokeWidth={7} />
+      <ellipse cx={150} cy={140} rx={54} ry={66} fill="none" stroke={C.orange} strokeWidth={3} />
+      {[-30, -10, 10, 30].map((dx) => (
+        <line key={dx} x1={150 + dx} y1={84} x2={150 + dx} y2={196} {...thin} />
+      ))}
+      {[100, 130, 160].map((y) => (
+        <line key={y} x1={106} y1={y} x2={194} y2={y} {...thin} />
+      ))}
+      <rect x={140} y={204} width={20} height={64} rx={8} fill={C.ink} />
+      {/* ball in a ring */}
+      <circle cx={262} cy={228} r={36} fill={C.lime} {...line} />
+      <path d="M232 206 C250 222 250 238 232 252 M292 206 C274 222 274 238 292 252" fill="none" {...line} />
+      <ellipse cx={262} cy={262} rx={44} ry={9} fill={C.white} {...line} />
+      {/* bottle */}
+      <rect x={322} y={150} width={32} height={116} rx={12} fill={C.violet2} {...line} />
+      <rect x={330} y={130} width={16} height={24} rx={4} fill={C.white} {...line} />
+      <rect x={322} y={196} width={32} height={26} fill={C.white} {...thin} />
+    </g>
+  );
+}
+
 const ART: Record<CategoryArtKey, () => React.JSX.Element> = {
   decor: Decor,
   desk: Desk,
@@ -498,6 +529,7 @@ const ART: Record<CategoryArtKey, () => React.JSX.Element> = {
   gift: Gift,
   hobby: Hobby,
   parts: Parts,
+  sports: Sports,
 };
 
 export function CategoryArt({ kind }: { kind: CategoryArtKey }) {

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { NewsletterForm } from './NewsletterForm';
+import type { ShopCategory } from '@/lib/shop-data';
 
-export function SiteFooter() {
+export function SiteFooter({ tree }: { tree: ShopCategory[] }) {
   return (
     <footer className="site">
       <div className="wrap">
@@ -16,10 +17,11 @@ export function SiteFooter() {
           <div>
             <h3>Shop</h3>
             <Link href="/shop">All products</Link>
-            <Link href="/shop/home-decor">Home decor</Link>
-            <Link href="/shop/kitchen">Kitchen</Link>
-            <Link href="/shop/gifts-personalised">Gifts and personalised</Link>
-            <Link href="/shop/spare-parts">Spare parts</Link>
+            {tree.slice(0, 6).map((c) => (
+              <Link key={c.slug} href={`/shop/${c.slug}`}>
+                {c.name}
+              </Link>
+            ))}
           </div>
           <div>
             <h3>Custom</h3>

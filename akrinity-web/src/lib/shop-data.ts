@@ -23,16 +23,40 @@ export const MODE_LABEL: Record<ColourMode, string> = {
   painted: 'Painted (later)',
 };
 
+/** One sub-category (a page of its own). In WordPress it is a child of a main product category. */
+export interface SubInfo {
+  name: string;
+  /** Page address part, for example "vases-and-planters". */
+  slug: string;
+  /** WooCommerce category id when the tree comes from WordPress. */
+  id?: number;
+  /** Picture: the WooCommerce category thumbnail, or an illustration shipped with the site. */
+  image?: string;
+  /** Heading it sits under in the menu's full list, for example "Flowers and plants". */
+  group?: string;
+  /** Shown as one of the picture tiles in the menu. */
+  popular: boolean;
+}
+
 export interface ShopCategory {
   name: string;
+  /** Page address part, for example "home-decor". */
+  slug: string;
+  /** WooCommerce category id when the tree comes from WordPress. */
+  id?: number;
   description: string;
   subs: string[];
+  subInfo: SubInfo[];
+  /** Short name for the top menu, when the full name is too long. */
+  menuLabel?: string;
   /** Tile colour on the home page and category header. */
   tone: string;
 }
 
+type BuiltIn = Pick<ShopCategory, 'name' | 'description' | 'subs' | 'tone'>;
+
 /** Main categories and their subcategories. "Kitchen" is non-food-contact only. */
-export const CATEGORIES: ShopCategory[] = [
+const BUILT_IN: BuiltIn[] = [
   {
     name: 'Home decor',
     description: 'Vases, planters, lamps, wall art and small storage for every room.',
@@ -89,6 +113,43 @@ export const CATEGORIES: ShopCategory[] = [
     tone: 'var(--accent)',
   },
 ];
+
+/**
+ * Illustrations shipped in public/category-images, named "<category slug>_<sub-category slug>.png".
+ * Used when a sub-category has no picture in WordPress.
+ */
+const LOCAL_IMAGES = new Set([
+  'desk-gadgets_cable-management', 'desk-gadgets_desk-organisers', 'desk-gadgets_desk-toys',
+  'desk-gadgets_phone-stands', 'experimental-art_geometric', 'experimental-art_parametric',
+  'experimental-art_print-in-place', 'figurines-miniatures_busts', 'figurines-miniatures_display-models',
+  'figurines-miniatures_miniatures', 'gifts-personalised_corporate-gifts', 'gifts-personalised_keychains',
+  'gifts-personalised_name-plates', 'hobby-cosplay_cosplay-badges', 'hobby-cosplay_dice-towers',
+  'hobby-cosplay_terrain', 'home-decor_lamps', 'home-decor_showpieces', 'home-decor_vases-and-planters',
+  'home-decor_wall-art', 'kitchen_drawer-dividers', 'kitchen_egg-trays', 'kitchen_spoon-and-knife-holders',
+  'kitchen_utility-tools', 'original-characters_busts', 'original-characters_chibi-figures',
+  'original-characters_display-stands', 'spare-parts_brackets', 'spare-parts_custom-parts',
+  'spare-parts_knobs-and-clips',
+]);
+
+export function localSubImage(categorySlugValue: string, subSlugValue: string): string | undefined {
+  const key = `${categorySlugValue}_${subSlugValue}`;
+  return LOCAL_IMAGES.has(key) ? `/category-images/${key}.png` : undefined;
+}
+
+/** The built-in category list. Used until WordPress has main categories with sub-categories, and when it cannot be reached. */
+export const CATEGORIES: ShopCategory[] = BUILT_IN.map((c) => {
+  const slug = slugify(c.name);
+  return {
+    ...c,
+    slug,
+    subInfo: c.subs.map((s, i) => ({
+      name: s,
+      slug: slugify(s),
+      image: localSubImage(slug, slugify(s)),
+      popular: i < 4,
+    })),
+  };
+});
 
 export const SHOP_CATEGORIES = CATEGORIES.map((c) => c.name);
 export const SIZE_OPTIONS = ['Small', 'Medium', 'Large'];
@@ -157,10 +218,64 @@ export function subKey(s: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-export function categorySlug(c: ShopCategory): string {
-  return slugify(c.name);
+/** Page address part for a sub-category, e.g. "Vases and planters" -> "vases-and-planters". */
+export function subSlug(name: string): string {
+  return slugify(name);
 }
 
-export function findCategory(slug: string): ShopCategory | undefined {
-  return CATEGORIES.find((c) => categorySlug(c) === slug);
+export function findSub(cat: ShopCategory, slug: string): string | undefined {
+  return cat.subInfo.find((s) => s.slug === slug)?.name;
+}
+
+export function subHref(cat: ShopCategory, sub: SubInfo): string {
+  return `/shop/${cat.slug}/${sub.slug}`;
+}
+
+/**
+ * Words in a product name that place it in a sub-category when the product has no sub-category
+ * ticked in WooCommerce yet. A sub-category ticked in WordPress always wins. The first match in the
+ * category's own list is used.
+ */
+const SUB_WORDS: Record<string, RegExp> = {
+  Showpieces: /showpiece|sculpture|statue|ornament|figure ?head/i,
+  'Vases and planters': /vase|planter|flower ?pot|\bpot\b/i,
+  Lamps: /lamp|lantern|night ?light|shade/i,
+  'Wall art': /wall|frame|hanging|poster|plaque/i,
+  'Desk organisers': /organi[sz]er|pen (holder|stand|cup)|desk tray|stationery/i,
+  'Phone stands': /(phone|tablet|mobile).*(stand|holder|dock)|(stand|holder|dock).*(phone|tablet|mobile)/i,
+  'Cable management': /cable|cord|wire/i,
+  'Desk toys': /fidget|desk toy|spinner|puzzle|toy/i,
+  'Egg trays': /egg/i,
+  'Spoon and knife holders': /spoon|knife|cutlery|utensil/i,
+  'Drawer dividers': /divider|drawer/i,
+  'Utility tools': /tool|scoop|opener|hook|peeler|tongs/i,
+  Busts: /bust|portrait/i,
+  Miniatures: /miniature|\bmini\b|tabletop/i,
+  'Display models': /model|replica|scale/i,
+  'Chibi figures': /chibi/i,
+  'Display stands': /stand|plinth|\bbase\b/i,
+  Parametric: /parametric|twist|spiral|vase mode/i,
+  'Print-in-place': /print[- ]in[- ]place|articulated|flexi|hinge/i,
+  Geometric: /geometric|polyhedron|hex|cube/i,
+  'Name plates': /name ?plate|nameplate|door ?sign/i,
+  Keychains: /key ?(chain|ring)|\btag\b/i,
+  'Corporate gifts': /corporate|branded|logo/i,
+  'Dice towers': /dice/i,
+  Terrain: /terrain|ruin|scenery|\btree\b/i,
+  'Cosplay badges': /badge|\bpin\b|cosplay/i,
+  'Knobs and clips': /knob|clip|handle/i,
+  Brackets: /bracket|mount|support/i,
+  'Custom parts': /custom|replacement|\bpart\b/i,
+};
+
+export function inferSub(cat: ShopCategory, productName: string): string | undefined {
+  return cat.subs.find((s) => SUB_WORDS[s]?.test(productName));
+}
+
+export function categorySlug(c: ShopCategory): string {
+  return c.slug || slugify(c.name);
+}
+
+export function findCategory(slug: string, tree: ShopCategory[] = CATEGORIES): ShopCategory | undefined {
+  return tree.find((c) => categorySlug(c) === slug);
 }

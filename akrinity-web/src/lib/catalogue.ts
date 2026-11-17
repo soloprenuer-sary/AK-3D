@@ -4,11 +4,12 @@
  * clear message, so a broken backend can never publish an empty or out-of-date site.
  */
 import { fetchPosts, fetchStoreProducts } from './wp';
+import { getCategoryTree } from './category-content';
 import type { Guide } from './guides-data';
 import type { ShopProduct } from './shop-data';
 
 export async function getProducts(): Promise<ShopProduct[]> {
-  const products = await fetchStoreProducts();
+  const products = await fetchStoreProducts(await getCategoryTree());
   if (products === null) {
     throw new Error(
       'Could not read products from WordPress. Check NEXT_PUBLIC_WC_STORE_API_URL and that the backend is online.',

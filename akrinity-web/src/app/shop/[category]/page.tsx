@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CategoryBrowser } from '@/components/category/CategoryBrowser';
 import { CategoryHero, CategoryInfo } from '@/components/category/CategoryHero';
-import { getCategoryContent } from '@/lib/category-content';
-import { CATEGORIES, categorySlug, findCategory, subKey } from '@/lib/shop-data';
+import { getCategoryCopy, getCategoryTree } from '@/lib/category-content';
+import { findCategory } from '@/lib/shop-data';
 import { themeFor } from '@/lib/category-themes';
 import { getProducts } from '@/lib/catalogue';
 
@@ -13,14 +13,14 @@ export const revalidate = 60;
 
 type Params = { params: Promise<{ category: string }> };
 
-export function generateStaticParams() {
-  return CATEGORIES.map((c) => ({ category: categorySlug(c) }));
+export async function generateStaticParams() {
+  return (await getCategoryTree()).map((c) => ({ category: c.slug }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { category } = await params;
-  const cat = findCategory(category);
-  const copy = cat ? (await getCategoryContent()).copy[subKey(cat.name)] : undefined;
+  const cat = findCategory(category, await getCategoryTree());
+  const copy = cat ? (await getCategoryCopy())[cat.slug] : undefined;
   return {
     title: copy?.seoTitle ?? (cat ? cat.name : 'Category'),
     description: copy?.seoDescription ?? cat?.description,
@@ -29,12 +29,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function CategoryPage({ params }: Params) {
   const { category } = await params;
-  const cat = findCategory(category);
+  const tree = await getCategoryTree();
+  const cat = findCategory(category, tree);
   if (!cat) notFound();
-  const theme = themeFor(category);
-  if (!theme) notFound();
-  const [products, content] = await Promise.all([getProducts(), getCategoryContent()]);
-  const copy = content.copy[subKey(cat.name)];
+  const theme = themeFor(category, tree.indexOf(cat));
+  const [products, allCopy] = await Promise.all([getProducts(), getCategoryCopy()]);
+  const copy = allCopy[cat.slug];
   const mine = products.filter((p) => p.category === cat.name);
   const prices = mine
     .map((p) => Number((p.price ?? '').replace(/[^\d.]/g, '')))
@@ -61,12 +61,7 @@ export default async function CategoryPage({ params }: Params) {
         fromPrice={fromPrice}
       />
 
-      <CategoryBrowser
-        products={products}
-        category={cat}
-        images={content.images}
-        tone={theme.bg}
-      />
+      <CategoryBrowser products={products} category={cat} tone={theme.bg} />
 
       <CategoryInfo theme={theme} copy={copy} />
     </main>

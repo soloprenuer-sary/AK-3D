@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useLiveGuides, useLiveProducts } from '@/lib/live-catalogue';
 import { GuideCard } from '@/components/guides/GuideCard';
 import type { Guide } from '@/lib/guides-data';
-import { CATEGORIES, categorySlug, productSlug, type ShopProduct } from '@/lib/shop-data';
+import { productSlug, type ShopProduct } from '@/lib/shop-data';
+import { useCategoryTree } from '@/components/layout/CategoryTree';
 
 function subscribeUrl(onChange: () => void) {
   window.addEventListener('popstate', onChange);
@@ -26,6 +27,7 @@ interface SearchPageProps {
 /** Search across products, categories and articles. Runs in the browser on the loaded data. */
 export function SearchPage({ products: builtProducts, guides: builtGuides }: SearchPageProps) {
   const allProducts = useLiveProducts(builtProducts);
+  const tree = useCategoryTree();
   const allGuides = useLiveGuides(builtGuides);
   // The search term lives in the URL (?q=) so a search can be shared and the back button works.
   const q = useSyncExternalStore(subscribeUrl, readQuery, noQuery);
@@ -48,10 +50,10 @@ export function SearchPage({ products: builtProducts, guides: builtGuides }: Sea
 
   const categories = useMemo(() => {
     if (!term) return [];
-    return CATEGORIES.filter((c) =>
+    return tree.filter((c) =>
       [c.name, c.description, ...c.subs].join(' ').toLowerCase().includes(term),
     );
-  }, [term]);
+  }, [term, tree]);
 
   const guides = useMemo(() => {
     if (!term) return [];
@@ -144,7 +146,7 @@ export function SearchPage({ products: builtProducts, guides: builtGuides }: Sea
           </h2>
           <div className="cat-grid">
             {categories.map((c) => (
-              <Link key={c.name} className="cat-card" href={`/shop/${categorySlug(c)}`}>
+              <Link key={c.name} className="cat-card" href={`/shop/${c.slug}`}>
                 <span className="cat-card-name">{c.name}</span>
                 <span className="cat-card-sub">{c.description}</span>
                 <span className="arrow" aria-hidden="true">

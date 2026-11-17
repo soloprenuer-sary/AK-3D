@@ -7,9 +7,8 @@ import {
   COLOURS,
   SHOP_MATERIALS,
   SIZE_OPTIONS,
-  categorySlug,
   productSlug,
-  subKey,
+  subHref,
   type ColourKey,
   type Material,
   type ShopCategory,
@@ -89,8 +88,6 @@ function Drop({
 interface Props {
   products: ShopProduct[];
   category: ShopCategory;
-  /** Picture per sub-category from WordPress, keyed by subKey(name). */
-  images: Record<string, string>;
   /** Tile background when a sub-category has no picture yet. */
   tone: string;
 }
@@ -99,7 +96,7 @@ interface Props {
  * The product area of a category page: sub-category tiles, a sticky filter bar, and either one row
  * of four per sub-category (nothing chosen) or one full grid (a sub-category or filter chosen).
  */
-export function CategoryBrowser({ products: built, category, images, tone }: Props) {
+export function CategoryBrowser({ products: built, category, tone }: Props) {
   const live = useLiveProducts(built);
   const all = useMemo(() => live.filter((p) => p.category === category.name), [live, category.name]);
 
@@ -119,28 +116,6 @@ export function CategoryBrowser({ products: built, category, images, tone }: Pro
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cartApi = useCart();
 
-  // A link such as /shop/home-decor#sub-lamps (from the menu) opens that sub-category.
-  useEffect(() => {
-    const read = () => {
-      const m = /^#sub-(.+)$/.exec(window.location.hash);
-      if (!m) return;
-      const found = category.subs.find((s) => subKey(s) === m[1]);
-      if (found) setSub(found);
-    };
-    const onPick = (e: Event) => {
-      const d = (e as CustomEvent<{ slug: string; key: string }>).detail;
-      if (d?.slug !== categorySlug(category)) return;
-      const found = category.subs.find((s) => subKey(s) === d.key);
-      if (found) setSub(found);
-    };
-    read();
-    window.addEventListener('hashchange', read);
-    window.addEventListener('akr:sub', onPick);
-    return () => {
-      window.removeEventListener('hashchange', read);
-      window.removeEventListener('akr:sub', onPick);
-    };
-  }, [category]);
 
   useEffect(() => {
     if (!open) return;
@@ -191,12 +166,6 @@ export function CategoryBrowser({ products: built, category, images, tone }: Pro
   const choose = useCallback(
     (next: string) => {
       setSub(next);
-      const key = next === 'All' || next === MORE ? '' : `#sub-${subKey(next)}`;
-      try {
-        window.history.replaceState(null, '', window.location.pathname + key);
-      } catch {
-        /* the address bar is only a convenience */
-      }
       top.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
     [],
@@ -277,14 +246,20 @@ export function CategoryBrowser({ products: built, category, images, tone }: Pro
   );
 
   const row = (title: string, key: string, list: ShopProduct[], target: string) => (
-    <section className="cb-group" id={key ? `sub-${key}` : undefined} key={target} aria-label={title}>
+    <section className="cb-group" key={target} aria-label={title}>
       <div className="cb-group-h">
         <h3 className="d">
           {title} <span className="cb-count">{list.length}</span>
         </h3>
-        <button type="button" className="link-btn" onClick={() => choose(target)}>
-          View all →
-        </button>
+        {target === MORE ? (
+          <button type="button" className="link-btn" onClick={() => choose(target)}>
+            View all →
+          </button>
+        ) : (
+          <Link className="link-btn" href={subHref(category, category.subInfo.find((x) => x.name === target)!)}>
+            View all →
+          </Link>
+        )}
       </div>
       <div className="cb-row">{list.slice(0, 4).map(card)}</div>
     </section>
@@ -298,17 +273,12 @@ export function CategoryBrowser({ products: built, category, images, tone }: Pro
 
       <section className="wrap cb-tiles-wrap" aria-label="Sub-categories">
         <div className="cb-tiles">
-          {category.subs.map((s) => {
-            const img = images[subKey(s)];
+          {category.subInfo.map((si) => {
+            const s = si.name;
+            const img = si.image;
             const n = countOf(s);
             return (
-              <button
-                key={s}
-                type="button"
-                className="cb-tile"
-                aria-pressed={sub === s}
-                onClick={() => choose(sub === s ? 'All' : s)}
-              >
+              <Link key={si.slug} className="cb-tile" href={subHref(category, si)}>
                 <span className="cb-tile-img" style={{ background: tone }}>
                   {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -319,7 +289,7 @@ export function CategoryBrowser({ products: built, category, images, tone }: Pro
                 </span>
                 <span className="cb-tile-name">{s}</span>
                 <span className="cb-tile-n">{n} {n === 1 ? 'product' : 'products'}</span>
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -410,7 +380,7 @@ export function CategoryBrowser({ products: built, category, images, tone }: Pro
           <>
             {category.subs.map((s) => {
               const list = all.filter((p) => p.sub === s);
-              return list.length ? row(s, subKey(s), list, s) : null;
+              return list.length ? row(s, s, list, s) : null;
             })}
             {more.length > 0 && row(`More ${category.name.toLowerCase()}`, '', more, MORE)}
             {all.length === 0 && (
@@ -425,7 +395,7 @@ export function CategoryBrowser({ products: built, category, images, tone }: Pro
             )}
           </>
         ) : (
-          <section id={sub !== 'All' && sub !== MORE ? `sub-${subKey(sub)}` : undefined} aria-label={heading}>
+          <section aria-label={heading}>
             <div className="cb-group-h">
               <h3 className="d">
                 {heading} <span className="cb-count">{flat.length}</span>

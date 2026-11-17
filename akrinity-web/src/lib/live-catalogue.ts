@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useCategoryTree } from '@/components/layout/CategoryTree';
 import { mapPosts, mapStoreProduct, type GqlPost, type StoreProduct } from './wp';
 import type { Guide } from './guides-data';
 import type { ShopProduct } from './shop-data';
@@ -46,12 +47,13 @@ function useLive<T>(initial: T, kind: 'products' | 'posts', map: (raw: never) =>
   return value;
 }
 
-const mapProducts = (raw: StoreProduct[]): ShopProduct[] => raw.map(mapStoreProduct);
 const mapArticles = (raw: GqlPost[]): Guide[] => mapPosts(raw);
 
 /** The product list, refreshed from WooCommerce after the page opens. */
 export function useLiveProducts(initial: ShopProduct[]): ShopProduct[] {
-  return useLive(initial, 'products', mapProducts as (raw: never) => ShopProduct[]);
+  const tree = useCategoryTree();
+  const raw = useLive<StoreProduct[] | null>(null, 'products', ((r: StoreProduct[]) => r) as (raw: never) => StoreProduct[] | null);
+  return useMemo(() => (raw ? raw.map((p) => mapStoreProduct(p, tree)) : initial), [raw, tree, initial]);
 }
 
 /** The article list, refreshed from WordPress after the page opens. */

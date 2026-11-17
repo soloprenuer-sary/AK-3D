@@ -1,12 +1,14 @@
 'use client';
 
 import { useLiveProducts } from '@/lib/live-catalogue';
+import { useCategoryTree } from '@/components/layout/CategoryTree';
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import {
   MODE_LABEL,
-  SHOP_CATEGORIES,
   SHOP_MATERIALS,
   productSlug,
+  slugify,
   type ColourMode,
   type Material,
   type ShopProduct,
@@ -38,17 +40,21 @@ interface ShopBrowserProps {
   /** When set, the page is one category: the category filter is fixed and subcategory chips show. */
   categoryName?: string;
   subcategories?: string[];
+  /** When set, the page is one sub-category: only its products show and the sub-category chips are hidden. */
+  fixedSub?: string;
 }
 
 export function ShopBrowser({
   products: builtProducts,
   categoryName,
   subcategories = [],
+  fixedSub,
 }: ShopBrowserProps) {
   const products = useLiveProducts(builtProducts);
+  const tree = useCategoryTree();
   const fixed = Boolean(categoryName);
   const [category, setCategory] = useState<string>(categoryName ?? 'All');
-  const [sub, setSub] = useState<string>('All');
+  const [sub, setSub] = useState<string>(fixedSub ?? 'All');
   const [availability, setAvailability] = useState<Availability>('all');
   const [mode, setMode] = useState<ModeFilter>('all');
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -102,7 +108,7 @@ export function ShopBrowser({
 
   const clearAll = () => {
     if (!fixed) setCategory('All');
-    setSub('All');
+    setSub(fixedSub ?? 'All');
     setAvailability('all');
     setMode('all');
     setMaterials([]);
@@ -129,7 +135,7 @@ export function ShopBrowser({
   const activeChips: { label: string; remove: () => void }[] = [];
   if (!fixed && category !== 'All')
     activeChips.push({ label: category, remove: () => setCategory('All') });
-  if (sub !== 'All') activeChips.push({ label: sub, remove: () => setSub('All') });
+  if (sub !== 'All' && !fixedSub) activeChips.push({ label: sub, remove: () => setSub('All') });
   if (availability !== 'all')
     activeChips.push({
       label: availability === 'stock' ? 'In stock' : 'Made to order',
@@ -140,7 +146,7 @@ export function ShopBrowser({
 
   return (
     <>
-      {fixed && subcategories.length > 0 && (
+      {fixed && !fixedSub && subcategories.length > 0 && (
         <div className="sub-chips" role="group" aria-label="Subcategories">
           {['All', ...subcategories].map((s) => (
             <button
@@ -188,7 +194,7 @@ export function ShopBrowser({
                 Category
               </span>
               <div role="group" aria-labelledby="cat-label">
-                {['All', ...SHOP_CATEGORIES].map((c) => {
+                {['All', ...tree.map((t) => t.name)].map((c) => {
                   const count = products.filter(
                     (p) => (c === 'All' || p.category === c) && matches(p, true),
                   ).length;
@@ -338,12 +344,25 @@ export function ShopBrowser({
 
           {list.length === 0 && (
             <div className="empty show" role="status">
-              <p>
-                <b>No products match these filters.</b>
-              </p>
-              <button type="button" className="btn" onClick={clearAll}>
-                Clear filters
-              </button>
+              {fixedSub && activeChips.length === 0 && availability === 'all' ? (
+                <>
+                  <p>
+                    <b>New {fixedSub.toLowerCase()} are coming soon.</b>
+                  </p>
+                  <Link className="btn" href={`/shop/${categoryName ? slugify(categoryName) : ''}`}>
+                    Back to {categoryName?.toLowerCase()}
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <p>
+                    <b>No products match these filters.</b>
+                  </p>
+                  <button type="button" className="btn" onClick={clearAll}>
+                    Clear filters
+                  </button>
+                </>
+              )}
             </div>
           )}
         </section>

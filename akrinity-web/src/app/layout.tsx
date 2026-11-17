@@ -6,7 +6,8 @@ import { AnnouncementBar } from '@/components/layout/AnnouncementBar';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { CartProvider } from '@/lib/cart-store';
-import { getMenu } from '@/lib/category-content';
+import { buildMenu, getCategoryTree } from '@/lib/category-content';
+import { CategoryTreeProvider } from '@/components/layout/CategoryTree';
 
 export const metadata: Metadata = {
   title: { default: 'Akrinity', template: '%s · Akrinity' },
@@ -20,19 +21,22 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const menu = await getMenu();
+  const tree = await getCategoryTree();
+  const menu = buildMenu(tree);
   return (
     <html lang="en">
       <body>
         <a className="skip" href="#main">
           Skip to content
         </a>
-        <CartProvider>
-          <AnnouncementBar />
-          <SiteHeader menu={menu} />
-          {children}
-          <SiteFooter />
-        </CartProvider>
+        <CategoryTreeProvider tree={tree}>
+          <CartProvider>
+            <AnnouncementBar />
+            <SiteHeader menu={menu} />
+            {children}
+            <SiteFooter tree={tree} />
+          </CartProvider>
+        </CategoryTreeProvider>
       </body>
     </html>
   );

@@ -1,12 +1,13 @@
 import Link from 'next/link';
-import { CATEGORIES, categorySlug, type ShopCategory } from '@/lib/shop-data';
+import { getCategoryTree } from '@/lib/category-content';
+import type { ShopCategory } from '@/lib/shop-data';
 
 function ink(tone: string): string {
   return tone === 'var(--violet)' || tone === 'var(--ink)' ? 'var(--white)' : 'var(--ink)';
 }
 
-export function CategoryTiles() {
-  const featured: ShopCategory[] = CATEGORIES.slice(0, 4);
+export async function CategoryTiles() {
+  const featured: ShopCategory[] = (await getCategoryTree()).slice(0, 4);
   return (
     <section className="sec" id="shop">
       <div className="wrap">
@@ -23,7 +24,7 @@ export function CategoryTiles() {
             <Link
               key={c.name}
               className="tile"
-              href={`/shop/${categorySlug(c)}`}
+              href={`/shop/${c.slug}`}
               style={{ background: c.tone, color: ink(c.tone) }}
             >
               <div className="shape" />

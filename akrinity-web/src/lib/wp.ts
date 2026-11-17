@@ -4,8 +4,15 @@
  * through the cached catalogue proxy (so edits in WordPress show without a rebuild).
  * There is no sample data: callers stop when WordPress cannot be reached (see catalogue.ts).
  */
-import { CATEGORIES, COLOURS, SHOP_MATERIALS, SIZE_OPTIONS, subKey } from './shop-data';
-import type { ColourKey, ColourMode, Material, ProcessType, ShopProduct } from './shop-data';
+import {
+  CATEGORIES,
+  COLOURS,
+  SHOP_MATERIALS,
+  SIZE_OPTIONS,
+  inferSub,
+  subKey,
+} from './shop-data';
+import type { ColourKey, ColourMode, Material, ProcessType, ShopCategory, ShopProduct } from './shop-data';
 import type { Block, Guide } from './guides-data';
 
 const STORE_API = process.env.NEXT_PUBLIC_WC_STORE_API_URL ?? '';
@@ -67,16 +74,22 @@ function terms(p: StoreProduct, pattern: RegExp): string[] {
 }
 
 /** Turns one WooCommerce product into the shape the pages use. Pure: also used in the browser. */
-export function mapStoreProduct(p: StoreProduct): ShopProduct {
+export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORIES): ShopProduct {
   const names = p.categories.map((c) => decode(c.name));
+  const ids = new Set(p.categories.map((c) => c.id));
   // Prefer a main category the shop knows. A product ticked only in a sub-category still lands in
   // the main category that owns it. Otherwise the first category WooCommerce lists.
+  const subOf = (c: ShopCategory) =>
+    c.subInfo.find((s) => (s.id !== undefined && ids.has(s.id)) || names.some((n) => subKey(n) === subKey(s.name)));
   const known =
-    CATEGORIES.find((c) => names.includes(c.name)) ??
-    CATEGORIES.find((c) => c.subs.some((s) => names.some((n) => subKey(n) === subKey(s))));
-  const category = known?.name ?? names[0] ?? 'Home decor';
+    tree.find((c) => (c.id !== undefined && ids.has(c.id)) || names.includes(c.name)) ??
+    tree.find((c) => subOf(c));
+  const category = known?.name ?? names[0] ?? tree[0]?.name ?? 'Home decor';
+  // A sub-category ticked in WordPress wins; otherwise guess from the product name.
   const sub =
-    known?.subs.find((s) => names.some((n) => subKey(n) === subKey(s))) ?? category;
+    (known ? subOf(known)?.name : undefined) ??
+    (known ? inferSub(known, decode(p.name)) : undefined) ??
+    category;
 
   const materials = terms(p, /^material$/i)
     .map((t) =>
@@ -149,19 +162,19 @@ export function mapStoreProduct(p: StoreProduct): ShopProduct {
 }
 
 /** Every product from the Store API (all pages), or null if WordPress cannot be reached. */
-export async function fetchStoreProducts(): Promise<ShopProduct[] | null> {
+export async function fetchStoreProducts(tree: ShopCategory[] = CATEGORIES): Promise<ShopProduct[] | null> {
   if (!STORE_API) return null;
   try {
     const all: StoreProduct[] = [];
     for (let page = 1; page <= 20; page++) {
       const res = await fetch(`${STORE_API}/products?per_page=100&page=${page}`);
-      if (!res.ok) return page === 1 ? null : all.map(mapStoreProduct);
+      if (!res.ok) return page === 1 ? null : all.map((p) => mapStoreProduct(p, tree));
       const data = (await res.json()) as StoreProduct[];
       all.push(...data);
       const pages = Number(res.headers.get('x-wp-totalpages') ?? 1);
       if (page >= pages || data.length === 0) break;
     }
-    return all.map(mapStoreProduct);
+    return all.map((p) => mapStoreProduct(p, tree));
   } catch {
     return null;
   }

@@ -14,7 +14,8 @@ export type CategoryArtKey =
   | 'experimental'
   | 'gift'
   | 'hobby'
-  | 'parts';
+  | 'parts'
+  | 'sports';
 
 export type CategoryLayout = 'split-right' | 'split-left' | 'center' | 'spotlight' | 'poster';
 
@@ -33,8 +34,8 @@ export interface CategoryTheme {
   accentInk?: string;
   /** Short line under the name. */
   tagline: string;
-  /** Three short facts shown as chips. */
-  facts: [string, string, string];
+  /** Up to three short facts shown as chips. */
+  facts: string[];
   /** Three things worth knowing, shown under the products. */
   tips: { title: string; text: string }[];
   /** Call to action under the tips. */
@@ -280,6 +281,36 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
       href: '/quote',
     },
   },
+  'sports-equipment-holders': {
+    art: 'sports',
+    layout: 'spotlight',
+    pattern: 'rays',
+    bg: '#FF6A1F',
+    fg: '#0B0B0C',
+    accent: '#FFFFFF',
+    tagline: 'A proper place for every racket and ball.',
+    facts: ['Racket and bat holders', 'Wall mounts', 'Printed to fit your gear'],
+    tips: [
+      {
+        title: 'Measure your gear first',
+        text: 'Check the width of the handle, the ball or the bottle before you pick a size.',
+      },
+      {
+        title: 'PETG for everyday knocks',
+        text: 'Holders that carry weight or get bumped do best in PETG. PLA+ suits light items.',
+      },
+      {
+        title: 'Fix wall mounts properly',
+        text: 'Use screws that suit your wall type. A printed holder is for sports gear, not for climbing or safety use.',
+      },
+    ],
+    cta: {
+      title: 'Odd-shaped gear?',
+      text: 'Send measurements in millimetres and we quote a holder made to fit.',
+      label: 'Request a quote',
+      href: '/quote',
+    },
+  },
   'spare-parts': {
     art: 'parts',
     layout: 'split-right',
@@ -312,6 +343,38 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
 };
 
-export function themeFor(slug: string): CategoryTheme | undefined {
-  return CATEGORY_THEMES[slug];
+/** Order the colour looks are handed out to categories that have no theme of their own. */
+const LOOKS = [
+  'home-decor',
+  'desk-gadgets',
+  'figurines-miniatures',
+  'spare-parts',
+  'sports-equipment-holders',
+  'hobby-cosplay',
+  'gifts-personalised',
+  'original-characters',
+  'experimental-art',
+];
+
+/**
+ * The look for a category. The nine built-in slugs and "sports-equipment-holders" have their own
+ * written theme. Any other category added in WordPress borrows a look by its position and uses plain
+ * defaults, with text from the ACF fields.
+ */
+export function themeFor(slug: string, index = 0): CategoryTheme {
+  const own = CATEGORY_THEMES[slug];
+  if (own) return own;
+  const base = CATEGORY_THEMES[LOOKS[index % LOOKS.length]];
+  return {
+    ...base,
+    tagline: '',
+    facts: [],
+    tips: [],
+    cta: {
+      title: 'Need something made for you?',
+      text: 'Send a sketch or an idea. We model it, check it prints well, and quote it.',
+      label: 'See the design service',
+      href: '/design-service',
+    },
+  };
 }

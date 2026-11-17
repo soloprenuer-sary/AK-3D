@@ -67,13 +67,15 @@ export function CategoryHero({
           <h1 className={`d${longest >= 11 ? ' cat-h1-long' : ''}`} id="cat-title">
             {first} {last && <span className="cat-hl">{last}</span>}
           </h1>
-          <p className="cat-tagline">{tagline}</p>
+          {tagline && <p className="cat-tagline">{tagline}</p>}
           <p className="cat-desc">{category.description}</p>
-          <ul className="cat-facts" aria-label="At a glance">
-            {facts.map((f) => (
-              <li key={f}>{f}</li>
-            ))}
-          </ul>
+          {facts.length > 0 && (
+            <ul className="cat-facts" aria-label="At a glance">
+              {facts.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+          )}
           <div className="cat-actions">
             <a className="btn cat-btn" href={count > 0 ? '#products' : '/shop'}>
               {count > 0 ? 'Shop this category' : 'Browse the whole shop'}

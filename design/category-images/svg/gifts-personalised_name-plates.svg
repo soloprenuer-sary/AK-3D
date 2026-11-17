@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+<defs><pattern id="d" width="36" height="36" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="2.4" fill="#000" opacity="0.1"/></pattern></defs>
+<rect width="800" height="600" fill="#F3F1EA"/><rect width="800" height="600" fill="url(#d)"/><ellipse cx="400" cy="520" rx="230" ry="38" fill="#000" opacity="0.16"/><g stroke="#0B0B0C" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+<rect x="190" y="230" width="420" height="180" rx="24" fill="#FF6A1F"/><rect x="215" y="255" width="370" height="130" rx="12" fill="#FFFFFF"/>
+<circle cx="225" cy="270" r="10" fill="#F3F1EA"/><circle cx="575" cy="270" r="10" fill="#F3F1EA"/><circle cx="225" cy="370" r="10" fill="#F3F1EA"/><circle cx="575" cy="370" r="10" fill="#F3F1EA"/></g>
+<g fill="#0B0B0C"><rect x="260" y="290" width="40" height="60" rx="6"/><rect x="315" y="290" width="40" height="60" rx="6"/><rect x="370" y="290" width="40" height="60" rx="6"/><rect x="425" y="290" width="40" height="60" rx="6"/><rect x="480" y="290" width="40" height="60" rx="6"/></g>
+<path d="M300 440 V500 M500 440 V500" stroke="#0B0B0C" stroke-width="6"/><g stroke="#0B0B0C" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"><rect x="260" y="495" width="280" height="22" rx="8" fill="#5B2BE0"/></g></svg>
