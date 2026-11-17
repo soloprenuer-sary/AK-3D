@@ -7,7 +7,17 @@ import type { MenuCategory, MenuItem } from '@/lib/category-content';
 /** The top bar has room for five main categories. All of them are in the phone menu and on the Shop page. */
 const TOP_BAR = 5;
 
-function Tile({ href, item, tone, onGo }: { href: string; item: MenuItem; tone: string; onGo: () => void }) {
+function Tile({
+  href,
+  item,
+  tone,
+  onGo,
+}: {
+  href: string;
+  item: MenuItem;
+  tone: string;
+  onGo: () => void;
+}) {
   return (
     <Link className="mm-tile" href={href} onClick={onGo}>
       <span className="mm-tile-img" style={{ background: tone }}>
@@ -72,37 +82,61 @@ export function MegaNav({ menu }: { menu: MenuCategory[] }) {
 
   return (
     <>
-      <nav className="main" aria-label="Main" data-mega onMouseLeave={hide} onMouseEnter={cancel}>
-        {menu.slice(0, TOP_BAR).map((c) => (
-          <span key={c.slug} className={open === c.slug ? 'mm-item open' : 'mm-item'} onMouseEnter={() => show(c.slug)}>
-            <Link href={`/shop/${c.slug}`} onClick={go}>
-              {c.label}
-            </Link>
-            <button
-              type="button"
-              className="mm-chev"
-              aria-expanded={open === c.slug}
-              aria-controls={`mega-${c.slug}`}
-              aria-label={`${open === c.slug ? 'Close' : 'Open'} the ${c.name} menu`}
-              onClick={() => (open === c.slug ? setOpen(null) : show(c.slug, 0))}
+      <div className="catbar" data-mega onMouseLeave={hide} onMouseEnter={cancel}>
+        <nav className="wrap cats" aria-label="Product categories">
+          {menu.slice(0, TOP_BAR).map((c) => (
+            <span
+              key={c.slug}
+              className={open === c.slug ? 'mm-item open' : 'mm-item'}
+              onMouseEnter={() => show(c.slug)}
             >
-              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
-                <path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-            </button>
-          </span>
-        ))}
-      </nav>
+              <Link href={`/shop/${c.slug}`} onClick={go}>
+                {c.label}
+              </Link>
+              <button
+                type="button"
+                className="mm-chev"
+                aria-expanded={open === c.slug}
+                aria-controls={`mega-${c.slug}`}
+                aria-label={`${open === c.slug ? 'Close' : 'Open'} the ${c.name} menu`}
+                onClick={() => (open === c.slug ? setOpen(null) : show(c.slug, 0))}
+              >
+                <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+                  <path
+                    d="M1 3l4 4 4-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </span>
+          ))}
+        </nav>
+      </div>
 
       {active && (
-        <div id={`mega-${active.slug}`} className="mega" data-mega onMouseEnter={cancel} onMouseLeave={hide}>
+        <div
+          id={`mega-${active.slug}`}
+          className="mega"
+          data-mega
+          onMouseEnter={cancel}
+          onMouseLeave={hide}
+        >
           <div className="wrap mega-a">
             {active.popular.length > 0 && (
               <div className="mega-pop">
                 <h3 className="mm-title">Popular</h3>
                 <div className="mm-tiles2">
                   {active.popular.map((s) => (
-                    <Tile key={s.slug} href={`/shop/${active.slug}/${s.slug}`} item={s} tone={active.tone} onGo={go} />
+                    <Tile
+                      key={s.slug}
+                      href={`/shop/${active.slug}/${s.slug}`}
+                      item={s}
+                      tone={active.tone}
+                      onGo={go}
+                    />
                   ))}
                 </div>
               </div>
@@ -167,7 +201,12 @@ export function MobileMenu({ menu, onClose }: { menu: MenuCategory[]; onClose: (
           {c.popular.length > 0 && (
             <div className="mm-pop-m">
               {c.popular.map((s) => (
-                <Link key={s.slug} className="mm-pop-i" href={`/shop/${c.slug}/${s.slug}`} onClick={go}>
+                <Link
+                  key={s.slug}
+                  className="mm-pop-i"
+                  href={`/shop/${c.slug}/${s.slug}`}
+                  onClick={go}
+                >
                   <span className="mm-pop-img" style={{ background: c.tone }}>
                     {s.image ? (
                       // eslint-disable-next-line @next/next/no-img-element

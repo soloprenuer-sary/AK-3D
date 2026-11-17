@@ -54,7 +54,7 @@ nav.main a:hover{color:var(--violet)}
 .hdr-actions{display:flex;align-items:center;gap:10px}
 .circle{width:48px;height:48px;border-radius:50%;border:1.5px solid var(--ink);background:transparent;display:grid;place-items:center;font-weight:700;font-size:14px;cursor:pointer;transition:background-color .2s var(--ease)}
 .circle:hover{background:var(--white)}
-@media (max-width:1080px){nav.main{display:none}}
+@media (max-width:860px){nav.main{display:none}}
 @media (max-width:640px){.logo{font-size:28px}.hdr-actions .btn{display:none}.circle{width:44px;height:44px}}
 footer.site{background:var(--ink);color:var(--paper);margin-top:0}
 footer.site .wrap{padding-top:72px;padding-bottom:32px}
@@ -363,7 +363,7 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .menu-btn{display:none}
 .mobile-menu{display:flex;flex-direction:column;border-top:1.5px solid var(--ink);background:var(--paper)}
 .mobile-menu a{padding:16px var(--gutter);border-bottom:1px solid #DCD8CE;font-weight:600;font-size:17px;text-decoration:none}
-@media (max-width:1080px){.menu-btn{display:grid}}
+@media (max-width:860px){.menu-btn{display:grid}}
 .cart-dialog{border:1.5px solid var(--ink);border-radius:24px;padding:0;width:min(440px,calc(100% - 32px));background:var(--paper);color:var(--ink);box-shadow:8px 8px 0 var(--ink)}
 .cart-dialog::backdrop{background:rgba(11,11,12,.55)}
 .cart-body{padding:24px}
@@ -665,8 +665,6 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .cat-art--figurine{transform:scale(1.22);transform-origin:50% 58%}
 
 /* ===== Mega menu ===== */
-nav.main{gap:4px 22px;font-size:14.5px;align-items:center}
-@media (min-width:1180px){nav.main{gap:4px 28px;font-size:15px}}
 .mm-item{display:inline-flex;align-items:center;gap:2px;position:relative}
 .mm-chev{display:inline-grid;place-items:center;width:22px;height:22px;border:0;background:transparent;color:var(--ink);cursor:pointer;border-radius:50%;padding:0;transition:transform .2s var(--ease)}
 .mm-chev:hover{background:var(--accent)}
@@ -711,7 +709,7 @@ nav.main{gap:4px 22px;font-size:14.5px;align-items:center}
 .mm-acc--sub{border-bottom:0;background:var(--white)}
 .mm-acc--sub>summary{padding-left:calc(var(--gutter) + 14px);font-size:16px;font-weight:600;background:var(--white);border-top:1px solid #DCD8CE}
 .mm-acc--sub>a{padding-left:calc(var(--gutter) + 32px)!important;font-size:15px!important}
-@media (max-width:1080px){.mega{display:none}}
+@media (max-width:860px){.mega,.catbar{display:none}}
 
 /* ===== Category page, version 2 ===== */
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
@@ -806,8 +804,6 @@ nav.main{gap:4px 22px;font-size:14.5px;align-items:center}
 .sub-title h1{font-size:clamp(38px,6vw,72px);line-height:1}
 
 /* ===== Mega menu, option A: popular pictures + full list ===== */
-nav.main{gap:4px 20px;font-size:14px}
-@media (min-width:1180px){nav.main{gap:4px 24px;font-size:14.5px}}
 .mega-a{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:40px;padding-block:26px}
 .mm-title{font:400 24px/1 var(--display);text-transform:uppercase;margin-bottom:14px}
 .mm-tiles2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -826,15 +822,24 @@ nav.main{gap:4px 20px;font-size:14px}
 .mm-pop-img img{width:100%;height:100%;object-fit:cover}
 .mm-pop-img b{font:400 40px/1 var(--display);opacity:.35}
 /* keep the header on one line */
-nav.main{gap:4px 18px}
-@media (min-width:1240px){nav.main{gap:4px 22px}}
 
 
-@media (max-width:1239px){.hdr-actions .btn{display:none}}
-@media (max-width:1060px) and (min-width:861px){nav.main{font-size:13px;gap:4px 12px}.mm-chev{width:18px}}
-header.site .bar{column-gap:22px}
-nav.main{gap:4px 16px}
-@media (min-width:1400px){nav.main{gap:4px 20px}}
-@media (min-width:1240px) and (max-width:1299px){.hdr-actions .btn{display:none}}
-@media (min-width:1300px){.hdr-actions .btn{display:inline-flex}}
 .cb-tile{text-decoration:none}
+
+/* ===== Category row under the header ===== */
+.catbar{border-top:1px solid #DCD8CE;background:var(--paper)}
+.cats{display:flex;flex-wrap:wrap;gap:0 26px;font-weight:600;font-size:14px;align-items:center}
+.cats a{text-decoration:none;padding:9px 0;transition:color .2s var(--ease)}
+.cats a:hover{color:var(--violet)}
+/* the panel: four pictures across, the full list beside them, kept short */
+.mega-a{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:32px;padding-block:16px 14px}
+.mm-title{font-size:20px;margin-bottom:10px}
+.mm-tiles2{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.mm-tiles2 .mm-tile-img{aspect-ratio:3/2}
+.mm-tiles2 .mm-tile-name{font-size:13px;padding:6px 6px 4px}
+.mm-tiles2 .mm-tile-btn{padding:5px;font-size:12px}
+.mm-tiles2 .mm-tile-img b{font-size:44px}
+.mm-groups{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px 22px}
+.mm-grp li a{padding-top:3px;padding-bottom:3px;font-size:14px}
+.mega-foot .wrap{padding-block:9px}
+@media (max-width:1000px){.hdr-actions .btn{display:none}}
