@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { GuideGrid } from '@/components/guides/GuideGrid';
+import { FaqAccordion } from '@/components/ui/FaqAccordion';
+import { FAQ } from '@/lib/faq-data';
 import { getGuides } from '@/lib/catalogue';
 
 /** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
@@ -24,7 +26,10 @@ export default async function KnowledgeHubPage() {
       <div className="wrap hub-head">
         <div>
           <span className="tag accent">Knowledge hub</span>
-          <h1 className="d" style={{ marginTop: 16, fontSize: 'clamp(56px,8vw,96px)', lineHeight: 0.95 }}>
+          <h1
+            className="d"
+            style={{ marginTop: 16, fontSize: 'clamp(56px,8vw,96px)', lineHeight: 0.95 }}
+          >
             Learn before <span className="hl">you print.</span>
           </h1>
         </div>
@@ -34,8 +39,26 @@ export default async function KnowledgeHubPage() {
         </p>
       </div>
 
-      <section className="wrap" style={{ marginTop: 8, paddingBottom: 'var(--sec)' }} aria-label="All articles">
+      <section
+        className="wrap"
+        style={{ marginTop: 8, paddingBottom: 'var(--sec)' }}
+        aria-label="All articles"
+      >
         <GuideGrid guides={guides} />
+      </section>
+
+      <section className="wrap faq-sec" aria-labelledby="faq-h">
+        <div className="faq-head">
+          <span className="tag accent">FAQ</span>
+          <h2 className="d" id="faq-h">
+            Questions, <span className="hl">answered</span>
+          </h2>
+          <p className="muted">
+            The questions we get most often. If yours is not here,{' '}
+            <Link href="/contact">message the studio</Link>.
+          </p>
+        </div>
+        <FaqAccordion items={FAQ} />
       </section>
     </main>
   );

@@ -19,7 +19,7 @@ export async function CategoryTiles() {
             View all
           </Link>
         </div>
-        <div className="grid4">
+        <div className="cat4">
           {featured.map((c) => (
             <Link
               key={c.name}

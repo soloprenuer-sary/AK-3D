@@ -1,21 +1,35 @@
 import type { Metadata } from 'next';
-import { InfoPage } from '@/components/layout/InfoPage';
+import Link from 'next/link';
+import { FaqAccordion } from '@/components/ui/FaqAccordion';
+import { FAQ } from '@/lib/faq-data';
 
-export const metadata: Metadata = { title: 'FAQ', description: 'Common questions about orders, colours and printing.' };
+export const metadata: Metadata = {
+  title: 'FAQ',
+  description: 'Common questions about orders, colours and printing.',
+};
 
 export default function Faq() {
   return (
-    <InfoPage
-      title="Questions, answered"
-      intro="The questions we get most often. If yours is not here, message the studio."
-      note="Answers are drafts. Figures in brackets are placeholders."
-      sections={[
-        { heading: 'Can I choose single or multi-colour?', paragraphs: ['Some products offer both. Multi-colour takes longer and may cost more, and we confirm the extra cost before payment.'] },
-        { heading: 'Can I buy a single-colour product and paint it later?', paragraphs: ['On a few products yes. Painting is made to order and quoted separately.'] },
-        { heading: 'Is the kitchen range safe for food?', paragraphs: ['The kitchen range is for non-food-contact use only, such as egg trays and spoon or knife holders. Do not store food in them.'] },
-        { heading: 'Can I order something made to order by cash on delivery?', paragraphs: ['No. Made-to-order and personalised items are paid online, with an advance where the order is larger.'] },
-        { heading: 'How long does printing take?', paragraphs: ['Each product shows its lead time. Made-to-order items are ready in [X] working days.'] },
-      ]}
-    />
+    <main id="main">
+      <nav className="crumbs" aria-label="Breadcrumb">
+        <Link href="/">Home</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">FAQ</span>
+      </nav>
+      <section className="wrap faq-sec" aria-labelledby="faq-h">
+        <div className="faq-head">
+          <span className="tag accent">FAQ</span>
+          <h1 className="d" id="faq-h">
+            Questions, <span className="hl">answered</span>
+          </h1>
+          <p className="muted">
+            The questions we get most often. If yours is not here,{' '}
+            <Link href="/contact">message the studio</Link>. Answers are drafts and bracketed values
+            are placeholders.
+          </p>
+        </div>
+        <FaqAccordion items={FAQ} />
+      </section>
+    </main>
   );
 }

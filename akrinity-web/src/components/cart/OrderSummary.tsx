@@ -43,7 +43,10 @@ export function OrderSummary({ showItems = false }: { showItems?: boolean }) {
           <dd>{money(subtotal)}</dd>
         </div>
       </dl>
-      <p className="meta">Final totals, tax and shipping will come from the store once it is connected. Sample amounts only.</p>
+      <p className="meta">
+        Shipping is added at checkout. Prices include GST. Final totals are confirmed when the store
+        is connected to payments.
+      </p>
     </aside>
   );
 }

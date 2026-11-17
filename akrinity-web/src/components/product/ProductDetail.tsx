@@ -15,6 +15,7 @@ import {
   type ShopProduct,
 } from '@/lib/shop-data';
 import { ProductReviews } from './ProductReviews';
+import { CompareButton, WishButton } from '@/components/shop/ProductActions';
 import { useCart } from '@/lib/cart-store';
 
 /**
@@ -148,7 +149,7 @@ export function ProductDetail({
       madeToOrder: !product.inStock,
     });
     setStatus(
-      `${qty} ${qty === 1 ? 'item' : 'items'} (${MODE_LABEL[mode].toLowerCase()}) added to cart. Sample only, no order is placed.`,
+      `${qty} ${qty === 1 ? 'item' : 'items'} (${MODE_LABEL[mode].toLowerCase()}) added to cart.`,
     );
   };
 
@@ -159,7 +160,7 @@ export function ProductDetail({
     }
     setPinMessage({
       ok: true,
-      text: 'Sample check. Live delivery dates appear once the courier is connected.',
+      text: 'Thanks. We deliver across India, and the delivery estimate for your pincode is shown at checkout.',
     });
   };
 
@@ -424,6 +425,8 @@ export function ProductDetail({
             <button type="button" className="btn btn-primary" onClick={addToCart}>
               Add to cart
             </button>
+            <WishButton id={product.id} name={product.name} className="pc-round pdp-heart" />
+            <CompareButton id={product.id} name={product.name} className="cmp-btn cmp-btn--pdp" />
             <p className="status" role="status" aria-live="polite">
               {status}
             </p>

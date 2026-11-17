@@ -27,7 +27,6 @@ export default async function ShopPage() {
           Finished prints in single colour or multi-colour, in stock and made to order. Made-to-order
           and personalised items are not available as cash on delivery.
         </p>
-        <p className="sample-note">Sample products. Names, prices and availability are placeholders.</p>
       </div>
 
       <nav className="wrap cat-strip" aria-label="Categories">

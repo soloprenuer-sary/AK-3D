@@ -36,6 +36,8 @@ export function SiteFooter({ tree }: { tree: ShopCategory[] }) {
             <h3>Help</h3>
             <Link href="/track-order">Track an order</Link>
             <Link href="/account">Account</Link>
+            <Link href="/wishlist">Wishlist</Link>
+            <Link href="/compare">Compare products</Link>
             <Link href="/faq">FAQ</Link>
             <Link href="/shipping">Shipping</Link>
             <Link href="/refunds">Refunds and cancellation</Link>

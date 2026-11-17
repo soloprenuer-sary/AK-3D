@@ -255,6 +255,12 @@ export function MobileMenu({ menu, onClose }: { menu: MenuCategory[]; onClose: (
       <Link href="/contact" onClick={go}>
         Contact
       </Link>
+      <Link href="/wishlist" onClick={go}>
+        Wishlist
+      </Link>
+      <Link href="/compare" onClick={go}>
+        Compare
+      </Link>
       <Link href="/search" onClick={go}>
         Search
       </Link>

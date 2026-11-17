@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties, type PointerEvent } from 'react';
 import Link from 'next/link';
+import { CompareButton, WishButton } from './ProductActions';
 import {
   COLOURS,
   MODE_LABEL,
@@ -20,7 +21,6 @@ interface ProductCardProps {
 
 export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: ProductCardProps) {
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
-  const [saved, setSaved] = useState(false);
 
   // Tilt follows the pointer on desktop. Touch screens skip it (CSS hides the hover actions there).
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
@@ -54,30 +54,11 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
         </span>
         <span className="tag mode-tag">{product.modes.map((m) => MODE_LABEL[m]).join(' · ')}</span>
 
-        <button
-          type="button"
-          className="pc-round pc-heart"
-          aria-pressed={saved}
-          aria-label={`Save ${product.name}`}
-          onClick={() => {
-            const next = !saved;
-            setSaved(next);
-            onSave(product, next);
-          }}
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#0B0B0C"
-            strokeWidth="2"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
-          </svg>
-        </button>
+        <WishButton
+          id={product.id}
+          name={product.name}
+          onChange={(saved) => onSave(product, saved)}
+        />
 
         <button
           type="button"
@@ -149,6 +130,9 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
           )}
           {product.price ?? '₹[price]'}
         </span>
+      </div>
+      <div className="pc-foot">
+        <CompareButton id={product.id} name={product.name} />
       </div>
     </article>
   );

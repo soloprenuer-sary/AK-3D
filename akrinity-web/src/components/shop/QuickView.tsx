@@ -29,18 +29,29 @@ export function QuickView({ product, onClose, onAdd }: QuickViewProps) {
         if (e.target === dialog.current) dialog.current?.close();
       }}
     >
-      {product && <QuickViewBody key={product.id} product={product} onClose={onClose} onAdd={onAdd} />}
+      {product && (
+        <QuickViewBody key={product.id} product={product} onClose={onClose} onAdd={onAdd} />
+      )}
     </dialog>
   );
 }
 
-function QuickViewBody({ product, onClose, onAdd }: { product: ShopProduct } & Omit<QuickViewProps, 'product'>) {
+function QuickViewBody({
+  product,
+  onClose,
+  onAdd,
+}: { product: ShopProduct } & Omit<QuickViewProps, 'product'>) {
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
   const artStyle = { '--c': COLOURS[colour] } as CSSProperties;
 
   return (
     <div className="qv-body">
-      <button type="button" className="qv-close" aria-label="Close quick view" onClick={() => onClose()}>
+      <button
+        type="button"
+        className="qv-close"
+        aria-label="Close quick view"
+        onClick={() => onClose()}
+      >
         ×
       </button>
       <div className={product.images?.length ? 'qv-art has-img' : 'qv-art'}>

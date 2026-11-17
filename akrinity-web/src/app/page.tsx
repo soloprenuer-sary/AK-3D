@@ -30,7 +30,7 @@ export default async function HomePage() {
       <ProcessSteps />
       <Materials />
       <KnowledgeHub guides={guides} />
-      <SelectedWork />
+      <SelectedWork products={products} />
       <FinalCta />
     </main>
   );

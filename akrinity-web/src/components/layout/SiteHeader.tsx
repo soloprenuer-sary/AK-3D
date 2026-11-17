@@ -7,6 +7,7 @@ import { formatRupees, useCart } from '@/lib/cart-store';
 import type { MenuCategory } from '@/lib/category-content';
 import { MegaNav, MobileMenu } from './MegaMenu';
 import { SearchOverlay } from './SearchOverlay';
+import { useWishlist } from '@/lib/lists-store';
 
 const NAV = [
   { href: '/shop', label: 'Shop' },
@@ -21,6 +22,7 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const wish = useWishlist();
   const cartDialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -69,6 +71,16 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
               <path d="M20 20l-4-4" />
             </svg>
           </button>
+          <Link
+            className="circle wish-link"
+            href="/wishlist"
+            aria-label={`Wishlist, ${wish.count} ${wish.count === 1 ? 'item' : 'items'}`}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
+            </svg>
+            {wish.count > 0 && <span className="wish-n">{wish.count}</span>}
+          </Link>
           <Link className="circle acct" href="/account" aria-label="Account">
             <svg
               width="20"

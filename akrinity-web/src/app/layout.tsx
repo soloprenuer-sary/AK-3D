@@ -8,6 +8,7 @@ import { SiteFooter } from '@/components/layout/SiteFooter';
 import { CartProvider } from '@/lib/cart-store';
 import { buildMenu, getCategoryTree } from '@/lib/category-content';
 import { CategoryTreeProvider } from '@/components/layout/CategoryTree';
+import { CompareTray } from '@/components/layout/CompareTray';
 
 export const metadata: Metadata = {
   title: { default: 'Akrinity', template: '%s · Akrinity' },
@@ -35,6 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <SiteHeader menu={menu} />
             {children}
             <SiteFooter tree={tree} />
+            <CompareTray />
           </CartProvider>
         </CategoryTreeProvider>
       </body>

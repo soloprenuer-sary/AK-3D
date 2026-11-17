@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { CartThumb } from './CartThumb';
 import { OrderSummary } from './OrderSummary';
 import { formatRupees, parsePrice, useCart } from '@/lib/cart-store';
+import { useWishlist } from '@/lib/lists-store';
 
 export function EmptyCart() {
   return (
@@ -22,6 +23,7 @@ export function EmptyCart() {
 /** Full cart page: items with quantity controls, and the totals box. */
 export function CartView() {
   const { lines, hasMadeToOrder, setQty, remove, clear, modeLabel } = useCart();
+  const wish = useWishlist();
 
   if (lines.length === 0) return <EmptyCart />;
 
@@ -42,22 +44,57 @@ export function CartView() {
                   ) : (
                     <b className="cart-row-name">{l.name}</b>
                   )}
-                  <span className="meta">{[modeLabel(l.mode), l.detail].filter(Boolean).join(' · ')}</span>
+                  <span className="meta">
+                    {[modeLabel(l.mode), l.detail].filter(Boolean).join(' · ')}
+                  </span>
                   <span className={l.madeToOrder ? 'tag' : 'tag accent'}>
                     {l.madeToOrder ? 'Made to order · no cash on delivery' : 'In stock'}
                   </span>
-                  <button type="button" className="link-btn" onClick={() => remove(l.key)} aria-label={`Remove ${l.name}`}>
-                    Remove
-                  </button>
+                  {unit !== null && l.qty > 1 && (
+                    <span className="meta">{formatRupees(unit)} each</span>
+                  )}
+                  <span className="cart-row-links">
+                    <button
+                      type="button"
+                      className="link-btn"
+                      onClick={() => remove(l.key)}
+                      aria-label={`Remove ${l.name}`}
+                    >
+                      Remove
+                    </button>
+                    {!wish.has(l.id) && (
+                      <button
+                        type="button"
+                        className="link-btn"
+                        onClick={() => {
+                          wish.toggle(l.id);
+                          remove(l.key);
+                        }}
+                        aria-label={`Save ${l.name} for later`}
+                      >
+                        Save for later
+                      </button>
+                    )}
+                  </span>
                 </div>
                 <div className="cart-row-side">
-                  <b className="cart-row-price">{unit === null ? '₹[price]' : formatRupees(unit * l.qty)}</b>
+                  <b className="cart-row-price">
+                    {unit === null ? '₹[price]' : formatRupees(unit * l.qty)}
+                  </b>
                   <div className="qty" role="group" aria-label={`Quantity for ${l.name}`}>
-                    <button type="button" aria-label={`Decrease quantity of ${l.name}`} onClick={() => setQty(l.key, l.qty - 1)}>
+                    <button
+                      type="button"
+                      aria-label={`Decrease quantity of ${l.name}`}
+                      onClick={() => setQty(l.key, l.qty - 1)}
+                    >
                       −
                     </button>
                     <span aria-live="polite">{l.qty}</span>
-                    <button type="button" aria-label={`Increase quantity of ${l.name}`} onClick={() => setQty(l.key, l.qty + 1)}>
+                    <button
+                      type="button"
+                      aria-label={`Increase quantity of ${l.name}`}
+                      onClick={() => setQty(l.key, l.qty + 1)}
+                    >
                       +
                     </button>
                   </div>
@@ -85,8 +122,8 @@ export function CartView() {
           <div className="notice">
             <span className="label">Made to order</span>
             <span className="muted" style={{ fontSize: 14 }}>
-              Made-to-order items are paid in full or with an advance. Cash on delivery is only offered for stocked items
-              under the order limit.
+              Made-to-order items are paid in full or with an advance. Cash on delivery is only
+              offered for stocked items under the order limit.
             </span>
           </div>
         )}
