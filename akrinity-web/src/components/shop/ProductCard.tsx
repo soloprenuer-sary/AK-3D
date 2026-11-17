@@ -131,6 +131,15 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
           <span className="pc-meta" style={{ display: 'block' }}>
             {product.material} · {product.sub}
           </span>
+          {product.reviewCount && product.rating ? (
+            <span
+              className="pc-rate"
+              aria-label={`Rated ${product.rating.toFixed(1)} out of 5 from ${product.reviewCount} ${product.reviewCount === 1 ? 'review' : 'reviews'}`}
+            >
+              <span aria-hidden="true">★</span> {product.rating.toFixed(1)}{' '}
+              <span className="pc-rate-n">({product.reviewCount})</span>
+            </span>
+          ) : null}
         </div>
         <span className="pc-price">
           {product.regularPrice && (

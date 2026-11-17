@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ShopBrowser } from '@/components/shop/ShopBrowser';
-import { CategoryExtras, CategoryHero } from '@/components/category/CategoryHero';
-import { CATEGORIES, categorySlug, findCategory } from '@/lib/shop-data';
+import { CategoryBrowser } from '@/components/category/CategoryBrowser';
+import { CategoryHero, CategoryInfo } from '@/components/category/CategoryHero';
+import { getCategoryContent } from '@/lib/category-content';
+import { CATEGORIES, categorySlug, findCategory, subKey } from '@/lib/shop-data';
 import { themeFor } from '@/lib/category-themes';
 import { getProducts } from '@/lib/catalogue';
 
@@ -19,7 +20,11 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { category } = await params;
   const cat = findCategory(category);
-  return { title: cat ? cat.name : 'Category', description: cat?.description };
+  const copy = cat ? (await getCategoryContent()).copy[subKey(cat.name)] : undefined;
+  return {
+    title: copy?.seoTitle ?? (cat ? cat.name : 'Category'),
+    description: copy?.seoDescription ?? cat?.description,
+  };
 }
 
 export default async function CategoryPage({ params }: Params) {
@@ -28,8 +33,15 @@ export default async function CategoryPage({ params }: Params) {
   if (!cat) notFound();
   const theme = themeFor(category);
   if (!theme) notFound();
-  const products = await getProducts();
-  const count = products.filter((p) => p.category === cat.name).length;
+  const [products, content] = await Promise.all([getProducts(), getCategoryContent()]);
+  const copy = content.copy[subKey(cat.name)];
+  const mine = products.filter((p) => p.category === cat.name);
+  const prices = mine
+    .map((p) => Number((p.price ?? '').replace(/[^\d.]/g, '')))
+    .filter((n) => n > 0);
+  const fromPrice = prices.length
+    ? `₹${Math.min(...prices).toLocaleString('en-IN')}`
+    : undefined;
 
   return (
     <main id="main">
@@ -41,13 +53,22 @@ export default async function CategoryPage({ params }: Params) {
         <span aria-current="page">{cat.name}</span>
       </nav>
 
-      <CategoryHero category={cat} theme={theme} count={count} />
+      <CategoryHero
+        category={cat}
+        theme={theme}
+        count={mine.length}
+        copy={copy}
+        fromPrice={fromPrice}
+      />
 
-      <div id="products">
-        <ShopBrowser products={products} categoryName={cat.name} subcategories={cat.subs} />
-      </div>
+      <CategoryBrowser
+        products={products}
+        category={cat}
+        images={content.images}
+        tone={theme.bg}
+      />
 
-      <CategoryExtras theme={theme} />
+      <CategoryInfo theme={theme} copy={copy} />
     </main>
   );
 }

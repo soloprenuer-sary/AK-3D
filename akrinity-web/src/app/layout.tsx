@@ -6,6 +6,7 @@ import { AnnouncementBar } from '@/components/layout/AnnouncementBar';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { CartProvider } from '@/lib/cart-store';
+import { getMenu } from '@/lib/category-content';
 
 export const metadata: Metadata = {
   title: { default: 'Akrinity', template: '%s · Akrinity' },
@@ -18,7 +19,8 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const menu = await getMenu();
   return (
     <html lang="en">
       <body>
@@ -27,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <CartProvider>
           <AnnouncementBar />
-          <SiteHeader />
+          <SiteHeader menu={menu} />
           {children}
           <SiteFooter />
         </CartProvider>

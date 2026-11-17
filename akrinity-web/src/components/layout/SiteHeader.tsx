@@ -4,16 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CartThumb } from '@/components/cart/CartThumb';
 import { formatRupees, useCart } from '@/lib/cart-store';
+import type { MenuCategory } from '@/lib/category-content';
+import { MegaNav, MobileMenu } from './MegaMenu';
 
-const NAV = [
-  { href: '/shop', label: 'Shop' },
-  { href: '/guides', label: 'Knowledge hub' },
-  { href: '/quote', label: 'Custom printing' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
-];
-
-export function SiteHeader() {
+export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
   const { lines, count, subtotal, remove, clear, modeLabel } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -33,13 +27,7 @@ export function SiteHeader() {
           Akrinity<i aria-hidden="true" />
         </Link>
 
-        <nav className="main" aria-label="Main">
-          {NAV.map((item) => (
-            <Link key={item.href} href={item.href}>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <MegaNav menu={menu} />
 
         <div className="hdr-actions">
           <Link className="circle" href="/search" aria-label="Search the site">
@@ -66,24 +54,7 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {menuOpen && (
-        <nav id="mobile-menu" className="mobile-menu" aria-label="Mobile">
-          {NAV.map((item) => (
-            <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
-              {item.label}
-            </Link>
-          ))}
-          <Link href="/search" onClick={() => setMenuOpen(false)}>
-            Search
-          </Link>
-          <Link href="/cart" onClick={() => setMenuOpen(false)}>
-            Cart
-          </Link>
-          <Link href="/account" onClick={() => setMenuOpen(false)}>
-            Account
-          </Link>
-        </nav>
-      )}
+      {menuOpen && <MobileMenu menu={menu} onClose={() => setMenuOpen(false)} />}
 
       <dialog
         ref={cartDialog}

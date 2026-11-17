@@ -4,7 +4,7 @@
  * through the cached catalogue proxy (so edits in WordPress show without a rebuild).
  * There is no sample data: callers stop when WordPress cannot be reached (see catalogue.ts).
  */
-import { COLOURS, SHOP_CATEGORIES, SHOP_MATERIALS, SIZE_OPTIONS } from './shop-data';
+import { CATEGORIES, COLOURS, SHOP_MATERIALS, SIZE_OPTIONS, subKey } from './shop-data';
 import type { ColourKey, ColourMode, Material, ProcessType, ShopProduct } from './shop-data';
 import type { Block, Guide } from './guides-data';
 
@@ -25,6 +25,8 @@ export interface StoreProduct {
     sale_price?: string;
     currency_minor_unit: number;
   };
+  average_rating?: string;
+  review_count?: number;
   is_in_stock: boolean;
   is_on_backorder?: boolean;
   images: { src: string; alt: string }[];
@@ -67,8 +69,14 @@ function terms(p: StoreProduct, pattern: RegExp): string[] {
 /** Turns one WooCommerce product into the shape the pages use. Pure: also used in the browser. */
 export function mapStoreProduct(p: StoreProduct): ShopProduct {
   const names = p.categories.map((c) => decode(c.name));
-  // Prefer a category the shop knows; otherwise the first one WooCommerce lists.
-  const category = names.find((n) => SHOP_CATEGORIES.includes(n)) ?? names[0] ?? 'Home decor';
+  // Prefer a main category the shop knows. A product ticked only in a sub-category still lands in
+  // the main category that owns it. Otherwise the first category WooCommerce lists.
+  const known =
+    CATEGORIES.find((c) => names.includes(c.name)) ??
+    CATEGORIES.find((c) => c.subs.some((s) => names.some((n) => subKey(n) === subKey(s))));
+  const category = known?.name ?? names[0] ?? 'Home decor';
+  const sub =
+    known?.subs.find((s) => names.some((n) => subKey(n) === subKey(s))) ?? category;
 
   const materials = terms(p, /^material$/i)
     .map((t) =>
@@ -105,7 +113,7 @@ export function mapStoreProduct(p: StoreProduct): ShopProduct {
     slug: p.slug || undefined,
     name: decode(p.name),
     category,
-    sub: category,
+    sub,
     // Out of stock and "on backorder" both mean made to order.
     inStock: Boolean(p.is_in_stock) && !p.is_on_backorder,
     // Options not stored in WooCommerce yet fall back to these defaults.
@@ -135,6 +143,8 @@ export function mapStoreProduct(p: StoreProduct): ShopProduct {
       ? formatRupees(p.prices.regular_price as string, p.prices.currency_minor_unit)
       : undefined,
     description: stripTags(p.short_description || p.description || '') || undefined,
+    rating: Number(p.average_rating) > 0 ? Number(p.average_rating) : undefined,
+    reviewCount: p.review_count && p.review_count > 0 ? p.review_count : undefined,
   };
 }
 

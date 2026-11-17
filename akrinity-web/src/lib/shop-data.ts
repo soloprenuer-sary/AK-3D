@@ -36,73 +36,56 @@ export const CATEGORIES: ShopCategory[] = [
   {
     name: 'Home decor',
     description: 'Vases, planters, lamps, wall art and small storage for every room.',
-    subs: [
-      'Vases & planters',
-      'Lamps & lighting',
-      'Wall art & hooks',
-      'Trays & storage',
-      'Clocks & frames',
-    ],
+    subs: ['Showpieces', 'Vases and planters', 'Lamps', 'Wall art'],
     tone: 'var(--accent)',
   },
   {
     name: 'Desk & gadgets',
     description: 'Organisers, stands and desk pieces that keep a workspace tidy.',
-    subs: [
-      'Desk organisers',
-      'Phone & tablet stands',
-      'Monitor stands',
-      'Cable management',
-      'Desk toys',
-    ],
+    subs: ['Desk organisers', 'Phone stands', 'Cable management', 'Desk toys'],
     tone: 'var(--violet)',
   },
   {
     name: 'Kitchen',
     description:
       'Non-food-contact kitchen pieces: egg trays, spoon and knife holders. Not for storing food.',
-    subs: ['Egg trays', 'Spoon holders', 'Knife holders', 'Drawer dividers'],
+    subs: ['Egg trays', 'Spoon and knife holders', 'Drawer dividers', 'Utility tools'],
     tone: 'var(--orange)',
   },
   {
     name: 'Figurines & miniatures',
     description: 'Human figurines, busts, tabletop miniatures and scale models.',
-    subs: ['Busts & portraits', 'Tabletop miniatures', 'Scale models', 'Creatures & animals'],
+    subs: ['Busts', 'Miniatures', 'Display models'],
     tone: 'var(--ink)',
   },
   {
     name: 'Original characters',
     description: 'Our own anime-inspired characters, chibi figures and display stands.',
-    subs: ['Chibi figures', 'Characters & busts', 'Display stands'],
+    subs: ['Chibi figures', 'Busts', 'Display stands'],
     tone: 'var(--accent)',
   },
   {
     name: 'Experimental & art',
     description: 'Geometric, organic, parametric and print-in-place designs for collectors.',
-    subs: [
-      'Geometric & organic art',
-      'Parametric designs',
-      'Print-in-place & mechanical',
-      'Abstract sculptures',
-    ],
+    subs: ['Parametric', 'Print-in-place', 'Geometric'],
     tone: 'var(--violet)',
   },
   {
     name: 'Gifts & personalised',
     description: 'Name plates, keychains and gift sets, personalised with text on request.',
-    subs: ['Name plates', 'Keychains & tags', 'Gift sets'],
+    subs: ['Name plates', 'Keychains', 'Corporate gifts'],
     tone: 'var(--orange)',
   },
   {
     name: 'Hobby & cosplay',
     description: 'Dice towers, board game accessories, cosplay badges and terrain.',
-    subs: ['Board game accessories', 'Cosplay badges', 'Miniature terrain'],
+    subs: ['Dice towers', 'Terrain', 'Cosplay badges'],
     tone: 'var(--ink)',
   },
   {
     name: 'Spare parts',
     description: 'Knobs, brackets, clips and feet for things around the house.',
-    subs: ['Knobs & handles', 'Brackets & clips', 'Feet & spacers'],
+    subs: ['Knobs and clips', 'Brackets', 'Custom parts'],
     tone: 'var(--accent)',
   },
 ];
@@ -146,6 +129,9 @@ export interface ShopProduct {
   regularPrice?: string;
   /** Short description from WordPress. Sample products use a placeholder when unset. */
   description?: string;
+  /** Average star rating from WooCommerce's own reviews (0 to 5) and how many reviews. */
+  rating?: number;
+  reviewCount?: number;
 }
 
 /** URL slug from a name, e.g. "Home decor" -> "home-decor", "Desk & gadgets" -> "desk-gadgets". */
@@ -159,6 +145,16 @@ export function slugify(s: string): string {
 
 export function productSlug(p: ShopProduct): string {
   return p.slug || slugify(p.name);
+}
+
+/**
+ * Comparison key for a sub-category name, so "Vases & planters" in WordPress matches
+ * "Vases and planters" on the site. Also the part after "#sub-" in the page address.
+ */
+export function subKey(s: string): string {
+  return slugify(s)
+    .replace(/(^|-)and(-|$)/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 export function categorySlug(c: ShopCategory): string {
