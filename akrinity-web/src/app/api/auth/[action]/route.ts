@@ -832,7 +832,16 @@ async function handleQuote(request: Request, env: Env): Promise<Response> {
       503,
     );
   }
-  return json({ ok: true, reference: String(r.data.reference ?? '') }, 201);
+  return json(
+    {
+      ok: true,
+      reference: String(r.data.reference ?? ''),
+      requestId: Number(r.data.id ?? 0),
+      uploadToken: String(r.data.upload_token ?? ''),
+      uploadExp: Number(r.data.upload_exp ?? 0),
+    },
+    201,
+  );
 }
 
 // ---------- password reset ----------

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Akrinity headless account
  * Description: Customer sign-up, account details and orders, bulk prices and bulk quote requests for the headless storefront. The one approved WordPress snippet (decisions 20, 32 and 34).
- * Version: 2.3.0
+ * Version: 2.4.0
  *
  * Install: copy this file to wp-content/mu-plugins/ and add to wp-config.php:
  *   define( 'AKRINITY_FRONTEND_URL', 'https://www.example.com' );
@@ -634,9 +634,6 @@ add_action(
 					);
 				}
 				echo '</tbody></table>';
-				if ( 'custom' === get_post_meta( $post->ID, 'akr_kind', true ) && '' !== (string) get_post_meta( $post->ID, 'akr_file_name', true ) ) {
-					echo '<p><em>The file itself is not stored here. Ask the customer to send it on WhatsApp or by email, quoting the reference.</em></p>';
-				}
 			},
 			'akr_request',
 			'normal',
@@ -645,18 +642,150 @@ add_action(
 	}
 );
 
-// The list of requests: reference, type, contact, phone, email and date at a glance.
+/* ---------- Quote request status, customer file and history ---------- */
+
+/** The stages a request goes through, like WooCommerce order statuses. The first is the default. */
+function akr_statuses() {
+	return array(
+		'new'              => 'New',
+		'reviewing'        => 'Reviewing',
+		'quoted'           => 'Quoted',
+		'awaiting_payment' => 'Awaiting payment',
+		'paid'             => 'Paid',
+		'in_production'    => 'In production',
+		'ready'            => 'Ready to ship',
+		'shipped'          => 'Shipped',
+		'completed'        => 'Completed',
+		'cancelled'        => 'Cancelled',
+		'refunded'         => 'Refunded',
+		'returned'         => 'Returned',
+	);
+}
+
+/** Statuses that mean the job is over, so the customer's file can be deleted. */
+function akr_closed_statuses() {
+	return array( 'completed', 'cancelled', 'refunded', 'returned' );
+}
+
+function akr_status_colors() {
+	return array(
+		'new'              => array( '#dcdcde', '#1d2327' ),
+		'reviewing'        => array( '#d0e4f7', '#0a4b78' ),
+		'quoted'           => array( '#e2d9f3', '#3c2a74' ),
+		'awaiting_payment' => array( '#fcf0c3', '#7a5b00' ),
+		'paid'             => array( '#c6e8c9', '#0b4a1b' ),
+		'in_production'    => array( '#ffe1c2', '#8a3b00' ),
+		'ready'            => array( '#d8ff3a', '#1d2327' ),
+		'shipped'          => array( '#b9e8f0', '#06505e' ),
+		'completed'        => array( '#2c3338', '#ffffff' ),
+		'cancelled'        => array( '#f6c9c9', '#7a1212' ),
+		'refunded'         => array( '#f0d2e6', '#6b1a50' ),
+		'returned'         => array( '#e6d2c0', '#5a3412' ),
+	);
+}
+
+function akr_request_status( $post_id ) {
+	$s   = (string) get_post_meta( $post_id, 'akr_status', true );
+	$all = akr_statuses();
+	return isset( $all[ $s ] ) ? $s : 'new';
+}
+
+/** A coloured label for a status, safe to print. */
+function akr_status_badge( $status ) {
+	$all    = akr_statuses();
+	$colors = akr_status_colors();
+	$c      = $colors[ $status ] ?? array( '#dcdcde', '#1d2327' );
+	return sprintf(
+		'<span style="display:inline-block;padding:2px 10px;border-radius:999px;font-weight:600;background:%s;color:%s">%s</span>',
+		esc_attr( $c[0] ),
+		esc_attr( $c[1] ),
+		esc_html( $all[ $status ] ?? $status )
+	);
+}
+
+/** Adds a line to a request's history (who did what, and when). */
+function akr_request_log( $post_id, $text ) {
+	$log = get_post_meta( $post_id, 'akr_log', true );
+	if ( ! is_array( $log ) ) {
+		$log = array();
+	}
+	$user  = wp_get_current_user();
+	$log[] = array(
+		'time' => time(),
+		'who'  => ( $user && $user->exists() ) ? $user->display_name : 'Website',
+		'text' => (string) $text,
+	);
+	update_post_meta( $post_id, 'akr_log', $log );
+}
+
+/** The private folder for customer files. Closed to the web, and file names are random. */
+function akr_private_dir() {
+	$dir = trailingslashit( WP_CONTENT_DIR ) . 'akr-private';
+	if ( ! is_dir( $dir ) ) {
+		wp_mkdir_p( $dir );
+		file_put_contents( $dir . '/.htaccess', "<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nDeny from all\n</IfModule>\n" );
+		file_put_contents( $dir . '/index.php', "<?php\n// Silence.\n" );
+	}
+	return $dir;
+}
+
+/** Full path of a request's stored file, or an empty string. */
+function akr_file_path( $post_id ) {
+	if ( 'stored' !== get_post_meta( $post_id, 'akr_file_state', true ) ) {
+		return '';
+	}
+	$rel = basename( (string) get_post_meta( $post_id, 'akr_file_path', true ) );
+	if ( '' === $rel ) {
+		return '';
+	}
+	$path = akr_private_dir() . '/' . $rel;
+	return is_file( $path ) ? $path : '';
+}
+
+/** Deletes a request's stored file and any half-uploaded part. Returns true if something was removed. */
+function akr_remove_file( $post_id ) {
+	$removed = false;
+	$path    = akr_file_path( $post_id );
+	if ( '' !== $path && @unlink( $path ) ) {
+		$removed = true;
+	}
+	$part = akr_private_dir() . '/' . (int) $post_id . '.part';
+	if ( is_file( $part ) && @unlink( $part ) ) {
+		$removed = true;
+	}
+	return $removed;
+}
+
+/** A token that lets the browser that sent a request upload its file, for two hours. */
+function akr_upload_token( $post_id, $expires ) {
+	if ( ! defined( 'AKRINITY_SHARED_SECRET' ) ) {
+		return '';
+	}
+	return hash_hmac( 'sha256', (int) $post_id . '|' . (int) $expires, (string) AKRINITY_SHARED_SECRET );
+}
+
+const AKR_FILE_MAX_BYTES  = 314572800; // 300 MB.
+const AKR_CHUNK_MAX_BYTES = 4194304; // 4 MB per piece.
+
+/** File types a customer may upload for a quote. */
+function akr_file_types() {
+	return array( 'stl', '3mf', 'obj', 'step', 'stp', 'iges', 'igs', 'jpg', 'jpeg', 'png', 'pdf' );
+}
+
+// The list of requests: reference, type, status, file, contact and date at a glance.
 add_filter(
 	'manage_akr_request_posts_columns',
 	function () {
 		return array(
-			'cb'        => '<input type="checkbox" />',
-			'akr_ref'   => 'Reference',
-			'title'     => 'Request',
-			'akr_kind'  => 'Type',
-			'akr_phone' => 'Phone',
-			'akr_email' => 'Email',
-			'date'      => 'Received',
+			'cb'         => '<input type="checkbox" />',
+			'akr_ref'    => 'Reference',
+			'title'      => 'Request',
+			'akr_kind'   => 'Type',
+			'akr_status' => 'Status',
+			'akr_file'   => 'File',
+			'akr_phone'  => 'Phone',
+			'akr_email'  => 'Email',
+			'date'       => 'Received',
 		);
 	}
 );
@@ -667,6 +796,17 @@ add_action(
 			echo esc_html( akr_request_reference( $post_id ) );
 		} elseif ( 'akr_kind' === $column ) {
 			echo esc_html( akr_request_kind_label( $post_id ) );
+		} elseif ( 'akr_status' === $column ) {
+			echo akr_status_badge( akr_request_status( $post_id ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- built from escaped parts.
+		} elseif ( 'akr_file' === $column ) {
+			$state  = (string) get_post_meta( $post_id, 'akr_file_state', true );
+			$labels = array(
+				'stored'    => 'Stored',
+				'uploading' => 'Uploading',
+				'pending'   => 'Waiting',
+				'deleted'   => 'Deleted',
+			);
+			echo esc_html( $labels[ $state ] ?? '' );
 		} elseif ( 'akr_phone' === $column ) {
 			echo esc_html( (string) get_post_meta( $post_id, 'akr_phone', true ) );
 		} elseif ( 'akr_email' === $column ) {
@@ -675,6 +815,60 @@ add_action(
 	},
 	10,
 	2
+);
+
+// Filter the list by status.
+add_action(
+	'restrict_manage_posts',
+	function ( $post_type ) {
+		if ( 'akr_request' !== $post_type ) {
+			return;
+		}
+		$cur = isset( $_GET['akr_status'] ) ? sanitize_key( wp_unslash( $_GET['akr_status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		echo '<select name="akr_status"><option value="">All statuses</option>';
+		foreach ( akr_statuses() as $key => $label ) {
+			printf( '<option value="%s"%s>%s</option>', esc_attr( $key ), selected( $cur, $key, false ), esc_html( $label ) );
+		}
+		echo '</select>';
+	}
+);
+add_action(
+	'pre_get_posts',
+	function ( $q ) {
+		if ( ! is_admin() || ! $q->is_main_query() || 'akr_request' !== $q->get( 'post_type' ) ) {
+			return;
+		}
+		$s = isset( $_GET['akr_status'] ) ? sanitize_key( wp_unslash( $_GET['akr_status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		if ( '' === $s || ! isset( akr_statuses()[ $s ] ) ) {
+			return;
+		}
+		if ( 'new' === $s ) {
+			$q->set(
+				'meta_query',
+				array(
+					'relation' => 'OR',
+					array(
+						'key'     => 'akr_status',
+						'value'   => 'new',
+					),
+					array(
+						'key'     => 'akr_status',
+						'compare' => 'NOT EXISTS',
+					),
+				)
+			);
+		} else {
+			$q->set(
+				'meta_query',
+				array(
+					array(
+						'key'   => 'akr_status',
+						'value' => $s,
+					),
+				)
+			);
+		}
+	}
 );
 
 /** Saves a custom quote request (the quote page), then emails the admin and, if given, the customer. */
@@ -697,6 +891,11 @@ function akr_handle_quote_request( WP_REST_Request $req ) {
 	if ( '' === $f['name'] || '' === $f['phone'] || ( $email_given && ! is_email( $f['email'] ) ) ) {
 		return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
 	}
+	// Only the known file types are accepted.
+	$ext = strtolower( pathinfo( $f['file_name'], PATHINFO_EXTENSION ) );
+	if ( '' !== $f['file_name'] && ! in_array( $ext, akr_file_types(), true ) ) {
+		return new WP_REST_Response( array( 'code' => 'bad_file_type' ), 400 );
+	}
 
 	$id = wp_insert_post(
 		array(
@@ -713,6 +912,19 @@ function akr_handle_quote_request( WP_REST_Request $req ) {
 	}
 	update_post_meta( $id, 'akr_job', $job );
 	update_post_meta( $id, 'akr_kind', 'custom' );
+	update_post_meta( $id, 'akr_status', 'new' );
+	akr_request_log( $id, 'Request received from the website.' );
+
+	$reply_data = array(
+		'id'        => $id,
+		'reference' => 'QR-' . $id,
+	);
+	if ( '' !== $f['file_name'] ) {
+		update_post_meta( $id, 'akr_file_state', 'pending' );
+		$expires                    = time() + 2 * HOUR_IN_SECONDS;
+		$reply_data['upload_token'] = akr_upload_token( $id, $expires );
+		$reply_data['upload_exp']   = $expires;
+	}
 
 	$ref   = 'QR-' . $id;
 	$lines = array(
@@ -725,8 +937,9 @@ function akr_handle_quote_request( WP_REST_Request $req ) {
 		'Quantity: ' . ( '' !== $f['quantity'] ? $f['quantity'] : 'not given' ),
 		'Company: ' . ( '' !== $f['company'] ? $f['company'] : 'none' ),
 		'GSTIN: ' . ( '' !== $f['gstin'] ? $f['gstin'] : 'not given' ),
-		'File: ' . ( '' !== $f['file_name'] ? $f['file_name'] . ( '' !== $f['file_size'] ? ' (' . $f['file_size'] . ')' : '' ) . ' - not uploaded, ask the customer to send it' : 'none chosen' ),
+		'File: ' . ( '' !== $f['file_name'] ? $f['file_name'] . ( '' !== $f['file_size'] ? ' (' . $f['file_size'] . ')' : '' ) . ' - uploading from the website, open the request to download it' : 'none chosen' ),
 		'Notes: ' . ( '' !== $f['notes'] ? $f['notes'] : 'none' ),
+		'Open it: ' . admin_url( 'post.php?post=' . $id . '&action=edit' ),
 	);
 	$summary = implode( "\r\n", $lines );
 	$admin   = get_option( 'admin_email' );
@@ -745,19 +958,89 @@ function akr_handle_quote_request( WP_REST_Request $req ) {
 				wp_mail(
 					$email,
 					'We received your quote request (' . $ref . ')',
-					"Thank you. We have received your quote request and will reply with a price and lead time.\r\n\r\n" . ( '' !== $f['file_name'] ? "Please send your file (" . $f['file_name'] . ") to us on WhatsApp or by reply to this email, and mention " . $ref . ".\r\n\r\n" : '' ) . "Here is what you sent us:\r\n\r\n" . $summary . "\r\n"
+					"Thank you. We have received your quote request and will reply with a price and lead time.\r\n\r\n" . ( '' !== $f['file_name'] ? 'If your file did not finish uploading on the website, please send it to us on WhatsApp or by replying to this email, and mention ' . $ref . ".\r\n\r\n" : '' ) . "Here is what you sent us:\r\n\r\n" . $summary . "\r\n"
 				);
 			}
 		}
 	);
 
-	return new WP_REST_Response(
-		array(
-			'id'        => $id,
-			'reference' => $ref,
-		),
-		201
-	);
+	return new WP_REST_Response( $reply_data, 201 );
+}
+
+/**
+ * Receives a customer's file in pieces (about 2 MB each) straight from the browser. The token from
+ * the quote request proves the upload belongs to that request. The file goes to a private folder.
+ */
+function akr_handle_quote_file( WP_REST_Request $req ) {
+	$id      = (int) $req->get_param( 'id' );
+	$exp     = (int) $req->get_param( 'exp' );
+	$token   = (string) $req->get_param( 'token' );
+	$index   = (int) $req->get_param( 'index' );
+	$total   = (int) $req->get_param( 'total' );
+	$expect  = akr_upload_token( $id, $exp );
+	if ( $id < 1 || '' === $expect || time() > $exp || ! hash_equals( $expect, $token ) ) {
+		return new WP_REST_Response( array( 'code' => 'forbidden' ), 403 );
+	}
+	if ( 'akr_request' !== get_post_type( $id ) || 'custom' !== get_post_meta( $id, 'akr_kind', true ) ) {
+		return new WP_REST_Response( array( 'code' => 'not_found' ), 404 );
+	}
+	$state = (string) get_post_meta( $id, 'akr_file_state', true );
+	if ( ! in_array( $state, array( 'pending', 'uploading' ), true ) ) {
+		return new WP_REST_Response( array( 'code' => 'closed' ), 409 );
+	}
+	if ( $total < 1 || $total > 200 || $index < 0 || $index >= $total ) {
+		return new WP_REST_Response( array( 'code' => 'bad_piece' ), 400 );
+	}
+	$next = (int) get_post_meta( $id, 'akr_file_next', true );
+	if ( 'pending' === $state ) {
+		$next = 0;
+	}
+	if ( $index !== $next ) {
+		return new WP_REST_Response( array( 'code' => 'out_of_order', 'next' => $next ), 409 );
+	}
+	$body = (string) $req->get_body();
+	$len  = strlen( $body );
+	if ( $len < 1 || $len > AKR_CHUNK_MAX_BYTES ) {
+		return new WP_REST_Response( array( 'code' => 'bad_size' ), 413 );
+	}
+	$name = (string) get_post_meta( $id, 'akr_file_name', true );
+	$ext  = strtolower( pathinfo( $name, PATHINFO_EXTENSION ) );
+	if ( ! in_array( $ext, akr_file_types(), true ) ) {
+		return new WP_REST_Response( array( 'code' => 'bad_file_type' ), 400 );
+	}
+
+	$dir  = akr_private_dir();
+	$part = $dir . '/' . $id . '.part';
+	if ( 0 === $index && is_file( $part ) ) {
+		@unlink( $part );
+	}
+	if ( false === file_put_contents( $part, $body, FILE_APPEND | LOCK_EX ) ) {
+		return new WP_REST_Response( array( 'code' => 'write_failed' ), 500 );
+	}
+	clearstatcache( true, $part );
+	if ( filesize( $part ) > AKR_FILE_MAX_BYTES ) {
+		@unlink( $part );
+		update_post_meta( $id, 'akr_file_state', 'pending' );
+		return new WP_REST_Response( array( 'code' => 'too_big' ), 413 );
+	}
+	update_post_meta( $id, 'akr_file_next', $index + 1 );
+	update_post_meta( $id, 'akr_file_state', 'uploading' );
+
+	if ( $index + 1 < $total ) {
+		return new WP_REST_Response( array( 'done' => false, 'next' => $index + 1 ), 200 );
+	}
+	$final = bin2hex( random_bytes( 16 ) ) . '.' . $ext;
+	if ( ! @rename( $part, $dir . '/' . $final ) ) {
+		return new WP_REST_Response( array( 'code' => 'write_failed' ), 500 );
+	}
+	$bytes = (int) filesize( $dir . '/' . $final );
+	update_post_meta( $id, 'akr_file_path', $final );
+	update_post_meta( $id, 'akr_file_bytes', $bytes );
+	update_post_meta( $id, 'akr_file_state', 'stored' );
+	update_post_meta( $id, 'akr_file_stored_at', time() );
+	delete_post_meta( $id, 'akr_file_next' );
+	akr_request_log( $id, 'The customer uploaded the file (' . size_format( $bytes ) . ').' );
+	return new WP_REST_Response( array( 'done' => true ), 200 );
 }
 
 add_action(
@@ -774,6 +1057,170 @@ add_action(
 				},
 			)
 		);
+		// Called by the customer's browser, so it is protected by the upload token instead of the shared key.
+		register_rest_route(
+			'akrinity/v1',
+			'/quote-file',
+			array(
+				'methods'             => 'POST',
+				'callback'            => 'akr_handle_quote_file',
+				'permission_callback' => '__return_true',
+			)
+		);
+	}
+);
+
+// Boxes on the request screen: status (side), customer file, history.
+add_action(
+	'add_meta_boxes_akr_request',
+	function () {
+		add_meta_box( 'akr_request_status', 'Status', 'akr_status_box', 'akr_request', 'side', 'high' );
+		add_meta_box( 'akr_request_file', 'Customer file', 'akr_file_box', 'akr_request', 'normal', 'default' );
+		add_meta_box( 'akr_request_history', 'History', 'akr_history_box', 'akr_request', 'normal', 'low' );
+	}
+);
+
+function akr_status_box( $post ) {
+	wp_nonce_field( 'akr_status_save', 'akr_status_nonce' );
+	$cur = akr_request_status( $post->ID );
+	echo '<p>' . akr_status_badge( $cur ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput -- built from escaped parts.
+	echo '<p><label for="akr_status"><strong>Change status</strong></label><br><select name="akr_status" id="akr_status" style="width:100%">';
+	foreach ( akr_statuses() as $key => $label ) {
+		printf( '<option value="%s"%s>%s</option>', esc_attr( $key ), selected( $cur, $key, false ), esc_html( $label ) );
+	}
+	echo '</select></p>';
+	echo '<p><label for="akr_status_note"><strong>Note (optional)</strong></label><br><textarea name="akr_status_note" id="akr_status_note" rows="3" style="width:100%"></textarea></p>';
+	echo '<p class="description">Press Update to save. Every change is written to History.</p>';
+}
+
+add_action(
+	'save_post_akr_request',
+	function ( $post_id ) {
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return;
+		}
+		$nonce = isset( $_POST['akr_status_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['akr_status_nonce'] ) ) : '';
+		if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'akr_status_save' ) || ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+		$new  = isset( $_POST['akr_status'] ) ? sanitize_key( wp_unslash( $_POST['akr_status'] ) ) : '';
+		$note = isset( $_POST['akr_status_note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['akr_status_note'] ) ) : '';
+		$all  = akr_statuses();
+		$old  = akr_request_status( $post_id );
+		if ( isset( $all[ $new ] ) && $new !== $old ) {
+			update_post_meta( $post_id, 'akr_status', $new );
+			akr_request_log( $post_id, 'Status changed from ' . $all[ $old ] . ' to ' . $all[ $new ] . ( '' !== $note ? '. Note: ' . $note : '' ) );
+		} elseif ( '' !== $note ) {
+			akr_request_log( $post_id, 'Note: ' . $note );
+		}
+	}
+);
+
+function akr_file_box( $post ) {
+	$id    = $post->ID;
+	$state = (string) get_post_meta( $id, 'akr_file_state', true );
+	$name  = (string) get_post_meta( $id, 'akr_file_name', true );
+	if ( '' === $name && '' === $state ) {
+		echo '<p>No file was added to this request.</p>';
+		return;
+	}
+	if ( 'stored' === $state ) {
+		$bytes = (int) get_post_meta( $id, 'akr_file_bytes', true );
+		$when  = (int) get_post_meta( $id, 'akr_file_stored_at', true );
+		printf(
+			'<p><strong>%s</strong> &middot; %s%s</p>',
+			esc_html( $name ),
+			esc_html( size_format( $bytes ) ),
+			$when ? ' &middot; uploaded ' . esc_html( wp_date( 'j M Y, g:i a', $when ) ) : ''
+		);
+		$dl  = wp_nonce_url( admin_url( 'admin-post.php?action=akr_file_download&request=' . $id ), 'akr_file_' . $id );
+		$del = wp_nonce_url( admin_url( 'admin-post.php?action=akr_file_delete&request=' . $id ), 'akr_file_' . $id );
+		printf( '<p><a class="button button-primary" href="%s">Download file</a> ', esc_url( $dl ) );
+		printf(
+			'<a class="button" style="color:#b32d2e;border-color:#b32d2e" href="%s" onclick="return confirm(\'Delete the customer file for this request? This cannot be undone.\');">Delete file</a></p>',
+			esc_url( $del )
+		);
+		echo '<p class="description">Open the downloaded file in your slicer or 3D software to prepare the quote.</p>';
+		if ( in_array( akr_request_status( $id ), akr_closed_statuses(), true ) ) {
+			echo '<p style="padding:8px 12px;background:#fcf0c3;border-left:4px solid #dba617"><strong>This request is closed.</strong> Delete the file when you no longer need it.</p>';
+		}
+	} elseif ( 'uploading' === $state || 'pending' === $state ) {
+		printf( '<p>The customer chose <strong>%s</strong>, but the upload has not finished.</p>', esc_html( $name ) );
+		echo '<p class="description">If it never completes, ask the customer to send the file on WhatsApp or by email, quoting ' . esc_html( akr_request_reference( $id ) ) . '.</p>';
+	} elseif ( 'deleted' === $state ) {
+		$when = (int) get_post_meta( $id, 'akr_file_deleted_at', true );
+		echo '<p>The file was deleted' . ( $when ? ' on ' . esc_html( wp_date( 'j M Y, g:i a', $when ) ) : '' ) . '.</p>';
+	}
+}
+
+function akr_history_box( $post ) {
+	$log = get_post_meta( $post->ID, 'akr_log', true );
+	if ( ! is_array( $log ) || ! $log ) {
+		echo '<p>Nothing yet.</p>';
+		return;
+	}
+	echo '<table class="widefat striped"><thead><tr><th style="width:170px">When</th><th style="width:140px">Who</th><th>What</th></tr></thead><tbody>';
+	foreach ( array_reverse( $log ) as $row ) {
+		printf(
+			'<tr><td>%s</td><td>%s</td><td>%s</td></tr>',
+			esc_html( wp_date( 'j M Y, g:i a', (int) ( $row['time'] ?? 0 ) ) ),
+			esc_html( (string) ( $row['who'] ?? '' ) ),
+			nl2br( esc_html( (string) ( $row['text'] ?? '' ) ) )
+		);
+	}
+	echo '</tbody></table>';
+}
+
+// Download and delete buttons. Both need a signed-in user who can edit the request, and a nonce.
+add_action(
+	'admin_post_akr_file_download',
+	function () {
+		$id    = isset( $_GET['request'] ) ? (int) $_GET['request'] : 0;
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! $id || ! current_user_can( 'edit_post', $id ) || ! wp_verify_nonce( $nonce, 'akr_file_' . $id ) ) {
+			wp_die( 'You are not allowed to do that.', 'Not allowed', array( 'response' => 403 ) );
+		}
+		$path = akr_file_path( $id );
+		if ( '' === $path ) {
+			wp_die( 'The file is not available.', 'Not found', array( 'response' => 404 ) );
+		}
+		$name = str_replace( array( '"', "\r", "\n" ), '', (string) get_post_meta( $id, 'akr_file_name', true ) );
+		akr_request_log( $id, 'File downloaded.' );
+		nocache_headers();
+		header( 'Content-Type: application/octet-stream' );
+		header( 'Content-Disposition: attachment; filename="' . $name . '"' );
+		header( 'Content-Length: ' . filesize( $path ) );
+		readfile( $path );
+		exit;
+	}
+);
+
+add_action(
+	'admin_post_akr_file_delete',
+	function () {
+		$id    = isset( $_GET['request'] ) ? (int) $_GET['request'] : 0;
+		$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+		if ( ! $id || ! current_user_can( 'edit_post', $id ) || ! wp_verify_nonce( $nonce, 'akr_file_' . $id ) ) {
+			wp_die( 'You are not allowed to do that.', 'Not allowed', array( 'response' => 403 ) );
+		}
+		akr_remove_file( $id );
+		update_post_meta( $id, 'akr_file_state', 'deleted' );
+		update_post_meta( $id, 'akr_file_deleted_at', time() );
+		delete_post_meta( $id, 'akr_file_path' );
+		delete_post_meta( $id, 'akr_file_next' );
+		akr_request_log( $id, 'The customer file was deleted.' );
+		wp_safe_redirect( (string) get_edit_post_link( $id, 'url' ) );
+		exit;
+	}
+);
+
+// Deleting a request for good also removes its file.
+add_action(
+	'before_delete_post',
+	function ( $post_id ) {
+		if ( 'akr_request' === get_post_type( $post_id ) ) {
+			akr_remove_file( $post_id );
+		}
 	}
 );
 

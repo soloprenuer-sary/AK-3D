@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { FilePreview } from '@/components/three/FilePreview';
 import { COLOURS, type ColourKey } from '@/lib/shop-data';
 import { sendQuoteRequest } from '@/lib/auth-client';
+import { uploadQuoteFile, type UploadTicket } from '@/lib/quote-upload';
 
 const ALLOWED = ['stl', '3mf', 'obj', 'step', 'stp', 'iges', 'igs', 'jpg', 'jpeg', 'png', 'pdf'];
 const MAX_MB = 300;
@@ -22,8 +23,9 @@ interface Errors {
 /**
  * Custom quote request. Validates the fields and the file (type and size) in the browser, then
  * sends the details to WordPress, which saves them under Quote requests and emails the studio.
- * The file itself is not uploaded yet (private storage is not connected): only its name and size are
- * sent, and the customer is asked to send the file by WhatsApp or email, quoting the reference.
+ * The file is then uploaded in pieces straight to WordPress, which keeps it in a private folder.
+ * If the upload fails, the request is already saved and the customer can retry or send the file by
+ * WhatsApp or email, quoting the reference.
  */
 export function QuoteForm() {
   const [job, setJob] = useState<'print' | 'design'>('print');
@@ -36,6 +38,30 @@ export function QuoteForm() {
   const [serverError, setServerError] = useState('');
   const [reference, setReference] = useState('');
   const [sentFile, setSentFile] = useState('');
+  const [upload, setUpload] = useState<{
+    state: 'idle' | 'sending' | 'done' | 'failed';
+    pct: number;
+    error: string;
+  }>({
+    state: 'idle',
+    pct: 0,
+    error: '',
+  });
+  const pending = useRef<{ file: File; ticket: UploadTicket } | null>(null);
+
+  const runUpload = async () => {
+    const p = pending.current;
+    if (!p) return;
+    setUpload({ state: 'sending', pct: 0, error: '' });
+    const err = await uploadQuoteFile(p.file, p.ticket, (pct) =>
+      setUpload({ state: 'sending', pct, error: '' }),
+    );
+    if (err) setUpload({ state: 'failed', pct: 0, error: err });
+    else {
+      pending.current = null;
+      setUpload({ state: 'done', pct: 100, error: '' });
+    }
+  };
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -96,10 +122,17 @@ export function QuoteForm() {
     }
     setReference(r.reference);
     setSentFile(picked?.name ?? '');
+    setUpload({ state: 'idle', pct: 0, error: '' });
+    pending.current = picked && r.ticket ? { file: picked, ticket: r.ticket } : null;
     form.reset();
     setFileName('');
     setModel(null);
     setBiz(false);
+    if (pending.current) {
+      setBusy(true);
+      await runUpload();
+      setBusy(false);
+    }
   };
 
   return (
@@ -288,8 +321,7 @@ export function QuoteForm() {
 
         <span id="file-hint" className="meta">
           {job === 'print' ? 'STL, 3MF, OBJ, STEP or IGES' : 'JPG, PNG or PDF'} · up to {MAX_MB} MB.
-          The file is not uploaded with this form yet: we note its name, then ask you to send it on
-          WhatsApp or by email.
+          We upload it with your request. It is kept privately and only the studio can open it.
           {fileName ? ` Selected: ${fileName}` : ''}
         </span>
         {errors.file && (
@@ -310,7 +342,11 @@ export function QuoteForm() {
       )}
 
       <button className="btn btn-primary btn-wide" type="submit" disabled={busy} aria-busy={busy}>
-        {busy ? 'Sending your request…' : 'Request my quote'}
+        {busy
+          ? upload.state === 'sending'
+            ? 'Uploading your file…'
+            : 'Sending your request…'
+          : 'Request my quote'}
       </button>
 
       <p id="quote-note" className="meta">
@@ -325,9 +361,47 @@ export function QuoteForm() {
         <p className="ok" role="status">
           Thank you. We received your request ({reference}).
           {sentFile
-            ? ` Please send your file (${sentFile}) to us on WhatsApp or by email and mention ${reference}, so we can quote it.`
+            ? upload.state === 'done'
+              ? ` Your file (${sentFile}) was uploaded.`
+              : upload.state === 'sending'
+                ? ' Uploading your file…'
+                : upload.state === 'idle'
+                  ? ` Please send your file (${sentFile}) to us on WhatsApp or by email and mention ${reference}, so we can quote it.`
+                  : ''
             : ' We will reply with a price and lead time.'}
         </p>
+      )}
+      {upload.state === 'sending' && (
+        <div
+          className="upload-bar"
+          role="progressbar"
+          aria-valuenow={upload.pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Upload progress"
+        >
+          <span style={{ width: `${upload.pct}%` }} />
+          <em>{upload.pct}%</em>
+        </div>
+      )}
+      {upload.state === 'failed' && (
+        <div className="err" role="alert">
+          <p>
+            {upload.error} Your request is saved ({reference}) but your file did not arrive. You can
+            try again, or send the file on WhatsApp or by email and mention {reference}.
+          </p>
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={async () => {
+              setBusy(true);
+              await runUpload();
+              setBusy(false);
+            }}
+          >
+            Try the upload again
+          </button>
+        </div>
       )}
     </form>
   );

@@ -221,17 +221,34 @@ export async function sendBusinessRequest(
 }
 
 /** Sends a custom quote request (the quote page). error is a message to show, or null on success. */
-export async function sendQuoteRequest(
-  values: Record<string, string>,
-): Promise<{ error: string | null; reference: string }> {
+export async function sendQuoteRequest(values: Record<string, string>): Promise<{
+  error: string | null;
+  reference: string;
+  /** Present when the request had a file: lets the browser upload it. */
+  ticket: { id: number; token: string; exp: number } | null;
+}> {
   const r = await call('quote', values);
   if (!r.ok) {
     return {
       error: explain(r, 'We could not send your request. Please try again.'),
       reference: '',
+      ticket: null,
     };
   }
-  return { error: null, reference: String((r.data as { reference?: string }).reference ?? '') };
+  const d = r.data as {
+    reference?: string;
+    requestId?: number;
+    uploadToken?: string;
+    uploadExp?: number;
+  };
+  return {
+    error: null,
+    reference: String(d.reference ?? ''),
+    ticket:
+      d.uploadToken && d.requestId && d.uploadExp
+        ? { id: d.requestId, token: d.uploadToken, exp: d.uploadExp }
+        : null,
+  };
 }
 
 // ---------- password reset ----------
