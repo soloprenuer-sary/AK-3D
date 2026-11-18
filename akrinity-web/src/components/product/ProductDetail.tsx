@@ -15,6 +15,7 @@ import {
   type ShopProduct,
 } from '@/lib/shop-data';
 import { ProductReviews } from './ProductReviews';
+import { splitLabel } from '@/lib/product-content';
 import { CompareButton, WishButton } from '@/components/shop/ProductActions';
 import { useCart } from '@/lib/cart-store';
 
@@ -284,10 +285,29 @@ export function ProductDetail({
               incl. GST
             </span>
           </div>
-          <p className="desc">
-            {product.description ??
-              '[Two or three lines on what this is, who it is for and what makes it good.]'}
-          </p>
+          {product.highlights?.length ? (
+            <ul className="highlights">
+              {product.highlights.slice(0, 6).map((h) => {
+                const s = splitLabel(h);
+                return (
+                  <li key={h}>
+                    {s ? (
+                      <>
+                        <b>{s.label}.</b> {s.rest}
+                      </>
+                    ) : (
+                      h
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="desc">
+              {product.description ??
+                '[Two or three lines on what this is, who it is for and what makes it good.]'}
+            </p>
+          )}
 
           <fieldset className="opt">
             <legend>Colour option</legend>
@@ -495,12 +515,61 @@ export function ProductDetail({
         </div>
       </section>
 
+      {product.longDescription?.length || product.specs?.length ? (
+        <section className="pdp-more">
+          <div className="wrap pdp-more-in">
+            {product.longDescription?.length ? (
+              <div className="pdp-about" id="about">
+                <h2 className="d">
+                  About this <span className="hl">product</span>
+                </h2>
+                <div className="prose">
+                  {product.longDescription.map((b, i) => {
+                    if (b.t === 'h') return <h3 key={i}>{b.text}</h3>;
+                    if (b.t === 'p') return <p key={i}>{b.text}</p>;
+                    if (b.t === 'ul')
+                      return (
+                        <ul key={i}>
+                          {b.items.map((it) => (
+                            <li key={it}>{it}</li>
+                          ))}
+                        </ul>
+                      );
+                    return (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={i}
+                        src={b.src}
+                        alt={b.alt}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+            {product.specs?.length ? (
+              <div className="pdp-specs" id="specs">
+                <h2 className="d">
+                  Product <span className="hl">specs</span>
+                </h2>
+                <dl className="spec-table">
+                  {product.specs.map((s) => (
+                    <div key={s.name}>
+                      <dt>{s.name}</dt>
+                      <dd>{s.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
       <section className="details">
         <div className="wrap">
-          <div>
-            <h2>Details</h2>
-            <p>[Dimensions, weight, finish, assembly and care instructions.]</p>
-          </div>
           <div>
             <h2>Shipping</h2>
             <p>[Dispatch time, courier, tracking, free shipping threshold.]</p>

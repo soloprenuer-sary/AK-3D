@@ -14,6 +14,7 @@ import type {
   ShopProduct,
 } from './shop-data';
 import type { Block, Guide } from './guides-data';
+import { buildSpecs, htmlToBlocks, listItems } from './product-content';
 
 const STORE_API = process.env.NEXT_PUBLIC_WC_STORE_API_URL ?? '';
 const GRAPHQL = process.env.NEXT_PUBLIC_WP_GRAPHQL_URL ?? '';
@@ -32,6 +33,8 @@ export interface StoreProduct {
     sale_price?: string;
     currency_minor_unit: number;
   };
+  formatted_weight?: string;
+  formatted_dimensions?: string;
   average_rating?: string;
   review_count?: number;
   is_in_stock: boolean;
@@ -179,6 +182,12 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
     description: stripTags(p.short_description || p.description || '') || undefined,
     rating: Number(p.average_rating) > 0 ? Number(p.average_rating) : undefined,
     reviewCount: p.review_count && p.review_count > 0 ? p.review_count : undefined,
+    highlights:
+      listItems(p.short_description ?? '').length >= 2
+        ? listItems(p.short_description ?? '')
+        : undefined,
+    longDescription: htmlToBlocks(p.description ?? ''),
+    specs: buildSpecs(p.attributes, p.formatted_weight, p.formatted_dimensions),
     crossSellIds: p.extensions?.akrinity?.cross_sell_ids?.map((n) => `wc-${n}`),
     upsellIds: p.extensions?.akrinity?.upsell_ids?.map((n) => `wc-${n}`),
   };

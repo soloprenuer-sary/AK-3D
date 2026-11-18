@@ -119,15 +119,35 @@ const BUILT_IN: BuiltIn[] = [
  * Used when a sub-category has no picture in WordPress.
  */
 const LOCAL_IMAGES = new Set([
-  'desk-gadgets_cable-management', 'desk-gadgets_desk-organisers', 'desk-gadgets_desk-toys',
-  'desk-gadgets_phone-stands', 'experimental-art_geometric', 'experimental-art_parametric',
-  'experimental-art_print-in-place', 'figurines-miniatures_busts', 'figurines-miniatures_display-models',
-  'figurines-miniatures_miniatures', 'gifts-personalised_corporate-gifts', 'gifts-personalised_keychains',
-  'gifts-personalised_name-plates', 'hobby-cosplay_cosplay-badges', 'hobby-cosplay_dice-towers',
-  'hobby-cosplay_terrain', 'home-decor_lamps', 'home-decor_showpieces', 'home-decor_vases-and-planters',
-  'home-decor_wall-art', 'kitchen_drawer-dividers', 'kitchen_egg-trays', 'kitchen_spoon-and-knife-holders',
-  'kitchen_utility-tools', 'original-characters_busts', 'original-characters_chibi-figures',
-  'original-characters_display-stands', 'spare-parts_brackets', 'spare-parts_custom-parts',
+  'desk-gadgets_cable-management',
+  'desk-gadgets_desk-organisers',
+  'desk-gadgets_desk-toys',
+  'desk-gadgets_phone-stands',
+  'experimental-art_geometric',
+  'experimental-art_parametric',
+  'experimental-art_print-in-place',
+  'figurines-miniatures_busts',
+  'figurines-miniatures_display-models',
+  'figurines-miniatures_miniatures',
+  'gifts-personalised_corporate-gifts',
+  'gifts-personalised_keychains',
+  'gifts-personalised_name-plates',
+  'hobby-cosplay_cosplay-badges',
+  'hobby-cosplay_dice-towers',
+  'hobby-cosplay_terrain',
+  'home-decor_lamps',
+  'home-decor_showpieces',
+  'home-decor_vases-and-planters',
+  'home-decor_wall-art',
+  'kitchen_drawer-dividers',
+  'kitchen_egg-trays',
+  'kitchen_spoon-and-knife-holders',
+  'kitchen_utility-tools',
+  'original-characters_busts',
+  'original-characters_chibi-figures',
+  'original-characters_display-stands',
+  'spare-parts_brackets',
+  'spare-parts_custom-parts',
   'spare-parts_knobs-and-clips',
 ]);
 
@@ -154,6 +174,8 @@ export const CATEGORIES: ShopCategory[] = BUILT_IN.map((c) => {
 export const SHOP_CATEGORIES = CATEGORIES.map((c) => c.name);
 export const SIZE_OPTIONS = ['Small', 'Medium', 'Large'];
 export const SHOP_MATERIALS: Material[] = ['PLA+', 'PETG', 'ABS / ASA', 'Resin'];
+
+import type { DescBlock, ProductSpec } from './product-content';
 
 /** One bulk price range set on the product in WordPress. to is null for "and up". */
 export interface BulkTier {
@@ -193,6 +215,12 @@ export interface ShopProduct {
   /** Average star rating from WooCommerce's own reviews (0 to 5) and how many reviews. */
   rating?: number;
   reviewCount?: number;
+  /** Bullet points from the short description, when it is a list. */
+  highlights?: string[];
+  /** The long description as headings, paragraphs, lists and pictures. */
+  longDescription?: DescBlock[];
+  /** Specifications: size, weight and every attribute with a value. */
+  specs?: ProductSpec[];
   /** Products set as cross-sells and upsells on this product in WordPress ("wc-<id>"). */
   crossSellIds?: string[];
   upsellIds?: string[];
@@ -245,7 +273,8 @@ const SUB_WORDS: Record<string, RegExp> = {
   Lamps: /lamp|lantern|night ?light|shade/i,
   'Wall art': /wall|frame|hanging|poster|plaque/i,
   'Desk organisers': /organi[sz]er|pen (holder|stand|cup)|desk tray|stationery/i,
-  'Phone stands': /(phone|tablet|mobile).*(stand|holder|dock)|(stand|holder|dock).*(phone|tablet|mobile)/i,
+  'Phone stands':
+    /(phone|tablet|mobile).*(stand|holder|dock)|(stand|holder|dock).*(phone|tablet|mobile)/i,
   'Cable management': /cable|cord|wire/i,
   'Desk toys': /fidget|desk toy|spinner|puzzle|toy/i,
   'Egg trays': /egg/i,
@@ -279,6 +308,9 @@ export function categorySlug(c: ShopCategory): string {
   return c.slug || slugify(c.name);
 }
 
-export function findCategory(slug: string, tree: ShopCategory[] = CATEGORIES): ShopCategory | undefined {
+export function findCategory(
+  slug: string,
+  tree: ShopCategory[] = CATEGORIES,
+): ShopCategory | undefined {
   return tree.find((c) => categorySlug(c) === slug);
 }

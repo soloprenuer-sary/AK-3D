@@ -1121,3 +1121,26 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .cart-row-name{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .fresh-main .fresh-name{font-size:30px}
 .crumbs span[aria-current]{display:inline-block;max-width:min(70ch,100%);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+
+/* ===== Product page: highlights, long description, specifications ===== */
+.highlights{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.highlights li{position:relative;padding-left:22px;font-size:15.5px;line-height:1.5;color:var(--muted)}
+.highlights li::before{content:'';position:absolute;left:0;top:.5em;width:9px;height:9px;border-radius:50%;background:var(--accent);border:1.5px solid var(--ink)}
+.highlights li b{color:var(--ink)}
+.pdp-more{padding-block:var(--sec) 24px}
+.pdp-more-in{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:48px;align-items:start}
+.pdp-more h2{font-size:clamp(34px,4vw,52px);line-height:1;margin-bottom:20px}
+.prose{max-width:720px}
+.prose h3{font:400 26px/1.1 var(--display);text-transform:uppercase;margin:26px 0 8px}
+.prose p{font-size:16.5px;line-height:1.7;margin:0 0 12px;color:var(--ink)}
+.prose ul{margin:0 0 14px;padding-left:22px;display:flex;flex-direction:column;gap:6px;line-height:1.6}
+.prose img{display:block;max-width:100%;height:auto;border:1.5px solid var(--ink);border-radius:18px;margin:14px 0;background:var(--white)}
+.pdp-specs{position:sticky;top:130px}
+.spec-table{margin:0;border:1.5px solid var(--ink);border-radius:20px;background:var(--white);overflow:hidden}
+.spec-table>div{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:14px;padding:12px 18px;border-bottom:1px solid #DCD8CE}
+.spec-table>div:last-child{border-bottom:0}
+.spec-table dt{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.spec-table dd{margin:0;font-size:15px;line-height:1.45;overflow-wrap:anywhere}
+@media (max-width:959px){.pdp-more-in{grid-template-columns:minmax(0,1fr);gap:36px}.pdp-specs{position:static}}
+@media (max-width:480px){.spec-table>div{grid-template-columns:minmax(0,1fr);gap:2px;padding:12px 16px}}
+.prose img{max-height:560px;object-fit:contain}
