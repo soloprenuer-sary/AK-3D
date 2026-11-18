@@ -220,6 +220,20 @@ export async function sendBusinessRequest(
   return { error: null, reference: String((r.data as { reference?: string }).reference ?? '') };
 }
 
+/** Sends a custom quote request (the quote page). error is a message to show, or null on success. */
+export async function sendQuoteRequest(
+  values: Record<string, string>,
+): Promise<{ error: string | null; reference: string }> {
+  const r = await call('quote', values);
+  if (!r.ok) {
+    return {
+      error: explain(r, 'We could not send your request. Please try again.'),
+      reference: '',
+    };
+  }
+  return { error: null, reference: String((r.data as { reference?: string }).reference ?? '') };
+}
+
 // ---------- password reset ----------
 
 /** Asks WordPress to email a reset link. Always looks successful, so it cannot reveal who has an account. */

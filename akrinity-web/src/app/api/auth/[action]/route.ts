@@ -747,6 +747,94 @@ async function handleBusiness(request: Request, env: Env): Promise<Response> {
   return json({ ok: true, reference: String(r.data.reference ?? '') }, 201);
 }
 
+// ---------- custom quote requests ----------
+
+/** A custom quote request from the quote page. WordPress saves it under Quote requests and emails the studio. */
+async function handleQuote(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  if (!body) {
+    return json(
+      { error: 'Something went wrong with the form. Reload the page and try again.' },
+      400,
+    );
+  }
+  const job = body.job === 'design' ? 'design' : 'print';
+  const name = str(body.name, 80);
+  const phone = str(body.phone, 20).replace(/\s+/g, '');
+  const email = str(body.email, 254).toLowerCase();
+  const material = str(body.material, 40);
+  const quantity = str(body.quantity, 6);
+  const company = str(body.company, 120);
+  const gstin = str(body.gstin, 15).toUpperCase();
+  const notes = str(body.notes, 1500);
+  const fileName = str(body.fileName, 150);
+  const fileSize = str(body.fileSize, 20);
+
+  if (!name)
+    return json({ error: 'Enter your name so we know who to reply to.', field: 'name' }, 400);
+  if (!PHONE_RE.test(phone)) {
+    return json(
+      { error: 'Enter a 10-digit mobile number, with or without +91.', field: 'phone' },
+      400,
+    );
+  }
+  if (email && !EMAIL_RE.test(email)) {
+    return json({ error: 'Enter a valid email like name@example.com.', field: 'email' }, 400);
+  }
+  if (gstin && !GSTIN_RE.test(gstin)) {
+    return json(
+      { error: 'GSTIN should be 15 characters, for example 27ABCDE1234F1Z5.', field: 'gstin' },
+      400,
+    );
+  }
+  if (quantity && !/^\d{1,4}$/.test(quantity)) {
+    return json({ error: 'Enter the quantity as a number.', field: 'qty' }, 400);
+  }
+
+  const ip = clientIp(request);
+  const limited = await limitIp(env, request, 'quote', { max: 5, window: 3600 });
+  if (limited) return limited;
+  if (!(await verifyTurnstile(env, str(body.turnstileToken, 2048), ip))) {
+    return json({ error: 'Bot check failed. Please try again.' }, 400);
+  }
+
+  const r = await wpService(env, '/quote-request', {
+    job,
+    name,
+    phone,
+    email,
+    material,
+    quantity,
+    company,
+    gstin,
+    notes,
+    fileName,
+    fileSize,
+  });
+  if (r.status === 0) {
+    return json(
+      {
+        error:
+          'The request is taking longer than usual. Please wait a minute and check your email before sending it again.',
+        code: 'slow',
+      },
+      503,
+    );
+  }
+  if (r.status !== 201) {
+    console.error('quote: WordPress returned', r.status, String(r.data.code ?? ''));
+    return json(
+      {
+        error: 'We could not send your request right now. Please try again in a few minutes.',
+        code: 'unavailable',
+        debug: env.AUTH_STATUS === '1' ? { wpStatus: r.status, wpCode: r.data.code } : undefined,
+      },
+      503,
+    );
+  }
+  return json({ ok: true, reference: String(r.data.reference ?? '') }, 201);
+}
+
 // ---------- password reset ----------
 
 const GENERIC_OK = { ok: true };
@@ -902,7 +990,7 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   }
   if (
     !env.AKRINITY_SHARED_SECRET &&
-    ['check', 'register', 'forgot', 'reset', 'business'].includes(action ?? '')
+    ['check', 'register', 'forgot', 'reset', 'business', 'quote'].includes(action ?? '')
   ) {
     return json({ error: 'Accounts are not configured.', code: 'unconfigured' }, 503);
   }
@@ -913,6 +1001,7 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   if (action === 'profile') return handleProfile(request, env);
   if (action === 'password') return handlePassword(request, env);
   if (action === 'business') return handleBusiness(request, env);
+  if (action === 'quote') return handleQuote(request, env);
   if (action === 'forgot') return handleForgot(request, env);
   if (action === 'reset') return handleReset(request, env);
   if (action === 'logout') return json({ ok: true }, 200, { 'Set-Cookie': clearCookie() });

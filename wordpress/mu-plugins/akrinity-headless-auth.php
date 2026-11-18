@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Akrinity headless account
  * Description: Customer sign-up, account details and orders, bulk prices and bulk quote requests for the headless storefront. The one approved WordPress snippet (decisions 20, 32 and 34).
- * Version: 2.2.0
+ * Version: 2.3.0
  *
  * Install: copy this file to wp-content/mu-plugins/ and add to wp-config.php:
  *   define( 'AKRINITY_FRONTEND_URL', 'https://www.example.com' );
@@ -587,6 +587,15 @@ add_action(
 	}
 );
 
+/** The label shown for a request's kind. Older requests have no kind and are bulk requests. */
+function akr_request_kind_label( $post_id ) {
+	return 'custom' === get_post_meta( $post_id, 'akr_kind', true ) ? 'Custom quote' : 'Bulk quote';
+}
+
+function akr_request_reference( $post_id ) {
+	return ( 'custom' === get_post_meta( $post_id, 'akr_kind', true ) ? 'QR-' : 'BQ-' ) . $post_id;
+}
+
 add_action(
 	'add_meta_boxes',
 	function () {
@@ -595,29 +604,175 @@ add_action(
 			'Request details',
 			function ( $post ) {
 				$rows = array(
-					'Company'  => 'company',
-					'GSTIN'    => 'gstin',
-					'Contact'  => 'name',
-					'Phone'    => 'phone',
-					'Email'    => 'email',
-					'Needs'    => 'need',
-					'Quantity' => 'quantity',
-					'Product'  => 'product_name',
-					'Notes'    => 'notes',
+					'Reference'  => akr_request_reference( $post->ID ),
+					'Type'       => akr_request_kind_label( $post->ID ),
+					'Received'   => get_the_date( 'j M Y, g:i a', $post ),
+					'Company'    => get_post_meta( $post->ID, 'akr_company', true ),
+					'GSTIN'      => get_post_meta( $post->ID, 'akr_gstin', true ),
+					'Contact'    => get_post_meta( $post->ID, 'akr_name', true ),
+					'Phone'      => get_post_meta( $post->ID, 'akr_phone', true ),
+					'Email'      => get_post_meta( $post->ID, 'akr_email', true ),
+					'Job'        => get_post_meta( $post->ID, 'akr_job', true ),
+					'Material'   => get_post_meta( $post->ID, 'akr_material', true ),
+					'Needs'      => get_post_meta( $post->ID, 'akr_need', true ),
+					'Quantity'   => get_post_meta( $post->ID, 'akr_quantity', true ),
+					'Product'    => get_post_meta( $post->ID, 'akr_product_name', true ),
+					'File name'  => get_post_meta( $post->ID, 'akr_file_name', true ),
+					'File size'  => get_post_meta( $post->ID, 'akr_file_size', true ),
+					'Notes'      => get_post_meta( $post->ID, 'akr_notes', true ),
 				);
 				echo '<table class="widefat striped"><tbody>';
-				foreach ( $rows as $label => $key ) {
+				foreach ( $rows as $label => $value ) {
+					$value = (string) $value;
+					if ( '' === $value ) {
+						continue;
+					}
 					printf(
 						'<tr><th style="width:140px">%s</th><td>%s</td></tr>',
 						esc_html( $label ),
-						nl2br( esc_html( (string) get_post_meta( $post->ID, 'akr_' . $key, true ) ) )
+						nl2br( esc_html( $value ) )
 					);
 				}
 				echo '</tbody></table>';
+				if ( 'custom' === get_post_meta( $post->ID, 'akr_kind', true ) && '' !== (string) get_post_meta( $post->ID, 'akr_file_name', true ) ) {
+					echo '<p><em>The file itself is not stored here. Ask the customer to send it on WhatsApp or by email, quoting the reference.</em></p>';
+				}
 			},
 			'akr_request',
 			'normal',
 			'high'
+		);
+	}
+);
+
+// The list of requests: reference, type, contact, phone, email and date at a glance.
+add_filter(
+	'manage_akr_request_posts_columns',
+	function () {
+		return array(
+			'cb'        => '<input type="checkbox" />',
+			'akr_ref'   => 'Reference',
+			'title'     => 'Request',
+			'akr_kind'  => 'Type',
+			'akr_phone' => 'Phone',
+			'akr_email' => 'Email',
+			'date'      => 'Received',
+		);
+	}
+);
+add_action(
+	'manage_akr_request_posts_custom_column',
+	function ( $column, $post_id ) {
+		if ( 'akr_ref' === $column ) {
+			echo esc_html( akr_request_reference( $post_id ) );
+		} elseif ( 'akr_kind' === $column ) {
+			echo esc_html( akr_request_kind_label( $post_id ) );
+		} elseif ( 'akr_phone' === $column ) {
+			echo esc_html( (string) get_post_meta( $post_id, 'akr_phone', true ) );
+		} elseif ( 'akr_email' === $column ) {
+			echo esc_html( (string) get_post_meta( $post_id, 'akr_email', true ) );
+		}
+	},
+	10,
+	2
+);
+
+/** Saves a custom quote request (the quote page), then emails the admin and, if given, the customer. */
+function akr_handle_quote_request( WP_REST_Request $req ) {
+	$p   = $req->get_json_params();
+	$job = ( 'design' === ( $p['job'] ?? '' ) ) ? 'Design and print' : 'Print my file';
+	$f   = array(
+		'name'      => sanitize_text_field( (string) ( $p['name'] ?? '' ) ),
+		'phone'     => sanitize_text_field( (string) ( $p['phone'] ?? '' ) ),
+		'email'     => sanitize_email( (string) ( $p['email'] ?? '' ) ),
+		'material'  => sanitize_text_field( (string) ( $p['material'] ?? '' ) ),
+		'quantity'  => sanitize_text_field( (string) ( $p['quantity'] ?? '' ) ),
+		'company'   => sanitize_text_field( (string) ( $p['company'] ?? '' ) ),
+		'gstin'     => strtoupper( sanitize_text_field( (string) ( $p['gstin'] ?? '' ) ) ),
+		'notes'     => sanitize_textarea_field( (string) ( $p['notes'] ?? '' ) ),
+		'file_name' => sanitize_file_name( (string) ( $p['fileName'] ?? '' ) ),
+		'file_size' => sanitize_text_field( (string) ( $p['fileSize'] ?? '' ) ),
+	);
+	$email_given = '' !== trim( (string) ( $p['email'] ?? '' ) );
+	if ( '' === $f['name'] || '' === $f['phone'] || ( $email_given && ! is_email( $f['email'] ) ) ) {
+		return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
+	}
+
+	$id = wp_insert_post(
+		array(
+			'post_type'   => 'akr_request',
+			'post_status' => 'publish',
+			'post_title'  => 'Custom quote: ' . $f['name'] . ' (' . $job . ')',
+		)
+	);
+	if ( is_wp_error( $id ) || ! $id ) {
+		return new WP_REST_Response( array( 'code' => 'save_failed' ), 500 );
+	}
+	foreach ( $f as $key => $value ) {
+		update_post_meta( $id, 'akr_' . $key, $value );
+	}
+	update_post_meta( $id, 'akr_job', $job );
+	update_post_meta( $id, 'akr_kind', 'custom' );
+
+	$ref   = 'QR-' . $id;
+	$lines = array(
+		'Reference: ' . $ref,
+		'Job: ' . $job,
+		'Name: ' . $f['name'],
+		'Phone: ' . $f['phone'],
+		'Email: ' . ( '' !== $f['email'] ? $f['email'] : 'not given' ),
+		'Material: ' . ( '' !== $f['material'] ? $f['material'] : 'not given' ),
+		'Quantity: ' . ( '' !== $f['quantity'] ? $f['quantity'] : 'not given' ),
+		'Company: ' . ( '' !== $f['company'] ? $f['company'] : 'none' ),
+		'GSTIN: ' . ( '' !== $f['gstin'] ? $f['gstin'] : 'not given' ),
+		'File: ' . ( '' !== $f['file_name'] ? $f['file_name'] . ( '' !== $f['file_size'] ? ' (' . $f['file_size'] . ')' : '' ) . ' - not uploaded, ask the customer to send it' : 'none chosen' ),
+		'Notes: ' . ( '' !== $f['notes'] ? $f['notes'] : 'none' ),
+	);
+	$summary = implode( "\r\n", $lines );
+	$admin   = get_option( 'admin_email' );
+	$reply   = '' !== $f['email'] ? 'Reply-To: ' . str_replace( array( "\r", "\n", '<', '>' ), '', $f['name'] ) . ' <' . $f['email'] . '>' : '';
+	$email   = $f['email'];
+
+	akr_after_response(
+		function () use ( $admin, $email, $ref, $summary, $reply, $job, $f ) {
+			wp_mail(
+				$admin,
+				'New custom quote request ' . $ref . ' (' . $job . ')',
+				"Someone asked for a custom quote on the website.\r\n\r\n" . $summary . "\r\n",
+				'' !== $reply ? array( $reply ) : array()
+			);
+			if ( '' !== $email ) {
+				wp_mail(
+					$email,
+					'We received your quote request (' . $ref . ')',
+					"Thank you. We have received your quote request and will reply with a price and lead time.\r\n\r\n" . ( '' !== $f['file_name'] ? "Please send your file (" . $f['file_name'] . ") to us on WhatsApp or by reply to this email, and mention " . $ref . ".\r\n\r\n" : '' ) . "Here is what you sent us:\r\n\r\n" . $summary . "\r\n"
+				);
+			}
+		}
+	);
+
+	return new WP_REST_Response(
+		array(
+			'id'        => $id,
+			'reference' => $ref,
+		),
+		201
+	);
+}
+
+add_action(
+	'rest_api_init',
+	function () {
+		register_rest_route(
+			'akrinity/v1',
+			'/quote-request',
+			array(
+				'methods'             => 'POST',
+				'callback'            => 'akr_handle_quote_request',
+				'permission_callback' => function ( WP_REST_Request $req ) {
+					return akr_secret_ok( $req );
+				},
+			)
 		);
 	}
 );
@@ -666,6 +821,7 @@ function akr_handle_business_request( WP_REST_Request $req ) {
 	}
 	update_post_meta( $id, 'akr_product_name', $product_name );
 	update_post_meta( $id, 'akr_product_url', $product_url );
+	update_post_meta( $id, 'akr_kind', 'bulk' );
 
 	$ref   = 'BQ-' . $id;
 	$lines = array(
