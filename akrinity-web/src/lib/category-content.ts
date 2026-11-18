@@ -44,12 +44,23 @@ export interface CategoryCopy {
 }
 
 function decode(s: string): string {
+  const named: Record<string, string> = {
+    amp: '&',
+    quot: '"',
+    apos: "'",
+    lt: '<',
+    gt: '>',
+    nbsp: ' ',
+    rsquo: '’',
+    lsquo: '‘',
+    ndash: '–',
+    mdash: '—',
+    hellip: '…',
+  };
   return s
-    .replace(/&#8217;|&rsquo;/g, '’')
-    .replace(/&#8211;|&ndash;/g, '–')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#0?39;/g, "'");
+    .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n: string) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&([a-z]+);/gi, (m, n: string) => named[n.toLowerCase()] ?? m);
 }
 
 const stripTags = (s: string) =>
@@ -136,8 +147,10 @@ async function fetchCategoryData(): Promise<{
   const wpV2 = STORE_API.replace(/\/wc\/store\/v1\/?$/, '/wp/v2');
   const [cats, acf] = await Promise.all([
     // hide_empty=false: the Store API hides categories with no products by default
-    getJson(`${STORE_API}/products/categories?per_page=100&hide_empty=false`),
-    getJson(`${wpV2}/product_cat?per_page=100&_fields=id,acf`),
+    getJson(
+      `${STORE_API}/products/categories?per_page=100&hide_empty=false&_t=${Math.floor(Date.now() / 60000)}`,
+    ),
+    getJson(`${wpV2}/product_cat?per_page=100&_fields=id,acf&_t=${Math.floor(Date.now() / 60000)}`),
   ]);
   const copy = new Map<number, CategoryCopy>();
   if (Array.isArray(acf)) {

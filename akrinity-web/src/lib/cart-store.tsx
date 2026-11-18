@@ -43,7 +43,14 @@ const listeners = new Set<() => void>();
 
 function isLine(x: unknown): x is CartLine {
   const l = x as CartLine;
-  return Boolean(l) && typeof l.key === 'string' && typeof l.id === 'string' && typeof l.name === 'string' && typeof l.qty === 'number' && l.qty > 0;
+  return (
+    Boolean(l) &&
+    typeof l.key === 'string' &&
+    typeof l.id === 'string' &&
+    typeof l.name === 'string' &&
+    typeof l.qty === 'number' &&
+    l.qty > 0
+  );
 }
 
 function load() {
@@ -53,7 +60,10 @@ function load() {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const parsed: unknown = JSON.parse(raw);
-    if (Array.isArray(parsed)) lines = parsed.filter(isLine).map((l) => ({ ...l, slug: l.slug ?? '', madeToOrder: Boolean(l.madeToOrder) }));
+    if (Array.isArray(parsed))
+      lines = parsed
+        .filter(isLine)
+        .map((l) => ({ ...l, slug: l.slug ?? '', madeToOrder: Boolean(l.madeToOrder) }));
   } catch {
     // Private mode or bad data: start with an empty cart.
   }
@@ -134,7 +144,7 @@ export function parsePrice(price?: string): number | null {
 }
 
 export function formatRupees(n: number): string {
-  return `₹${Math.round(n).toLocaleString('en-IN')}`;
+  return `₹${n.toLocaleString('en-IN', { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 })}`;
 }
 
 /** The cart store needs no provider. Kept so the app layout does not change. */
@@ -149,7 +159,10 @@ export function useCart() {
       const p = parsePrice(l.price);
       return p === null ? null : p * l.qty;
     });
-    const subtotal = current.length > 0 && prices.every((p) => p !== null) ? (prices as number[]).reduce((a, b) => a + b, 0) : null;
+    const subtotal =
+      current.length > 0 && prices.every((p) => p !== null)
+        ? (prices as number[]).reduce((a, b) => a + b, 0)
+        : null;
     return {
       lines: current,
       count: current.reduce((n, l) => n + l.qty, 0),

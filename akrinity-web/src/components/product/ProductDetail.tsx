@@ -268,7 +268,7 @@ export function ProductDetail({
               {product.inStock ? 'In stock' : 'Made to order'}
             </span>
           </div>
-          <h1 className="d" id="product-name">
+          <h1 className={product.name.length > 50 ? 'd h1-long' : 'd'} id="product-name">
             {product.name}
           </h1>
           <div className="price">

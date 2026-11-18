@@ -4,15 +4,15 @@
  * through the cached catalogue proxy (so edits in WordPress show without a rebuild).
  * There is no sample data: callers stop when WordPress cannot be reached (see catalogue.ts).
  */
-import {
-  CATEGORIES,
-  COLOURS,
-  SHOP_MATERIALS,
-  SIZE_OPTIONS,
-  inferSub,
-  subKey,
+import { CATEGORIES, COLOURS, SHOP_MATERIALS, SIZE_OPTIONS, inferSub, subKey } from './shop-data';
+import type {
+  ColourKey,
+  ColourMode,
+  Material,
+  ProcessType,
+  ShopCategory,
+  ShopProduct,
 } from './shop-data';
-import type { ColourKey, ColourMode, Material, ProcessType, ShopCategory, ShopProduct } from './shop-data';
 import type { Block, Guide } from './guides-data';
 
 const STORE_API = process.env.NEXT_PUBLIC_WC_STORE_API_URL ?? '';
@@ -51,12 +51,23 @@ export interface StoreProduct {
 
 /** Decode the HTML entities WordPress uses in names and excerpts (e.g. &amp;, &#8217;). */
 function decode(s: string): string {
+  const named: Record<string, string> = {
+    amp: '&',
+    quot: '"',
+    apos: "'",
+    lt: '<',
+    gt: '>',
+    nbsp: ' ',
+    rsquo: '’',
+    lsquo: '‘',
+    ndash: '–',
+    mdash: '—',
+    hellip: '…',
+  };
   return s
-    .replace(/&#8217;|&rsquo;/g, '’')
-    .replace(/&#8211;|&ndash;/g, '–')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;|&#39;/g, "'");
+    .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n: string) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&([a-z]+);/gi, (m, n: string) => named[n.toLowerCase()] ?? m);
 }
 
 function stripTags(html: string): string {
@@ -70,7 +81,8 @@ function stripTags(html: string): string {
 
 function formatRupees(price: string, minorUnit: number): string {
   const value = Number(price) / 10 ** minorUnit;
-  return `₹${Math.round(value).toLocaleString('en-IN')}`;
+  // Keep paise when there are any, so ₹373.55 is not shown as ₹374.
+  return `₹${value.toLocaleString('en-IN', { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 2 })}`;
 }
 
 /** Terms of the first product attribute whose name matches, e.g. "Material". */
@@ -86,7 +98,10 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
   // Prefer a main category the shop knows. A product ticked only in a sub-category still lands in
   // the main category that owns it. Otherwise the first category WooCommerce lists.
   const subOf = (c: ShopCategory) =>
-    c.subInfo.find((s) => (s.id !== undefined && ids.has(s.id)) || names.some((n) => subKey(n) === subKey(s.name)));
+    c.subInfo.find(
+      (s) =>
+        (s.id !== undefined && ids.has(s.id)) || names.some((n) => subKey(n) === subKey(s.name)),
+    );
   const known =
     tree.find((c) => (c.id !== undefined && ids.has(c.id)) || names.includes(c.name)) ??
     tree.find((c) => subOf(c));
@@ -170,12 +185,17 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
 }
 
 /** Every product from the Store API (all pages), or null if WordPress cannot be reached. */
-export async function fetchStoreProducts(tree: ShopCategory[] = CATEGORIES): Promise<ShopProduct[] | null> {
+export async function fetchStoreProducts(
+  tree: ShopCategory[] = CATEGORIES,
+): Promise<ShopProduct[] | null> {
   if (!STORE_API) return null;
   try {
     const all: StoreProduct[] = [];
     for (let page = 1; page <= 20; page++) {
-      const res = await fetch(`${STORE_API}/products?per_page=100&page=${page}`);
+      // _t changes every minute: the host caches some REST addresses, and a new address skips a stale copy.
+      const res = await fetch(
+        `${STORE_API}/products?per_page=100&page=${page}&_t=${Math.floor(Date.now() / 60000)}`,
+      );
       if (!res.ok) return page === 1 ? null : all.map((p) => mapStoreProduct(p, tree));
       const data = (await res.json()) as StoreProduct[];
       all.push(...data);

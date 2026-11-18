@@ -1110,3 +1110,14 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .legal-toc a{display:block;padding-block:6px}
 .legal-toc ol{gap:0}
 .faq-head a{display:inline-block;padding-block:6px}
+
+/* ===== Long product names (for example full marketplace titles) ===== */
+.buy h1.h1-long{font-family:var(--body);font-weight:800;text-transform:none;font-size:clamp(22px,2.3vw,30px);line-height:1.2;letter-spacing:-.01em}
+.pc-name{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card-p .name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fresh-name{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.fresh-card:not(.fresh-main) .fresh-name{font-size:20px}
+.cmp-name{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cart-row-name{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.fresh-main .fresh-name{font-size:30px}
+.crumbs span[aria-current]{display:inline-block;max-width:min(70ch,100%);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}

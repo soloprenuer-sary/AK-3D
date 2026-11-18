@@ -41,10 +41,13 @@ const failure = (message: string, status: number): Response =>
 async function products(base: string): Promise<Response> {
   const all: unknown[] = [];
   for (let page = 1; page <= 20; page++) {
-    const res = await fetch(`${base}/wp-json/wc/store/v1/products?per_page=100&page=${page}`, {
-      next: { revalidate: CACHE_SECONDS },
-      signal: AbortSignal.timeout(20000),
-    });
+    const res = await fetch(
+      `${base}/wp-json/wc/store/v1/products?per_page=100&page=${page}&_t=${Math.floor(Date.now() / 60000)}`,
+      {
+        next: { revalidate: CACHE_SECONDS },
+        signal: AbortSignal.timeout(20000),
+      },
+    );
     if (!res.ok) return failure('The product service is unavailable.', 502);
     const data = (await res.json()) as unknown[];
     all.push(...data);
