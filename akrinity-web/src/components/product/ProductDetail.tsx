@@ -16,6 +16,7 @@ import {
 } from '@/lib/shop-data';
 import { ProductReviews } from './ProductReviews';
 import { splitLabel } from '@/lib/product-content';
+import { ProductMore } from './ProductMore';
 import { CompareButton, WishButton } from '@/components/shop/ProductActions';
 import { useCart } from '@/lib/cart-store';
 
@@ -515,60 +516,9 @@ export function ProductDetail({
         </div>
       </section>
 
-      {product.longDescription?.length || product.specs?.length ? (
-        <section className="pdp-more">
-          <div className="wrap pdp-more-in">
-            {product.longDescription?.length ? (
-              <div className="pdp-about" id="about">
-                <h2 className="d">
-                  About this <span className="hl">product</span>
-                </h2>
-                <div className="prose">
-                  {product.longDescription.map((b, i) => {
-                    if (b.t === 'h') return <h3 key={i}>{b.text}</h3>;
-                    if (b.t === 'p') return <p key={i}>{b.text}</p>;
-                    if (b.t === 'ul')
-                      return (
-                        <ul key={i}>
-                          {b.items.map((it) => (
-                            <li key={it}>{it}</li>
-                          ))}
-                        </ul>
-                      );
-                    return (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={i}
-                        src={b.src}
-                        alt={b.alt}
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-            {product.specs?.length ? (
-              <div className="pdp-specs" id="specs">
-                <h2 className="d">
-                  Product <span className="hl">specs</span>
-                </h2>
-                <dl className="spec-table">
-                  {product.specs.map((s) => (
-                    <div key={s.name}>
-                      <dt>{s.name}</dt>
-                      <dd>{s.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
+      <ProductMore product={product} />
 
-      <section className="details">
+      <section className="details" id="shipping">
         <div className="wrap">
           <div>
             <h2>Shipping</h2>
@@ -584,7 +534,7 @@ export function ProductDetail({
         </div>
       </section>
 
-      <div className="wrap review-section">
+      <div className="wrap review-section" id="reviews">
         <ProductReviews productName={product.name} />
       </div>
 
