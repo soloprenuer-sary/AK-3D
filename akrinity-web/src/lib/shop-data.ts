@@ -175,7 +175,7 @@ export const SHOP_CATEGORIES = CATEGORIES.map((c) => c.name);
 export const SIZE_OPTIONS = ['Small', 'Medium', 'Large'];
 export const SHOP_MATERIALS: Material[] = ['PLA+', 'PETG', 'ABS / ASA', 'Resin'];
 
-import type { DescBlock, ProductSpec } from './product-content';
+import type { DescBlock, ProductContent, ProductSpec } from './product-content';
 
 /** One bulk price range set on the product in WordPress. to is null for "and up". */
 export interface BulkTier {
@@ -219,6 +219,8 @@ export interface ShopProduct {
   highlights?: string[];
   /** The long description as headings, paragraphs, lists and pictures. */
   longDescription?: DescBlock[];
+  /** The product page content fields from WordPress (features, A+ pictures, specs table). */
+  content?: ProductContent;
   /** Specifications: size, weight and every attribute with a value. */
   specs?: ProductSpec[];
   /** Products set as cross-sells and upsells on this product in WordPress ("wc-<id>"). */

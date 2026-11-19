@@ -40,6 +40,8 @@ interface ProductDetailProps {
   crossSells: ShopProduct[];
   /** Suggested row (more like this). */
   related: ShopProduct[];
+  /** A draft preview: show exactly the data given, never the public copy. */
+  preview?: boolean;
 }
 
 /** One product in a suggestion row. */
@@ -72,10 +74,13 @@ export function ProductDetail({
   product: builtProduct,
   crossSells: builtCross,
   related: builtRelated,
+  preview,
 }: ProductDetailProps) {
   // Fresh data from WooCommerce replaces the built copy once it arrives (price, stock, photos, text).
   const live = useLiveProducts([builtProduct, ...builtCross, ...builtRelated]);
-  const product = live.find((p) => p.id === builtProduct.id) ?? builtProduct;
+  const product = preview
+    ? builtProduct
+    : (live.find((p) => p.id === builtProduct.id) ?? builtProduct);
   const refresh = (list: ShopProduct[]) =>
     list.map((r) => live.find((p) => p.id === r.id)).filter((p): p is ShopProduct => Boolean(p));
   const crossSells = refresh(builtCross);

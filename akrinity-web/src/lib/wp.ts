@@ -14,7 +14,7 @@ import type {
   ShopProduct,
 } from './shop-data';
 import type { Block, Guide } from './guides-data';
-import { buildSpecs, htmlToBlocks, listItems } from './product-content';
+import { buildSpecs, htmlToBlocks, listItems, parseProductContent } from './product-content';
 
 const STORE_API = process.env.NEXT_PUBLIC_WC_STORE_API_URL ?? '';
 const GRAPHQL = process.env.NEXT_PUBLIC_WP_GRAPHQL_URL ?? '';
@@ -49,6 +49,7 @@ export interface StoreProduct {
       cross_sell_ids?: number[];
       upsell_ids?: number[];
     };
+    akrinity_content?: unknown;
   };
 }
 
@@ -141,6 +142,7 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
     .map((t): ColourMode => (/multi/i.test(t) ? 'multi' : /paint/i.test(t) ? 'painted' : 'single'))
     .sort((a, b) => modeOrder.indexOf(a) - modeOrder.indexOf(b));
 
+  const content = parseProductContent(p.extensions?.akrinity_content);
   const onSale =
     Boolean(p.on_sale) &&
     Boolean(p.prices.regular_price) &&
@@ -182,10 +184,14 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
     description: stripTags(p.short_description || p.description || '') || undefined,
     rating: Number(p.average_rating) > 0 ? Number(p.average_rating) : undefined,
     reviewCount: p.review_count && p.review_count > 0 ? p.review_count : undefined,
+    // Key features from the content fields when they are filled in, otherwise the short description bullets.
     highlights:
-      listItems(p.short_description ?? '').length >= 2
-        ? listItems(p.short_description ?? '')
-        : undefined,
+      content?.hasContent && content.features.length
+        ? content.features
+        : listItems(p.short_description ?? '').length >= 2
+          ? listItems(p.short_description ?? '')
+          : undefined,
+    content,
     longDescription: htmlToBlocks(p.description ?? ''),
     specs: buildSpecs(p.attributes, p.formatted_weight, p.formatted_dimensions),
     crossSellIds: p.extensions?.akrinity?.cross_sell_ids?.map((n) => `wc-${n}`),

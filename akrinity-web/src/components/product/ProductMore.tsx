@@ -2,17 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import type { ShopProduct } from '@/lib/shop-data';
-import type { DescBlock } from '@/lib/product-content';
+import type { ContentPicture, DescBlock, ProductContent } from '@/lib/product-content';
 
 /** A picture from the long description. Wide banners and logo strips (more than 2.4 times wider than tall) are hidden. */
 function DescImage({
   src,
   alt,
+  caption,
   wide,
   onGone,
 }: {
   src: string;
   alt: string;
+  /** Text shown over the picture (A+ content). */
+  caption?: string;
   wide: boolean;
   /** Called once when the picture is hidden or fails to load, so the page can drop an empty picture column. */
   onGone: () => void;
@@ -40,6 +43,7 @@ function DescImage({
           onGone();
         }}
       />
+      {caption ? <figcaption>{caption}</figcaption> : null}
     </figure>
   );
 }
@@ -73,14 +77,56 @@ function Prose({ blocks }: { blocks: DescBlock[] }) {
   );
 }
 
+/** The pictures of a product that has A+ content, wide banners left out. */
+function usablePictures(c: ProductContent): ContentPicture[] {
+  return c.pictures.filter((p) => !(p.width > 0 && p.height > 0 && p.width / p.height > 2.4));
+}
+
+/** The left column of the "pictures" layout: the About blocks, then the Product details lines. */
+function aboutBlocks(c: ProductContent): DescBlock[] {
+  const out: DescBlock[] = [];
+  for (const a of c.about) {
+    if (a.title) out.push({ t: 'h', text: a.title });
+    if (a.text) out.push({ t: 'p', text: a.text });
+  }
+  if (c.details.length) {
+    out.push({ t: 'h', text: 'Product details' });
+    out.push({
+      t: 'ul',
+      items: c.details.map((d) => (d.label ? `${d.label}: ${d.value}` : d.value)),
+    });
+  }
+  return out;
+}
+
+/** The two columns of the "text" layout: key features, then the description and what is in the package. */
+function textLayout(c: ProductContent): { left: DescBlock[]; right: DescBlock[] } {
+  const left: DescBlock[] = c.features.length
+    ? [
+        { t: 'h', text: 'Key features' },
+        { t: 'ul', items: c.features },
+      ]
+    : [];
+  const right: DescBlock[] = c.description.map((p) => ({ t: 'p', text: p }) as DescBlock);
+  if (c.package.length) {
+    right.push({ t: 'h', text: 'Package includes' });
+    right.push({ t: 'ul', items: c.package });
+  }
+  return { left, right };
+}
+
 /**
- * Everything under the buy area: a sticky section menu, the key facts as tiles, the description with
- * its pictures in a grid beside the text, and the full specification list.
+ * Everything under the buy area: a sticky section menu, the key facts as tiles, the description and
+ * the full specification list. A product filled in with the content fields in WordPress uses those
+ * (pictures layout or text layout); older products keep the description box and attributes.
  */
 export function ProductMore({ product }: { product: ShopProduct }) {
+  const content = product.content?.hasContent ? product.content : undefined;
+
+  // Older products: description HTML and attributes.
   const blocks = product.longDescription ?? [];
-  const text = blocks.filter((b) => b.t !== 'img');
-  const images = blocks.filter((b): b is Extract<DescBlock, { t: 'img' }> => b.t === 'img');
+  const oldText = blocks.filter((b) => b.t !== 'img');
+  const oldImages = blocks.filter((b): b is Extract<DescBlock, { t: 'img' }> => b.t === 'img');
   const specs = product.specs ?? [];
 
   const facts = FACTS.map((f) => {
@@ -90,12 +136,32 @@ export function ProductMore({ product }: { product: ShopProduct }) {
   const factNames = new Set(facts.map((f) => f.name));
   const rest = specs.filter((s) => !factNames.has(s.name));
 
-  const hasDesc = text.length > 0 || images.length > 0;
+  // What the description section shows.
+  const pics = content ? usablePictures(content) : [];
+  const usePicturesLayout = Boolean(content && content.layout === 'pictures' && pics.length > 0);
+  const left: DescBlock[] = content
+    ? usePicturesLayout
+      ? aboutBlocks(content)
+      : textLayout(content).left
+    : oldText;
+  const right: DescBlock[] = content && !usePicturesLayout ? textLayout(content).right : [];
+  const oldMediaCount = content ? 0 : oldImages.length;
+  const mediaCount = content ? (usePicturesLayout ? pics.length : 0) : oldMediaCount;
+
   // Pictures that turn out to be banners or fail to load are counted, so when none is left the text uses the full width.
   const [gone, setGone] = useState(0);
-  const hasMedia = images.length - gone > 0;
-  // A short table with one or two rows looks empty, so the specs section needs at least three extra rows.
-  const showSpecs = rest.length >= 3;
+  const hasMedia = mediaCount - gone > 0;
+  const hasText = left.length > 0 || right.length > 0;
+  const hasDesc = hasText || hasMedia;
+
+  // The specs table: the owner's own rows, or (older products) the attributes when there are at least three.
+  const specRows = content
+    ? content.specs.map((s) => ({ name: s.label, value: s.value }))
+    : rest.length >= 3
+      ? rest
+      : [];
+  const showSpecs = specRows.length > 0;
+
   const items = [
     hasDesc && { id: 'about', label: 'Description' },
     showSpecs && { id: 'specs', label: 'Specifications' },
@@ -126,6 +192,9 @@ export function ProductMore({ product }: { product: ShopProduct }) {
 
   if (!hasDesc && !showSpecs && facts.length === 0) return null;
 
+  const twoColumns = hasMedia && left.length > 0;
+  const split = !hasMedia && left.length > 0 && right.length > 0;
+
   return (
     <>
       <nav className="pdp-nav" aria-label="On this page">
@@ -149,35 +218,74 @@ export function ProductMore({ product }: { product: ShopProduct }) {
         </section>
       )}
 
-      {(text.length > 0 || hasMedia) && (
+      {hasDesc && (
         <section className="wrap pdp-desc" id="about" aria-labelledby="about-h">
-          <div className={hasMedia && text.length ? 'pdp-desc-grid' : 'pdp-desc-grid text-only'}>
-            {text.length > 0 && (
-              <div className="pdp-desc-text">
-                <h2 className="d" id="about-h">
-                  About this <span className="hl">product</span>
-                </h2>
-                <Prose blocks={text} />
-              </div>
+          <div
+            className={
+              twoColumns
+                ? 'pdp-desc-grid'
+                : split
+                  ? 'pdp-desc-grid split'
+                  : 'pdp-desc-grid text-only'
+            }
+          >
+            {split && (
+              <h2 className="d split-h" id="about-h">
+                About this <span className="hl">product</span>
+              </h2>
             )}
-            {hasMedia && (
-              <div className="pdp-desc-media" role="group" aria-label="Product pictures">
-                {text.length === 0 && (
+            {left.length > 0 && (
+              <div className="pdp-desc-text">
+                {!split && (
                   <h2 className="d" id="about-h">
                     About this <span className="hl">product</span>
                   </h2>
                 )}
-                <div className="desc-grid">
-                  {images.map((im, i) => (
-                    <DescImage
-                      key={i}
-                      src={im.src}
-                      alt={im.alt}
-                      wide={i === 0}
-                      onGone={() => setGone((g) => g + 1)}
-                    />
-                  ))}
+                <Prose blocks={left} />
+              </div>
+            )}
+            {split && (
+              <div className="pdp-desc-right">
+                <Prose blocks={right} />
+              </div>
+            )}
+            {hasMedia && (
+              <div className="pdp-desc-media" role="group" aria-label="Product pictures">
+                {left.length === 0 && (
+                  <h2 className="d" id="about-h">
+                    About this <span className="hl">product</span>
+                  </h2>
+                )}
+                <div className={left.length === 0 ? 'desc-grid wide-grid' : 'desc-grid'}>
+                  {content
+                    ? pics.map((p, i) => (
+                        <DescImage
+                          key={p.id || i}
+                          src={p.url}
+                          alt={p.alt || p.caption}
+                          caption={p.caption}
+                          wide={i === 0 && left.length > 0}
+                          onGone={() => setGone((g) => g + 1)}
+                        />
+                      ))
+                    : oldImages.map((im, i) => (
+                        <DescImage
+                          key={i}
+                          src={im.src}
+                          alt={im.alt}
+                          wide={i === 0}
+                          onGone={() => setGone((g) => g + 1)}
+                        />
+                      ))}
                 </div>
+              </div>
+            )}
+            {!hasMedia && !split && right.length > 0 && left.length === 0 && (
+              <div className="pdp-desc-right">
+                <h2 className="d" id="about-h">
+                  About this <span className="hl">product</span>
+                </h2>
+                <Prose blocks={right} />
               </div>
             )}
           </div>
@@ -190,8 +298,8 @@ export function ProductMore({ product }: { product: ShopProduct }) {
             Product <span className="hl">specs</span>
           </h2>
           <dl className="spec-grid">
-            {rest.map((s) => (
-              <div key={s.name}>
+            {specRows.map((s, i) => (
+              <div key={`${s.name}-${i}`}>
                 <dt>{s.name}</dt>
                 <dd>{s.value}</dd>
               </div>

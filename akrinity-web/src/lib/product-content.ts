@@ -137,3 +137,77 @@ export function splitLabel(item: string): { label: string; rest: string } | null
   const lower = m[1].toLowerCase().replace(/\b3d\b/g, '3D');
   return { label: lower.charAt(0).toUpperCase() + lower.slice(1), rest: m[2] };
 }
+
+/* ---------- Product page content fields (ACF, sent by the WordPress snippet) ---------- */
+
+export interface ContentPicture {
+  id: number;
+  /** Picture sized for the page. */
+  url: string;
+  full: string;
+  width: number;
+  height: number;
+  alt: string;
+  /** Text shown over the picture. */
+  caption: string;
+}
+
+/**
+ * What the owner fills in on the product in WordPress (extensions.akrinity_content in the Store API).
+ * All text is plain, with no HTML. hasContent is false for products that have not been filled in; those
+ * keep the older description box.
+ */
+export interface ProductContent {
+  /** "pictures" when the product has A+ pictures, otherwise "text". */
+  layout: 'pictures' | 'text';
+  features: string[];
+  description: string[];
+  package: string[];
+  about: { title: string; text: string }[];
+  details: { label: string; value: string }[];
+  pictures: ContentPicture[];
+  specs: { label: string; value: string }[];
+  hasContent: boolean;
+}
+
+const strings = (v: unknown): string[] =>
+  Array.isArray(v)
+    ? v.filter((x): x is string => typeof x === 'string' && x.trim() !== '').map((x) => x.trim())
+    : [];
+
+const rows = (v: unknown, a: string, b: string): Record<string, string>[] =>
+  Array.isArray(v)
+    ? v
+        .filter((x): x is Record<string, unknown> => Boolean(x) && typeof x === 'object')
+        .map((x) => ({ [a]: String(x[a] ?? '').trim(), [b]: String(x[b] ?? '').trim() }))
+        .filter((x) => x[a] !== '' || x[b] !== '')
+    : [];
+
+/** Reads the content fields defensively: a missing or odd value becomes an empty list. */
+export function parseProductContent(raw: unknown): ProductContent | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const r = raw as Record<string, unknown>;
+  const pictures = (Array.isArray(r.pictures) ? r.pictures : [])
+    .filter((x): x is Record<string, unknown> => Boolean(x) && typeof x === 'object')
+    .map((x) => ({
+      id: Number(x.id ?? 0),
+      url: String(x.url ?? x.full ?? ''),
+      full: String(x.full ?? x.url ?? ''),
+      width: Number(x.width ?? 0),
+      height: Number(x.height ?? 0),
+      alt: String(x.alt ?? ''),
+      caption: String(x.caption ?? ''),
+    }))
+    .filter((x) => /^https?:\/\//.test(x.url));
+  return {
+    layout: r.layout === 'pictures' ? 'pictures' : 'text',
+    features: strings(r.features),
+    description: strings(r.description),
+    package: strings(r.package),
+    about: rows(r.about, 'title', 'text').map((x) => ({ title: x.title, text: x.text })),
+    details: rows(r.details, 'label', 'value').map((x) => ({ label: x.label, value: x.value })),
+    pictures,
+    specs: rows(r.specs, 'label', 'value').map((x) => ({ label: x.label, value: x.value })),
+    hasContent: r.has_content === true,
+  };
+}
