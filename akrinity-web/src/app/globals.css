@@ -1195,3 +1195,11 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .upload-bar{position:relative;height:30px;border:1.5px solid var(--ink);border-radius:999px;background:var(--white);overflow:hidden;margin-top:10px}
 .upload-bar span{position:absolute;inset:0 auto 0 0;background:var(--accent);transition:width .25s var(--ease)}
 .upload-bar em{position:relative;display:block;text-align:center;font:700 13px/27px var(--body);font-style:normal}
+
+/* Description with no usable pictures: the text uses the full width in two columns */
+.pdp-desc-grid.text-only{grid-template-columns:minmax(0,1fr)}
+.pdp-desc-grid.text-only .pdp-desc-text{position:static}
+.pdp-desc-grid.text-only .prose{max-width:none;columns:2;column-gap:64px}
+.pdp-desc-grid.text-only .prose>*{break-inside:avoid}
+.pdp-desc-grid.text-only .prose h3:first-child{margin-top:0}
+@media (max-width:860px){.pdp-desc-grid.text-only .prose{columns:1}}

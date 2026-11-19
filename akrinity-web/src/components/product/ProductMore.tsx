@@ -5,7 +5,18 @@ import type { ShopProduct } from '@/lib/shop-data';
 import type { DescBlock } from '@/lib/product-content';
 
 /** A picture from the long description. Wide banners and logo strips (more than 2.4 times wider than tall) are hidden. */
-function DescImage({ src, alt, wide }: { src: string; alt: string; wide: boolean }) {
+function DescImage({
+  src,
+  alt,
+  wide,
+  onGone,
+}: {
+  src: string;
+  alt: string;
+  wide: boolean;
+  /** Called once when the picture is hidden or fails to load, so the page can drop an empty picture column. */
+  onGone: () => void;
+}) {
   const [hide, setHide] = useState(false);
   const [failed, setFailed] = useState(false);
   if (hide || failed) return null;
@@ -19,9 +30,15 @@ function DescImage({ src, alt, wide }: { src: string; alt: string; wide: boolean
         referrerPolicy="no-referrer"
         onLoad={(e) => {
           const im = e.currentTarget;
-          if (im.naturalHeight > 0 && im.naturalWidth / im.naturalHeight > 2.4) setHide(true);
+          if (im.naturalHeight > 0 && im.naturalWidth / im.naturalHeight > 2.4) {
+            setHide(true);
+            onGone();
+          }
         }}
-        onError={() => setFailed(true)}
+        onError={() => {
+          setFailed(true);
+          onGone();
+        }}
       />
     </figure>
   );
@@ -74,6 +91,9 @@ export function ProductMore({ product }: { product: ShopProduct }) {
   const rest = specs.filter((s) => !factNames.has(s.name));
 
   const hasDesc = text.length > 0 || images.length > 0;
+  // Pictures that turn out to be banners or fail to load are counted, so when none is left the text uses the full width.
+  const [gone, setGone] = useState(0);
+  const hasMedia = images.length - gone > 0;
   // A short table with one or two rows looks empty, so the specs section needs at least three extra rows.
   const showSpecs = rest.length >= 3;
   const items = [
@@ -129,9 +149,9 @@ export function ProductMore({ product }: { product: ShopProduct }) {
         </section>
       )}
 
-      {hasDesc && (
+      {(text.length > 0 || hasMedia) && (
         <section className="wrap pdp-desc" id="about" aria-labelledby="about-h">
-          <div className={images.length && text.length ? 'pdp-desc-grid' : 'pdp-desc-grid one'}>
+          <div className={hasMedia && text.length ? 'pdp-desc-grid' : 'pdp-desc-grid text-only'}>
             {text.length > 0 && (
               <div className="pdp-desc-text">
                 <h2 className="d" id="about-h">
@@ -140,7 +160,7 @@ export function ProductMore({ product }: { product: ShopProduct }) {
                 <Prose blocks={text} />
               </div>
             )}
-            {images.length > 0 && (
+            {hasMedia && (
               <div className="pdp-desc-media" role="group" aria-label="Product pictures">
                 {text.length === 0 && (
                   <h2 className="d" id="about-h">
@@ -149,7 +169,13 @@ export function ProductMore({ product }: { product: ShopProduct }) {
                 )}
                 <div className="desc-grid">
                   {images.map((im, i) => (
-                    <DescImage key={i} src={im.src} alt={im.alt} wide={i === 0} />
+                    <DescImage
+                      key={i}
+                      src={im.src}
+                      alt={im.alt}
+                      wide={i === 0}
+                      onGone={() => setGone((g) => g + 1)}
+                    />
                   ))}
                 </div>
               </div>
