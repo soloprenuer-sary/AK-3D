@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { ShopProduct } from '@/lib/shop-data';
 import type { DescBlock, ProductContent } from '@/lib/product-content';
-import { DescStage, type GlanceCard, type StagePicture } from './DescStage';
+import { DescStage, type StagePicture } from './DescStage';
 
 /** The four specs shown as big tiles, in this order. */
 const FACTS: { match: RegExp; label: string }[] = [
@@ -51,38 +51,37 @@ export function ProductMore({ product }: { product: ShopProduct }) {
   // Text for the left column, pictures and summary cards for the right column.
   let blocks: DescBlock[] = [];
   let pictures: StagePicture[] = [];
-  const glance: GlanceCard[] = [];
 
   if (content) {
     const usable = content.pictures.filter(
       (p) => !(p.width > 0 && p.height > 0 && p.width / p.height > 2.4),
     );
     pictures = usable.map((p) => ({ src: p.url, alt: p.alt, caption: p.caption }));
-    const features = content.features.length ? content.features : (product.highlights ?? []);
-    if (content.layout === 'pictures' && usable.length > 0) {
-      blocks = aboutBlocks(content);
-      if (features.length) glance.push({ title: 'At a glance', items: features.slice(0, 6) });
-    } else {
-      blocks = content.description.map((p) => ({ t: 'p', text: p }) as DescBlock);
-      if (blocks.length === 0 && features.length) {
-        // Nothing but a feature list: it is the text, so the side column keeps only the package.
-        blocks = [
+    // The right side holds only pictures, so the lists live in the text on the left.
+    const keyFeatures: DescBlock[] = content.features.length
+      ? [
           { t: 'h', text: 'Key features' },
-          { t: 'ul', items: features },
-        ];
-      } else if (features.length) {
-        glance.push({ title: 'At a glance', items: features.slice(0, 6) });
-      }
+          { t: 'ul', items: content.features },
+        ]
+      : [];
+    const inTheBox: DescBlock[] = content.package.length
+      ? [
+          { t: 'h', text: 'Package includes' },
+          { t: 'ul', items: content.package },
+        ]
+      : [];
+    if (content.layout === 'pictures' && usable.length > 0) {
+      blocks = [...aboutBlocks(content), ...keyFeatures, ...inTheBox];
+    } else {
+      const paragraphs = content.description.map((p) => ({ t: 'p', text: p }) as DescBlock);
+      blocks = [...keyFeatures, ...paragraphs, ...inTheBox];
     }
-    if (content.package.length) glance.push({ title: 'In the box', items: content.package });
   } else {
     const all = product.longDescription ?? [];
     blocks = all.filter((b) => b.t !== 'img');
     pictures = all
       .filter((b): b is Extract<DescBlock, { t: 'img' }> => b.t === 'img')
       .map((b) => ({ src: b.src, alt: b.alt, caption: '' }));
-    if (product.highlights?.length)
-      glance.push({ title: 'At a glance', items: product.highlights.slice(0, 6) });
   }
   // No A+ pictures: the normal product photos fill the picture area.
   if (pictures.length === 0 && (product.images?.length ?? 0) > 0) {
@@ -159,7 +158,7 @@ export function ProductMore({ product }: { product: ShopProduct }) {
           <h2 className="d" id="about-h">
             About this <span className="hl">product</span>
           </h2>
-          <DescStage blocks={blocks} pictures={pictures} glance={glance} />
+          <DescStage blocks={blocks} pictures={pictures} />
         </section>
       )}
 

@@ -1313,3 +1313,22 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .dg-thumbs,.dg-card{flex:none}
 @media (max-width:959px){.dg-side{max-height:none}.dg-pic{flex:none;aspect-ratio:4/3;max-height:none}}
 .dg-card ul.ticks li{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Right column: square pictures only */
+.dg-side{max-height:none}
+.dg-pic{width:min(100%,calc(100vh - 240px));max-width:560px;height:auto;aspect-ratio:1/1;flex:none;min-height:0;max-height:none;align-self:center}
+.dg-pic img{object-fit:cover}
+.dg-thumbs{justify-content:center;flex-wrap:wrap}
+.dg-th{flex:0 0 58px;width:58px;height:58px;aspect-ratio:1/1}
+@media (max-width:959px){.dg-pic{width:100%;max-width:none;aspect-ratio:1/1}.dg-thumbs{justify-content:flex-start;flex-wrap:nowrap}}
+.dg-side{top:199px}
+.dg-pic{width:min(100%,calc(100vh - 290px))}
+.dg-thumbs{flex-wrap:nowrap;justify-content:flex-start}
+@media (max-width:959px){.dg-side{top:auto}}
+
+/* Picture area: stacked pictures that cross-fade */
+.dg-pic{animation:none}
+.dg-slide{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.1s ease-in-out}
+.dg-slide.on{opacity:1}
+.dg-th{transition:opacity .4s ease,box-shadow .4s ease}
+@media (prefers-reduced-motion:reduce){.dg-slide{transition:none}}
