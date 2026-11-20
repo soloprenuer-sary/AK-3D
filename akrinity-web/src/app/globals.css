@@ -1217,3 +1217,65 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .pdp-desc-grid.split .pdp-desc-right .prose h3:first-child{margin-top:26px}
 @media (max-width:860px){.pdp-desc-grid.split{grid-template-columns:minmax(0,1fr);gap:12px}}
 .draft-banner{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;justify-content:center;padding:10px var(--gutter);background:var(--orange);color:var(--ink);border-bottom:1.5px solid var(--ink);font-size:14px;text-align:center}
+
+/* ===== Product page, buy panel kept short so it can stay in place (like the reference shop) ===== */
+@media (min-width:940px){.pdp{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:32px}}
+.buy{gap:14px}
+.buy h1{font-size:clamp(30px,3vw,40px);line-height:1.02;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.buy h1.h1-long{font-size:clamp(20px,1.9vw,24px);line-height:1.25}
+.buy .opt{gap:6px}
+.buy .opt legend{margin-bottom:6px}
+.buy .pill{min-height:38px;padding:0 14px;font-size:14px}
+.buy .highlights{gap:6px}
+.buy .highlights li{font-size:14.5px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.buy .notice{padding:10px 14px;gap:2px;border-radius:14px}
+.buy .notice .muted{display:none}
+.buy .pinrow input,.buy .pinrow .btn{min-height:44px}
+.opt-details{border:1.5px solid var(--ink);border-radius:14px;background:var(--white);padding:0}
+.opt-details>summary{cursor:pointer;list-style:none;padding:11px 14px;font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.opt-details>summary::-webkit-details-marker{display:none}
+.opt-details>summary::after{content:'+';font-size:20px;line-height:1}
+.opt-details[open]>summary::after{content:'–'}
+.opt-details>:not(summary){margin-inline:14px}
+.opt-details>:last-child{margin-bottom:14px}
+.ask-link{align-self:flex-start;font-weight:700;font-size:14px;text-decoration:underline;text-underline-offset:3px;padding-block:4px}
+.buy{gap:12px}
+.buy .pill{min-height:34px;padding:0 13px;font-size:13.5px}
+.buy .opt legend{margin-bottom:4px}
+.buy .highlights li{-webkit-line-clamp:1}
+.buy .buyrow{gap:10px}
+.sub-links{display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px}
+.sub-links .cmp-btn{min-height:32px}
+.more-details .notice{margin-bottom:10px}
+.more-details .notice .muted{display:block}
+.more-details>.opt{margin-bottom:10px}
+.more-details>.bulk{margin-bottom:0}
+.buy{gap:10px}
+.buy h1{-webkit-line-clamp:2}
+.buy .price{margin-block:-2px}
+
+/* ===== Description: alternating rows (A+ content) and picture strip above long text ===== */
+.a-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:48px;align-items:center;padding-block:30px;border-top:1.5px solid var(--ink)}
+.a-row:first-of-type{border-top:0;padding-top:8px}
+.a-row.flip .a-text{order:2}
+.a-row.flip .a-media{order:1}
+.a-text h3{font:400 clamp(28px,3vw,42px)/1.05 var(--display);text-transform:uppercase;margin-bottom:12px}
+.a-text p,.a-card p{font-size:17px;line-height:1.7;color:var(--muted);margin:0}
+.a-media .desc-fig{aspect-ratio:4/3}
+.a-extra{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gap);padding-top:24px;border-top:1.5px solid var(--ink)}
+.a-card{border:1.5px solid var(--ink);border-radius:22px;background:var(--white);padding:22px}
+.a-card h3{font:400 24px/1.1 var(--display);text-transform:uppercase;margin-bottom:8px}
+.a-details{margin-top:24px}
+.a-details ul.ticks{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 32px}
+.a-details ul.ticks li{position:relative;padding-left:30px;font-size:16px;line-height:1.5}
+.a-details ul.ticks li::before{content:'✓';position:absolute;left:0;top:1px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);border:1.5px solid var(--ink);font-size:12px;font-weight:800}
+.gal-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:32px}
+.gal-strip .desc-fig{aspect-ratio:1/1}
+.a-row+.gal-strip,.a-extra+.gal-strip{margin-top:28px}
+@media (max-width:1000px){.gal-strip{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:760px){
+  .a-row{grid-template-columns:minmax(0,1fr);gap:18px}
+  .a-row.flip .a-text,.a-row.flip .a-media{order:initial}
+  .a-extra,.a-details ul.ticks{grid-template-columns:minmax(0,1fr)}
+  .gal-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+}

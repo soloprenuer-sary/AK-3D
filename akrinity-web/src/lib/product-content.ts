@@ -85,7 +85,7 @@ export function htmlToBlocks(html: string): DescBlock[] {
       while ((im = imgRe.exec(inner)) && images < MAX_IMAGES) {
         const src = /\bsrc\s*=\s*["']([^"']+)["']/i.exec(im[0])?.[1] ?? '';
         const alt = /\balt\s*=\s*["']([^"']*)["']/i.exec(im[0])?.[1] ?? '';
-        if (/^https:\/\//i.test(src)) {
+        if (/^(https:\/\/|http:\/\/localhost[:/])/i.test(src)) {
           blocks.push({ t: 'img', src, alt: decodeEntities(alt) });
           images++;
         }

@@ -115,6 +115,18 @@ function textLayout(c: ProductContent): { left: DescBlock[]; right: DescBlock[] 
   return { left, right };
 }
 
+/** More text than this beside the pictures leaves a blank column, so the pictures move above the text. */
+const LONG_TEXT = 1400;
+
+function textLength(blocks: DescBlock[]): number {
+  return blocks.reduce(
+    (n, b) =>
+      n +
+      (b.t === 'p' || b.t === 'h' ? b.text.length : b.t === 'ul' ? b.items.join(' ').length : 0),
+    0,
+  );
+}
+
 /**
  * Everything under the buy area: a sticky section menu, the key facts as tiles, the description and
  * the full specification list. A product filled in with the content fields in WordPress uses those
@@ -192,6 +204,18 @@ export function ProductMore({ product }: { product: ShopProduct }) {
 
   if (!hasDesc && !showSpecs && facts.length === 0) return null;
 
+  // How the description is laid out:
+  //  rows    - products with A+ content: each block beside its own picture, alternating sides
+  //  gallery - long text with pictures: the pictures in a strip above, the text in two columns below
+  //  side    - short text: text on one side, pictures on the other
+  const mode: 'rows' | 'gallery' | 'side' =
+    content && usePicturesLayout
+      ? 'rows'
+      : hasMedia && textLength([...left, ...right]) > LONG_TEXT
+        ? 'gallery'
+        : 'side';
+  const about = content?.about ?? [];
+  const pairs = Math.min(about.length, pics.length);
   const twoColumns = hasMedia && left.length > 0;
   const split = !hasMedia && left.length > 0 && right.length > 0;
 
@@ -218,7 +242,99 @@ export function ProductMore({ product }: { product: ShopProduct }) {
         </section>
       )}
 
-      {hasDesc && (
+      {hasDesc && mode === 'rows' && content && (
+        <section className="wrap pdp-desc" id="about" aria-labelledby="about-h">
+          <h2 className="d" id="about-h">
+            About this <span className="hl">product</span>
+          </h2>
+          {about.slice(0, pairs).map((blk, i) => (
+            <div className={i % 2 ? 'a-row flip' : 'a-row'} key={i}>
+              <div className="a-text">
+                <h3>{blk.title}</h3>
+                <p>{blk.text}</p>
+              </div>
+              <div className="a-media">
+                <DescImage
+                  src={pics[i].url}
+                  alt={pics[i].alt || pics[i].caption}
+                  caption={pics[i].caption}
+                  wide={false}
+                  onGone={() => setGone((g) => g + 1)}
+                />
+              </div>
+            </div>
+          ))}
+          {about.length > pairs && (
+            <div className="a-extra">
+              {about.slice(pairs).map((blk, i) => (
+                <div className="a-card" key={i}>
+                  <h3>{blk.title}</h3>
+                  <p>{blk.text}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          {pics.length > pairs && (
+            <div className="gal-strip" role="group" aria-label="More pictures">
+              {pics.slice(pairs).map((p, i) => (
+                <DescImage
+                  key={p.id || i}
+                  src={p.url}
+                  alt={p.alt || p.caption}
+                  caption={p.caption}
+                  wide={false}
+                  onGone={() => setGone((g) => g + 1)}
+                />
+              ))}
+            </div>
+          )}
+          {content.details.length > 0 && (
+            <div className="a-card a-details">
+              <h3>Product details</h3>
+              <ul className="ticks">
+                {content.details.map((d, i) => (
+                  <li key={i}>{d.label ? `${d.label}: ${d.value}` : d.value}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
+
+      {hasDesc && mode === 'gallery' && (
+        <section className="wrap pdp-desc" id="about" aria-labelledby="about-h">
+          <h2 className="d" id="about-h">
+            About this <span className="hl">product</span>
+          </h2>
+          <div className="gal-strip" role="group" aria-label="Product pictures">
+            {content
+              ? pics.map((p, i) => (
+                  <DescImage
+                    key={p.id || i}
+                    src={p.url}
+                    alt={p.alt || p.caption}
+                    caption={p.caption}
+                    wide={false}
+                    onGone={() => setGone((g) => g + 1)}
+                  />
+                ))
+              : oldImages.map((im, i) => (
+                  <DescImage
+                    key={i}
+                    src={im.src}
+                    alt={im.alt}
+                    wide={false}
+                    onGone={() => setGone((g) => g + 1)}
+                  />
+                ))}
+          </div>
+          <div className="pdp-desc-grid text-only">
+            <Prose blocks={[...left, ...right]} />
+          </div>
+        </section>
+      )}
+
+      {hasDesc && mode === 'side' && (
         <section className="wrap pdp-desc" id="about" aria-labelledby="about-h">
           <div
             className={

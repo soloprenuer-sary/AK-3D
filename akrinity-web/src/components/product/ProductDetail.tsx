@@ -98,7 +98,9 @@ export function ProductDetail({
         el.style.top = '';
         return;
       }
-      const top = Math.min(104, window.innerHeight - el.offsetHeight - 24);
+      const header = document.querySelector('header.site');
+      const clear = (header ? header.getBoundingClientRect().height : 80) + 16;
+      const top = Math.min(clear, window.innerHeight - el.offsetHeight - 24);
       el.style.top = `${top}px`;
     };
     place();
@@ -293,7 +295,7 @@ export function ProductDetail({
           </div>
           {product.highlights?.length ? (
             <ul className="highlights">
-              {product.highlights.slice(0, 6).map((h) => {
+              {product.highlights.slice(0, 2).map((h) => {
                 const s = splitLabel(h);
                 return (
                   <li key={h}>
@@ -332,13 +334,13 @@ export function ProductDetail({
                 </button>
               ))}
             </div>
-            <p className="muted" style={{ fontSize: 14 }}>
-              {mode === 'multi'
-                ? 'Multi-colour prints take longer and may cost more. The extra cost and lead time are confirmed before payment.'
-                : mode === 'painted'
-                  ? 'Painted items are made to order. Painting is quoted separately, and we will tell you the cost first.'
-                  : 'One filament colour, the quickest option.'}
-            </p>
+            {mode !== 'single' && (
+              <p className="muted" style={{ fontSize: 14 }}>
+                {mode === 'multi'
+                  ? 'Multi-colour prints take longer and may cost more. The extra cost and lead time are confirmed before payment.'
+                  : 'Painted items are made to order. Painting is quoted separately, and we will tell you the cost first.'}
+              </p>
+            )}
           </fieldset>
 
           <fieldset className="opt">
@@ -397,7 +399,8 @@ export function ProductDetail({
             </div>
           </fieldset>
 
-          <div className="opt">
+          <details className="opt opt-details" open={personal !== '' || personalError !== ''}>
+            <summary>Add personalised text (optional)</summary>
             <label htmlFor="personal">
               Personalization{' '}
               <span
@@ -428,7 +431,7 @@ export function ProductDetail({
             <p className="err" id="personal-error" role="alert" hidden={personalError === ''}>
               {personalError}
             </p>
-          </div>
+          </details>
 
           <div className="buyrow">
             <div className="qty">
@@ -452,72 +455,80 @@ export function ProductDetail({
               Add to cart
             </button>
             <WishButton id={product.id} name={product.name} className="pc-round pdp-heart" />
-            <CompareButton id={product.id} name={product.name} className="cmp-btn cmp-btn--pdp" />
             <p className="status" role="status" aria-live="polite">
               {status}
             </p>
           </div>
 
-          <Link className="btn btn-wide" href="/contact">
-            Ask about this product
-          </Link>
-
-          <div className="notice">
-            <span className="label">
-              {product.inStock
-                ? 'In stock, ships in [X] working days'
-                : 'Made to order, ready in [X] working days'}
-            </span>
-            <span className="muted" style={{ fontSize: 14 }}>
-              {product.inStock
-                ? 'Packed and handed to the courier once payment is confirmed.'
-                : 'Printed after you order. Cash on delivery is not offered for made-to-order items.'}
-            </span>
-          </div>
-
-          <div className="opt">
-            <label htmlFor="pin">Delivery estimate</label>
-            <div className="pinrow">
-              <input
-                id="pin"
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                placeholder="Enter pincode"
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-              />
-              <button type="button" className="btn btn-dark" onClick={checkPincode}>
-                Check
-              </button>
-            </div>
-            {pinMessage && (
-              <p className={pinMessage.ok ? 'ok' : 'err'} role={pinMessage.ok ? 'status' : 'alert'}>
-                {pinMessage.text}
-              </p>
-            )}
-          </div>
-
-          <div className="bulk">
-            <span className="label">Buying in bulk?</span>
-            {bulkTiers.length > 0 && (
-              <div className="tiers">
-                {bulkTiers.map((t) => (
-                  <div key={t.from}>
-                    <span>{t.to ? `${t.from} to ${t.to}` : `${t.from} and up`}</span>
-                    <b>{t.price}</b>
-                    <small>per piece</small>
-                  </div>
-                ))}
-              </div>
-            )}
-            <Link
-              className="link"
-              href={`/business?product=${encodeURIComponent(productSlug(product))}`}
-            >
-              Request a bulk quote →
+          <div className="sub-links">
+            <CompareButton id={product.id} name={product.name} className="cmp-btn" />
+            <Link className="ask-link" href="/contact">
+              Ask about this product
             </Link>
           </div>
+
+          <details className="opt-details more-details">
+            <summary>Delivery and bulk prices</summary>
+            <div className="notice">
+              <span className="label">
+                {product.inStock
+                  ? 'In stock, ships in [X] working days'
+                  : 'Made to order, ready in [X] working days'}
+              </span>
+              <span className="muted" style={{ fontSize: 14 }}>
+                {product.inStock
+                  ? 'Packed and handed to the courier once payment is confirmed.'
+                  : 'Printed after you order. Cash on delivery is not offered for made-to-order items.'}
+              </span>
+            </div>
+
+            <div className="opt">
+              <label htmlFor="pin">Delivery estimate</label>
+              <div className="pinrow">
+                <input
+                  id="pin"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="Enter pincode"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                />
+                <button type="button" className="btn btn-dark" onClick={checkPincode}>
+                  Check
+                </button>
+              </div>
+              {pinMessage && (
+                <p
+                  className={pinMessage.ok ? 'ok' : 'err'}
+                  role={pinMessage.ok ? 'status' : 'alert'}
+                >
+                  {pinMessage.text}
+                </p>
+              )}
+            </div>
+
+            <div className="bulk">
+              <span className="label">Buying in bulk?</span>
+              {bulkTiers.length > 0 && (
+                <div className="tiers">
+                  {bulkTiers.map((t) => (
+                    <div key={t.from}>
+                      <span>{t.to ? `${t.from} to ${t.to}` : `${t.from} and up`}</span>
+                      <b>{t.price}</b>
+                      <small>per piece</small>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Link
+                className="link"
+                href={`/business?product=${encodeURIComponent(productSlug(product))}`}
+              >
+                Request a bulk quote →
+              </Link>
+            </div>
+          </details>
         </div>
       </section>
 
