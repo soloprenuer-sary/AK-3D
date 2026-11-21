@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+import { Pic } from '@/components/ui/Pic';
 import Link from 'next/link';
 import { useLiveProducts } from '@/lib/live-catalogue';
 import { COMPARE_MAX, useCompare } from '@/lib/lists-store';
@@ -124,8 +125,7 @@ export function CompareView({ products: built }: { products: ShopProduct[] }) {
                     </button>
                     <Link className="cmp-img" href={`/product/${productSlug(p)}`}>
                       {p.images?.[0] ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.images[0]} alt="" loading="lazy" />
+                        <Pic src={p.images[0]} alt="" sizes="220px" widths={[256, 384]} />
                       ) : (
                         <span className="stripes" />
                       )}

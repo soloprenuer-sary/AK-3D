@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Pic } from '@/components/ui/Pic';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLiveProducts } from '@/lib/live-catalogue';
 import {
@@ -44,7 +45,13 @@ const priceNum = (p: ShopProduct): number | null => {
 function Chevron() {
   return (
     <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
-      <path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path
+        d="M1 3l4 4 4-4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -98,7 +105,10 @@ interface Props {
  */
 export function CategoryBrowser({ products: built, category, tone }: Props) {
   const live = useLiveProducts(built);
-  const all = useMemo(() => live.filter((p) => p.category === category.name), [live, category.name]);
+  const all = useMemo(
+    () => live.filter((p) => p.category === category.name),
+    [live, category.name],
+  );
 
   const [sub, setSub] = useState<string>('All');
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -115,7 +125,6 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
   const addTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cartApi = useCart();
-
 
   useEffect(() => {
     if (!open) return;
@@ -163,18 +172,17 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
     notify(`${p.name} added to cart`);
   };
 
-  const choose = useCallback(
-    (next: string) => {
-      setSub(next);
-      top.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    },
-    [],
-  );
+  const choose = useCallback((next: string) => {
+    setSub(next);
+    top.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
-  const toggle = <T,>(list: T[], v: T): T[] => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+  const toggle = <T,>(list: T[], v: T): T[] =>
+    list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
 
   const passes = (p: ShopProduct) => {
-    if (materials.length && !materials.some((m) => (p.materials ?? [p.material]).includes(m))) return false;
+    if (materials.length && !materials.some((m) => (p.materials ?? [p.material]).includes(m)))
+      return false;
     if (colours.length && !colours.some((c) => p.colours.includes(c))) return false;
     if (sizes.length && !sizes.some((s) => (p.sizes ?? SIZE_OPTIONS).includes(s))) return false;
     if (avail === 'stock' && !p.inStock) return false;
@@ -224,13 +232,22 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
 
   const chips: { label: string; remove: () => void }[] = [
     ...materials.map((m) => ({ label: m, remove: () => setMaterials((l) => toggle(l, m)) })),
-    ...colours.map((c) => ({ label: c[0].toUpperCase() + c.slice(1), remove: () => setColours((l) => toggle(l, c)) })),
+    ...colours.map((c) => ({
+      label: c[0].toUpperCase() + c.slice(1),
+      remove: () => setColours((l) => toggle(l, c)),
+    })),
     ...sizes.map((s) => ({ label: s, remove: () => setSizes((l) => toggle(l, s)) })),
   ];
   if (price !== 'any')
-    chips.push({ label: PRICES.find((x) => x.value === price)!.label, remove: () => setPrice('any') });
+    chips.push({
+      label: PRICES.find((x) => x.value === price)!.label,
+      remove: () => setPrice('any'),
+    });
   if (avail !== 'all')
-    chips.push({ label: AVAIL.find((x) => x.value === avail)!.label, remove: () => setAvail('all') });
+    chips.push({
+      label: AVAIL.find((x) => x.value === avail)!.label,
+      remove: () => setAvail('all'),
+    });
 
   const card = (p: ShopProduct) => (
     <ProductCard
@@ -256,7 +273,13 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
             View all →
           </button>
         ) : (
-          <Link className="link-btn" href={subHref(category, category.subInfo.find((x) => x.name === target)!)}>
+          <Link
+            className="link-btn"
+            href={subHref(
+              category,
+              category.subInfo.find((x) => x.name === target)!,
+            )}
+          >
             View all →
           </Link>
         )}
@@ -265,7 +288,8 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
     </section>
   );
 
-  const heading = sub === 'All' ? category.name : sub === MORE ? `More ${category.name.toLowerCase()}` : sub;
+  const heading =
+    sub === 'All' ? category.name : sub === MORE ? `More ${category.name.toLowerCase()}` : sub;
 
   return (
     <div className="cb" id="products">
@@ -273,7 +297,7 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
 
       <section className="wrap cb-tiles-wrap" aria-label="Sub-categories">
         <div className="cb-tiles">
-          {category.subInfo.map((si) => {
+          {category.subInfo.map((si, ti) => {
             const s = si.name;
             const img = si.image;
             const n = countOf(s);
@@ -281,14 +305,21 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
               <Link key={si.slug} className="cb-tile" href={subHref(category, si)}>
                 <span className="cb-tile-img" style={{ background: tone }}>
                   {img ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={img} alt="" loading="lazy" />
+                    <Pic
+                      src={img}
+                      alt=""
+                      sizes="(max-width: 640px) 50vw, 25vw"
+                      priority={ti < 4}
+                      widths={[256, 384, 640]}
+                    />
                   ) : (
                     <b aria-hidden="true">{s.charAt(0)}</b>
                   )}
                 </span>
                 <span className="cb-tile-name">{s}</span>
-                <span className="cb-tile-n">{n} {n === 1 ? 'product' : 'products'}</span>
+                <span className="cb-tile-n">
+                  {n} {n === 1 ? 'product' : 'products'}
+                </span>
               </Link>
             );
           })}
@@ -305,10 +336,20 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
           >
             All
           </button>
-          <Drop id="material" label="Material" count={materials.length} open={open} setOpen={setOpen}>
+          <Drop
+            id="material"
+            label="Material"
+            count={materials.length}
+            open={open}
+            setOpen={setOpen}
+          >
             {SHOP_MATERIALS.map((m) => (
               <label key={m} className="cb-opt">
-                <input type="checkbox" checked={materials.includes(m)} onChange={() => setMaterials((l) => toggle(l, m))} />
+                <input
+                  type="checkbox"
+                  checked={materials.includes(m)}
+                  onChange={() => setMaterials((l) => toggle(l, m))}
+                />
                 <span>{m}</span>
               </label>
             ))}
@@ -316,7 +357,11 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
           <Drop id="colour" label="Colour" count={colours.length} open={open} setOpen={setOpen}>
             {(Object.keys(COLOURS) as ColourKey[]).map((c) => (
               <label key={c} className="cb-opt">
-                <input type="checkbox" checked={colours.includes(c)} onChange={() => setColours((l) => toggle(l, c))} />
+                <input
+                  type="checkbox"
+                  checked={colours.includes(c)}
+                  onChange={() => setColours((l) => toggle(l, c))}
+                />
                 <span className="cb-sw" style={{ background: COLOURS[c] }} aria-hidden="true" />
                 <span>{c[0].toUpperCase() + c.slice(1)}</span>
               </label>
@@ -325,23 +370,49 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
           <Drop id="size" label="Size" count={sizes.length} open={open} setOpen={setOpen}>
             {SIZE_OPTIONS.map((s) => (
               <label key={s} className="cb-opt">
-                <input type="checkbox" checked={sizes.includes(s)} onChange={() => setSizes((l) => toggle(l, s))} />
+                <input
+                  type="checkbox"
+                  checked={sizes.includes(s)}
+                  onChange={() => setSizes((l) => toggle(l, s))}
+                />
                 <span>{s}</span>
               </label>
             ))}
           </Drop>
-          <Drop id="price" label="Price" count={price === 'any' ? 0 : 1} open={open} setOpen={setOpen}>
+          <Drop
+            id="price"
+            label="Price"
+            count={price === 'any' ? 0 : 1}
+            open={open}
+            setOpen={setOpen}
+          >
             {PRICES.map((x) => (
               <label key={x.value} className="cb-opt">
-                <input type="radio" name="cb-price" checked={price === x.value} onChange={() => setPrice(x.value)} />
+                <input
+                  type="radio"
+                  name="cb-price"
+                  checked={price === x.value}
+                  onChange={() => setPrice(x.value)}
+                />
                 <span>{x.label}</span>
               </label>
             ))}
           </Drop>
-          <Drop id="avail" label="Availability" count={avail === 'all' ? 0 : 1} open={open} setOpen={setOpen}>
+          <Drop
+            id="avail"
+            label="Availability"
+            count={avail === 'all' ? 0 : 1}
+            open={open}
+            setOpen={setOpen}
+          >
             {AVAIL.map((x) => (
               <label key={x.value} className="cb-opt">
-                <input type="radio" name="cb-avail" checked={avail === x.value} onChange={() => setAvail(x.value)} />
+                <input
+                  type="radio"
+                  name="cb-avail"
+                  checked={avail === x.value}
+                  onChange={() => setAvail(x.value)}
+                />
                 <span>{x.label}</span>
               </label>
             ))}
@@ -349,7 +420,11 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
           <span className="cb-grow" />
           <label className="cb-sort">
             <span className="sr-only">Sort by</span>
-            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Sort by">
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as Sort)}
+              aria-label="Sort by"
+            >
               <option value="featured">Sort: Featured</option>
               <option value="low">Price: low to high</option>
               <option value="high">Price: high to low</option>
@@ -407,13 +482,20 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
               )}
             </div>
             {flat.length > 0 ? (
-              <div className="cb-row cb-grid" role="status" aria-live="polite" aria-label={`${flat.length} products`}>
+              <div
+                className="cb-row cb-grid"
+                role="status"
+                aria-live="polite"
+                aria-label={`${flat.length} products`}
+              >
                 {flat.map(card)}
               </div>
             ) : (
               <div className="empty show" role="status">
                 <p>
-                  <b>{filtersOn ? 'No products match these filters.' : 'New pieces coming soon.'}</b>
+                  <b>
+                    {filtersOn ? 'No products match these filters.' : 'New pieces coming soon.'}
+                  </b>
                 </p>
                 {filtersOn ? (
                   <button type="button" className="btn" onClick={clearFilters}>
@@ -438,4 +520,3 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
     </div>
   );
 }
-

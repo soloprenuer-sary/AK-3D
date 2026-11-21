@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import type { DescBlock } from '@/lib/product-content';
+import { Pic } from '@/components/ui/Pic';
 
 export interface StagePicture {
   src: string;
@@ -99,15 +100,14 @@ export function DescStage({ blocks, pictures }: { blocks: DescBlock[]; pictures:
           onMouseLeave={() => setPaused(false)}
         >
           {shown.map((p, i) => (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
+            <Pic
               key={p.src}
               className={i === index ? 'dg-slide on' : 'dg-slide'}
               src={p.src}
               alt={i === index ? p.alt || p.caption : ''}
               aria-hidden={i === index ? undefined : true}
-              loading={i === 0 ? undefined : 'lazy'}
-              referrerPolicy="no-referrer"
+              sizes="(max-width: 959px) 100vw, 560px"
+              widths={[384, 640, 828, 1080]}
               onLoad={(e) => {
                 const im = e.currentTarget;
                 if (im.naturalHeight > 0 && im.naturalWidth / im.naturalHeight > 2.4) drop(p.src);
@@ -130,12 +130,11 @@ export function DescStage({ blocks, pictures }: { blocks: DescBlock[]; pictures:
                   setActive(i);
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Pic
                   src={p.src}
                   alt=""
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
+                  sizes="58px"
+                  widths={[256]}
                   onLoad={(e) => {
                     const im = e.currentTarget;
                     if (im.naturalHeight > 0 && im.naturalWidth / im.naturalHeight > 2.4)

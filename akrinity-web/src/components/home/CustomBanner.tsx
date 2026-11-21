@@ -35,7 +35,7 @@ export function CustomBanner() {
             </div>
             <div className="pills">
               {MATERIAL_PILLS.map((m, i) => (
-                <span key={m} className="pill" aria-pressed={i === 0}>
+                <span key={m} className={i === 0 ? 'pill on' : 'pill'}>
                   {m}
                 </span>
               ))}

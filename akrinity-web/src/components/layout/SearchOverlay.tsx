@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { Pic } from '@/components/ui/Pic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLiveProducts } from '@/lib/live-catalogue';
@@ -131,8 +132,7 @@ function SearchPanel({ onClose }: { onClose: () => void }) {
                 <Link href={`/product/${productSlug(p)}`} onClick={onClose}>
                   <span className="so-img">
                     {p.images?.[0] ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.images[0]} alt="" loading="lazy" />
+                      <Pic src={p.images[0]} alt="" sizes="96px" widths={[256]} />
                     ) : (
                       <b aria-hidden="true">{p.name.charAt(0)}</b>
                     )}

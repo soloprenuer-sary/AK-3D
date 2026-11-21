@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { Pic } from '@/components/ui/Pic';
 import { COLOURS, type ColourKey, type ShopProduct } from '@/lib/shop-data';
 
 interface QuickViewProps {
@@ -56,8 +57,13 @@ function QuickViewBody({
       </button>
       <div className={product.images?.length ? 'qv-art has-img' : 'qv-art'}>
         {product.images?.length ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.images[0]} alt={product.name} />
+          <Pic
+            src={product.images[0]}
+            alt={product.name}
+            sizes="(max-width: 700px) 90vw, 500px"
+            widths={[384, 640, 828]}
+            priority
+          />
         ) : (
           <div className="pc-obj" style={artStyle} />
         )}

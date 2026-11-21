@@ -1,6 +1,7 @@
 'use client';
 
 import { useLiveProducts } from '@/lib/live-catalogue';
+import { Pic } from '@/components/ui/Pic';
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { ModelViewer } from '@/components/three/ModelViewer';
@@ -50,8 +51,12 @@ function SuggestCard({ p }: { p: ShopProduct }) {
     <Link className="card-p" href={`/product/${productSlug(p)}`}>
       <div className="img stripes">
         {p.images?.[0] && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.images[0]} alt="" loading="lazy" />
+          <Pic
+            src={p.images[0]}
+            alt=""
+            sizes="(max-width: 640px) 50vw, 25vw"
+            widths={[256, 384, 640]}
+          />
         )}
         <span className={p.inStock ? 'tag accent' : 'tag'}>
           {p.inStock ? 'In stock' : 'Made to order'}
@@ -225,19 +230,23 @@ export function ProductDetail({
             {photos.length ? (
               <>
                 <figure className="gal-hero">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photos[0]} alt={`${product.name}, photo 1 of ${photos.length}`} />
+                  <Pic
+                    src={photos[0]}
+                    alt={`${product.name}, photo 1 of ${photos.length}`}
+                    sizes="(max-width: 960px) 100vw, 640px"
+                    widths={[384, 640, 828, 1080]}
+                    priority
+                  />
                 </figure>
                 {photos.length > 1 && (
                   <div className="gal-grid">
                     {photos.slice(1).map((src, i) => (
                       <figure className="gal-tile" key={src + i}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Pic
                           src={src}
                           alt={`${product.name}, photo ${i + 2} of ${photos.length}`}
-                          loading="lazy"
-                          decoding="async"
+                          sizes="(max-width: 960px) 50vw, 320px"
+                          widths={[256, 384, 640]}
                         />
                       </figure>
                     ))}
@@ -327,7 +336,6 @@ export function ProductDetail({
                   role="radio"
                   className="pill"
                   aria-checked={mode === m}
-                  aria-pressed={mode === m}
                   onClick={() => setMode(m)}
                 >
                   {MODE_LABEL[m]}

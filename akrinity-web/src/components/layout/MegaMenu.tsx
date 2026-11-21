@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Pic } from '@/components/ui/Pic';
 import Link from 'next/link';
 import type { MenuCategory, MenuItem } from '@/lib/category-content';
 
@@ -22,8 +23,7 @@ function Tile({
     <Link className="mm-tile" href={href} onClick={onGo}>
       <span className="mm-tile-img" style={{ background: tone }}>
         {item.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image} alt="" loading="lazy" />
+          <Pic src={item.image} alt="" sizes="160px" widths={[256]} />
         ) : (
           <b aria-hidden="true">{item.name.charAt(0)}</b>
         )}
@@ -209,8 +209,7 @@ export function MobileMenu({ menu, onClose }: { menu: MenuCategory[]; onClose: (
                 >
                   <span className="mm-pop-img" style={{ background: c.tone }}>
                     {s.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={s.image} alt="" loading="lazy" />
+                      <Pic src={s.image} alt="" sizes="160px" widths={[256]} />
                     ) : (
                       <b aria-hidden="true">{s.name.charAt(0)}</b>
                     )}

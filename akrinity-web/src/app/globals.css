@@ -121,7 +121,7 @@ footer.site .wrap{padding-top:72px;padding-bottom:32px}
 .pills{display:flex;gap:8px;flex-wrap:wrap}
 .pill{min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--ink);display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;background:var(--white);color:var(--ink);cursor:pointer;transition:background-color .2s var(--ease),color .2s var(--ease),transform .2s var(--ease)}
 .pill:hover{transform:translateY(-1px)}
-.pill[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.pill[aria-pressed="true"],.pill.on{background:var(--ink);color:var(--paper)}
 @media (max-width:760px){.custom .card{padding:32px 24px;border-radius:24px}.upload{display:none}}
 .card-p{background:var(--white);border:1.5px solid var(--ink);border-radius:24px;padding:12px;display:flex;flex-direction:column;gap:10px;text-decoration:none;transition:box-shadow .2s var(--ease),transform .2s var(--ease)}
 .card-p:hover{box-shadow:6px 6px 0 var(--ink);transform:translate(-2px,-2px)}

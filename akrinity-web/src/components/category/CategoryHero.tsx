@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import Link from 'next/link';
+import { Pic } from '@/components/ui/Pic';
 import { CategoryArt } from './CategoryArt';
 import type { CategoryTheme } from '@/lib/category-themes';
 import type { CategoryCopy } from '@/lib/category-content';
@@ -87,8 +88,14 @@ export function CategoryHero({
         </div>
         <div className="cat-hero-art">
           {copy?.heroImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img className="cat-hero-img" src={copy.heroImage} alt="" />
+            <Pic
+              className="cat-hero-img"
+              src={copy.heroImage}
+              alt=""
+              sizes="(max-width: 900px) 100vw, 560px"
+              widths={[384, 640, 828, 1080]}
+              priority
+            />
           ) : (
             <CategoryArt kind={theme.art} />
           )}

@@ -289,7 +289,7 @@ export function ProcessSteps() {
           From file to <em>front door</em>
         </h2>
 
-        <div className="ftd-track" role="list">
+        <div className="ftd-track">
           <div className="ftd-rail" aria-hidden="true">
             <span style={{ width: `${pct}%` }} />
           </div>
@@ -297,7 +297,6 @@ export function ProcessSteps() {
             <button
               key={s.title}
               type="button"
-              role="listitem"
               className={i < active ? 'ftd-node done' : i === active ? 'ftd-node on' : 'ftd-node'}
               aria-current={i === active ? 'step' : undefined}
               onClick={() => {

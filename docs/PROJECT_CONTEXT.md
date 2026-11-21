@@ -132,6 +132,8 @@ Note on the sample: stylesheets and scripts must be inline in published artifact
 
 ## 8. Open items and next steps
 
+42. **Speed and security check (2026-11-21, `SECURITY_AND_SPEED_CHECK.md`):** Lighthouse was 86 to 97 on phones before the fixes. Pictures now go through Vercel's image service (resized, WebP, cached a year; `Pic` component; hosts admin.akrinity.in and m.media-amazon.com), first pictures load with priority, favicon added, two ARIA fixes, and the storefront sends a Content-Security-Policy and other security headers. WordPress findings: public admin username (REST users, author redirect, users sitemap, WPGraphQL), login errors that reveal usernames, CORS that repeats any origin, a 1.4 MB REST index that lists all plugins, public readme.html. A hardening snippet `wordpress/mu-plugins/akrinity-hardening.php` was written (not deployed yet); backend team to upload it, deactivate unused plugins (WPGraphQL, Jetpack and others) and add 2FA. Amazon-hosted pictures on product pages to be replaced with own uploads (BUSINESS).
+
 Priority order proposed:
 1. Satyam to supply: real product categories and list, photos, free-shipping threshold, GSTIN, WhatsApp number, support email, upload limit, quote reply time, advance percentage, return and warranty terms, logo (SVG), accent choice, real stats.
 2. Design the missing pages on the canvas (cart, checkout, confirmation, account, tracking, quote states, policy, 404, search, auth, emails, mobile drawer) and update the canvas System board motion line.

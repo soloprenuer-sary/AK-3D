@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties, type PointerEvent } from 'react';
 import Link from 'next/link';
+import { Pic } from '@/components/ui/Pic';
 import { CompareButton, WishButton } from './ProductActions';
 import {
   COLOURS,
@@ -43,8 +44,12 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
       <div className="pc-media" onPointerMove={onMove} onPointerLeave={onLeave}>
         <div className={product.images?.length ? 'pc-art has-img' : 'pc-art'}>
           {product.images?.length ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={product.images[0]} alt="" loading="lazy" />
+            <Pic
+              src={product.images[0]}
+              alt=""
+              sizes="(max-width: 640px) 50vw, (max-width: 1100px) 33vw, 300px"
+              widths={[256, 384, 640]}
+            />
           ) : (
             <div className="pc-obj" style={objStyle} />
           )}

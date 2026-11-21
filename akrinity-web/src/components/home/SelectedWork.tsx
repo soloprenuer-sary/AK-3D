@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Pic } from '@/components/ui/Pic';
 import { useLiveProducts } from '@/lib/live-catalogue';
 import { productSlug, type ShopProduct } from '@/lib/shop-data';
 
@@ -32,8 +33,12 @@ export function SelectedWork({ products: built }: { products: ShopProduct[] }) {
             >
               <span className={p.images?.length ? 'fresh-img' : 'fresh-img stripes'}>
                 {p.images?.[0] && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.images[0]} alt="" loading="lazy" />
+                  <Pic
+                    src={p.images[0]}
+                    alt=""
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    widths={[256, 384, 640]}
+                  />
                 )}
               </span>
               <span className="fresh-body">
