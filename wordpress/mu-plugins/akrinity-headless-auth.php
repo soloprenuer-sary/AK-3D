@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Akrinity headless account
  * Description: Customer sign-up, account details and orders, bulk prices and bulk quote requests for the headless storefront. The one approved WordPress snippet (decisions 20, 32 and 34).
- * Version: 2.4.0
+ * Version: 2.5.0
  *
  * Install: copy this file to wp-content/mu-plugins/ and add to wp-config.php:
  *   define( 'AKRINITY_FRONTEND_URL', 'https://www.example.com' );
@@ -22,6 +22,7 @@
  *      GET /orders/{id}        one of their orders
  *  - Bulk prices: ACF fields on the product, in pairs of MOQ and price (MOQ-1 with price-moq-1, and so on), appear in the Store API as extensions.akrinity.bulk_tiers.
  *  - POST /business-request (shared secret): saves a bulk quote request under Quote requests and emails the admin and the customer.
+ *  - POST /contact and POST /newsletter (shared secret): saved under Quote requests as Message (CM-) and Newsletter entries; GET /reviews?product=ID lists approved reviews, POST /reviews (shared secret) saves a new one as pending for approval.
  *  - Password-reset emails link to the storefront, and slow emails are sent after the reply.
  */
 
@@ -589,11 +590,21 @@ add_action(
 
 /** The label shown for a request's kind. Older requests have no kind and are bulk requests. */
 function akr_request_kind_label( $post_id ) {
-	return 'custom' === get_post_meta( $post_id, 'akr_kind', true ) ? 'Custom quote' : 'Bulk quote';
+	$labels = array(
+		'custom'     => 'Custom quote',
+		'contact'    => 'Message',
+		'newsletter' => 'Newsletter',
+	);
+	return $labels[ get_post_meta( $post_id, 'akr_kind', true ) ] ?? 'Bulk quote';
 }
 
 function akr_request_reference( $post_id ) {
-	return ( 'custom' === get_post_meta( $post_id, 'akr_kind', true ) ? 'QR-' : 'BQ-' ) . $post_id;
+	$prefix = array(
+		'custom'     => 'QR-',
+		'contact'    => 'CM-',
+		'newsletter' => 'NL-',
+	);
+	return ( $prefix[ get_post_meta( $post_id, 'akr_kind', true ) ] ?? 'BQ-' ) . $post_id;
 }
 
 add_action(
@@ -619,6 +630,9 @@ add_action(
 					'Product'    => get_post_meta( $post->ID, 'akr_product_name', true ),
 					'File name'  => get_post_meta( $post->ID, 'akr_file_name', true ),
 					'File size'  => get_post_meta( $post->ID, 'akr_file_size', true ),
+					'Topic'      => get_post_meta( $post->ID, 'akr_topic', true ),
+					'Order no.'  => get_post_meta( $post->ID, 'akr_order', true ),
+					'Message'    => get_post_meta( $post->ID, 'akr_message', true ),
 					'Notes'      => get_post_meta( $post->ID, 'akr_notes', true ),
 				);
 				echo '<table class="widefat striped"><tbody>';
@@ -1327,5 +1341,231 @@ add_action(
 				},
 			)
 		);
+	}
+);
+
+/* ---------- Contact messages, newsletter sign-ups and product reviews (version 2.5.0) ---------- */
+
+/** A short email-safe name such as "Asha K." from a full name. */
+function akr_short_name( $name ) {
+	$parts = preg_split( '/\s+/', trim( (string) $name ) );
+	$first = (string) ( $parts[0] ?? '' );
+	$last  = count( $parts ) > 1 ? (string) end( $parts ) : '';
+	return '' !== $last ? $first . ' ' . mb_strtoupper( mb_substr( $last, 0, 1 ) ) . '.' : $first;
+}
+
+/** Saves a contact message under Quote requests (type Message) and emails the studio. */
+function akr_handle_contact( WP_REST_Request $req ) {
+	$p = $req->get_json_params();
+	$f = array(
+		'name'    => sanitize_text_field( (string) ( $p['name'] ?? '' ) ),
+		'phone'   => sanitize_text_field( (string) ( $p['phone'] ?? '' ) ),
+		'email'   => sanitize_email( (string) ( $p['email'] ?? '' ) ),
+		'topic'   => sanitize_text_field( (string) ( $p['topic'] ?? '' ) ),
+		'order'   => sanitize_text_field( (string) ( $p['order'] ?? '' ) ),
+		'message' => sanitize_textarea_field( (string) ( $p['message'] ?? '' ) ),
+	);
+	$email_given = '' !== $f['email'];
+	if ( '' === $f['name'] || '' === $f['phone'] || '' === $f['message'] || ( $email_given && ! is_email( $f['email'] ) ) ) {
+		return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
+	}
+	$id = wp_insert_post(
+		array(
+			'post_type'   => 'akr_request',
+			'post_status' => 'publish',
+			'post_title'  => 'Message: ' . $f['name'] . ( '' !== $f['topic'] ? ' (' . $f['topic'] . ')' : '' ),
+		)
+	);
+	if ( is_wp_error( $id ) || ! $id ) {
+		return new WP_REST_Response( array( 'code' => 'save_failed' ), 500 );
+	}
+	foreach ( $f as $key => $value ) {
+		update_post_meta( $id, 'akr_' . $key, $value );
+	}
+	update_post_meta( $id, 'akr_kind', 'contact' );
+	update_post_meta( $id, 'akr_status', 'new' );
+	akr_request_log( $id, 'Message received from the website.' );
+
+	$ref     = 'CM-' . $id;
+	$summary = implode(
+		"\r\n",
+		array(
+			'Reference: ' . $ref,
+			'Name: ' . $f['name'],
+			'Phone: ' . $f['phone'],
+			'Email: ' . ( $email_given ? $f['email'] : 'not given' ),
+			'Topic: ' . ( '' !== $f['topic'] ? $f['topic'] : 'not given' ),
+			'Order number: ' . ( '' !== $f['order'] ? $f['order'] : 'none' ),
+			'Message: ' . $f['message'],
+			'Open it: ' . admin_url( 'post.php?post=' . $id . '&action=edit' ),
+		)
+	);
+	$admin = get_option( 'admin_email' );
+	$reply = $email_given ? 'Reply-To: ' . str_replace( array( "\r", "\n", '<', '>' ), '', $f['name'] ) . ' <' . $f['email'] . '>' : '';
+	$email = $f['email'];
+	akr_after_response(
+		function () use ( $admin, $email, $ref, $summary, $reply, $f ) {
+			wp_mail( $admin, 'New website message ' . $ref . ( '' !== $f['topic'] ? ' (' . $f['topic'] . ')' : '' ), "Someone wrote to us on the website.\r\n\r\n" . $summary . "\r\n", '' !== $reply ? array( $reply ) : array() );
+			if ( '' !== $email ) {
+				wp_mail( $email, 'We got your message (' . $ref . ')', "Thank you for writing to Akrinity. We have your message and will reply soon.\r\n\r\nHere is what you sent us:\r\n\r\n" . $summary . "\r\n" );
+			}
+		}
+	);
+	return new WP_REST_Response( array( 'id' => $id, 'reference' => $ref ), 201 );
+}
+
+/** Keeps a newsletter address once, under Quote requests (type Newsletter). Always answers the same way. */
+function akr_handle_newsletter( WP_REST_Request $req ) {
+	$email = sanitize_email( (string) ( $req->get_json_params()['email'] ?? '' ) );
+	if ( ! is_email( $email ) ) {
+		return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
+	}
+	$found = get_posts(
+		array(
+			'post_type'      => 'akr_request',
+			'post_status'    => 'any',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				array( 'key' => 'akr_kind', 'value' => 'newsletter' ),
+				array( 'key' => 'akr_email', 'value' => $email ),
+			),
+		)
+	);
+	if ( empty( $found ) ) {
+		$id = wp_insert_post(
+			array(
+				'post_type'   => 'akr_request',
+				'post_status' => 'publish',
+				'post_title'  => 'Newsletter: ' . $email,
+			)
+		);
+		if ( is_wp_error( $id ) || ! $id ) {
+			return new WP_REST_Response( array( 'code' => 'save_failed' ), 500 );
+		}
+		update_post_meta( $id, 'akr_kind', 'newsletter' );
+		update_post_meta( $id, 'akr_email', $email );
+		update_post_meta( $id, 'akr_status', 'completed' );
+		akr_request_log( $id, 'Signed up on the website.' );
+		akr_after_response(
+			function () use ( $email ) {
+				wp_mail( $email, 'You are on the Akrinity list', "Thank you for signing up. We will write only when we have something worth sharing: new prints, offers and how-to guides.\r\n\r\nIf this was not you, just ignore this email.\r\n" );
+			}
+		);
+	}
+	return new WP_REST_Response( array( 'ok' => true ), 201 );
+}
+
+/** Approved reviews of one product, newest first, with the average. Public: it only returns approved reviews. */
+function akr_handle_reviews_list( WP_REST_Request $req ) {
+	$product_id = (int) $req->get_param( 'product' );
+	if ( $product_id < 1 || 'product' !== get_post_type( $product_id ) || 'publish' !== get_post_status( $product_id ) ) {
+		return new WP_REST_Response( array( 'count' => 0, 'average' => 0, 'reviews' => array() ), 200 );
+	}
+	$comments = get_comments(
+		array(
+			'post_id' => $product_id,
+			'status'  => 'approve',
+			'type'    => 'review',
+			'number'  => 50,
+			'orderby' => 'comment_date_gmt',
+			'order'   => 'DESC',
+		)
+	);
+	$out = array();
+	$sum = 0;
+	foreach ( $comments as $c ) {
+		$rating = (int) get_comment_meta( $c->comment_ID, 'rating', true );
+		if ( $rating < 1 || $rating > 5 ) {
+			continue;
+		}
+		$sum  += $rating;
+		$out[] = array(
+			'id'       => (int) $c->comment_ID,
+			'name'     => akr_short_name( $c->comment_author ),
+			'rating'   => $rating,
+			'text'     => (string) $c->comment_content,
+			'date'     => mysql2date( 'j M Y', $c->comment_date ),
+			'verified' => (bool) get_comment_meta( $c->comment_ID, 'verified', true ),
+		);
+	}
+	$n = count( $out );
+	return new WP_REST_Response(
+		array(
+			'count'   => $n,
+			'average' => $n ? round( $sum / $n, 1 ) : 0,
+			'reviews' => $out,
+		),
+		200
+	);
+}
+
+/** Saves a new review as pending, so nothing shows until it is approved in WordPress. */
+function akr_handle_review_post( WP_REST_Request $req ) {
+	$p          = $req->get_json_params();
+	$product_id = (int) ( $p['product'] ?? 0 );
+	$rating     = (int) ( $p['rating'] ?? 0 );
+	$name       = sanitize_text_field( (string) ( $p['name'] ?? '' ) );
+	$email      = sanitize_email( (string) ( $p['email'] ?? '' ) );
+	$text       = sanitize_textarea_field( (string) ( $p['text'] ?? '' ) );
+	if ( $product_id < 1 || 'product' !== get_post_type( $product_id ) || 'publish' !== get_post_status( $product_id ) ) {
+		return new WP_REST_Response( array( 'code' => 'no_product' ), 404 );
+	}
+	if ( $rating < 1 || $rating > 5 || '' === $name || ! is_email( $email ) || strlen( $text ) < 10 ) {
+		return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
+	}
+	$already = get_comments(
+		array(
+			'post_id'      => $product_id,
+			'author_email' => $email,
+			'type'         => 'review',
+			'status'       => 'all',
+			'count'        => true,
+		)
+	);
+	if ( (int) $already > 0 ) {
+		return new WP_REST_Response( array( 'code' => 'duplicate' ), 409 );
+	}
+	$user     = get_user_by( 'email', $email );
+	$verified = function_exists( 'wc_customer_bought_product' ) && wc_customer_bought_product( $email, $user ? $user->ID : 0, $product_id );
+	$id       = wp_insert_comment(
+		array(
+			'comment_post_ID'      => $product_id,
+			'comment_author'       => $name,
+			'comment_author_email' => $email,
+			'comment_content'      => $text,
+			'comment_type'         => 'review',
+			'comment_approved'     => 0,
+			'user_id'              => $user ? $user->ID : 0,
+		)
+	);
+	if ( ! $id ) {
+		return new WP_REST_Response( array( 'code' => 'save_failed' ), 500 );
+	}
+	add_comment_meta( $id, 'rating', $rating );
+	add_comment_meta( $id, 'verified', $verified ? 1 : 0 );
+	$title = get_the_title( $product_id );
+	akr_after_response(
+		function () use ( $title, $name, $rating, $text, $id ) {
+			wp_mail(
+				get_option( 'admin_email' ),
+				'New review waiting for approval: ' . $title,
+				$name . ' gave ' . $rating . ' of 5 stars.' . "\r\n\r\n" . $text . "\r\n\r\nApprove or delete it: " . admin_url( 'comment.php?action=editcomment&c=' . $id ) . "\r\n"
+			);
+		}
+	);
+	return new WP_REST_Response( array( 'ok' => true, 'status' => 'pending' ), 201 );
+}
+
+add_action(
+	'rest_api_init',
+	function () {
+		$secret = function ( WP_REST_Request $req ) {
+			return akr_secret_ok( $req );
+		};
+		register_rest_route( 'akrinity/v1', '/contact', array( 'methods' => 'POST', 'callback' => 'akr_handle_contact', 'permission_callback' => $secret ) );
+		register_rest_route( 'akrinity/v1', '/newsletter', array( 'methods' => 'POST', 'callback' => 'akr_handle_newsletter', 'permission_callback' => $secret ) );
+		register_rest_route( 'akrinity/v1', '/reviews', array( 'methods' => 'GET', 'callback' => 'akr_handle_reviews_list', 'permission_callback' => '__return_true' ) );
+		register_rest_route( 'akrinity/v1', '/reviews', array( 'methods' => 'POST', 'callback' => 'akr_handle_review_post', 'permission_callback' => $secret ) );
 	}
 );

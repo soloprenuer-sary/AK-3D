@@ -105,6 +105,7 @@ export function SimpleForm({
     const values: Record<string, string> = {};
     for (const field of fields) values[field.name] = String(f.get(field.name) ?? '').trim();
     if (consent) values.consent = 'true';
+    values.website = String(f.get('website') ?? '');
     setBusy(true);
     const error = await send(values);
     setBusy(false);
@@ -115,6 +116,16 @@ export function SimpleForm({
   return (
     <form className="quote-form simple-form" onSubmit={onSubmit} noValidate>
       {lead}
+      {send && (
+        <input
+          className="hp"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          defaultValue=""
+        />
+      )}
       <div className="form-grid">
         {fields.map((field) => {
           const fid = `${id}-${field.name}`;

@@ -14,17 +14,37 @@ const MESSAGES: Record<Exclude<Status, 'ready'>, string> = {
   error: '3D preview could not load. Reload the page to try again.',
 };
 
+export interface ModelFile {
+  url: string;
+  /** stl, glb, gltf, obj or 3mf */
+  type: string;
+}
+
 interface ModelViewerProps {
   product: ShopProduct;
-  /** Optional 3MF model URL. When missing, a sample vase is shown. */
-  modelUrl?: string;
+  /** The product's 3D file. When missing, a sample vase is shown. */
+  model?: ModelFile;
+}
+
+/** Reads the file. If the file host does not allow this site to read it, the same-site copy is tried. */
+async function readModel(url: string): Promise<ArrayBuffer> {
+  const tryFetch = async (u: string) => {
+    const res = await fetch(u, { cache: 'force-cache' });
+    if (!res.ok) throw new Error('model ' + res.status);
+    return res.arrayBuffer();
+  };
+  try {
+    return await tryFetch(url);
+  } catch {
+    return tryFetch('/api/model?u=' + encodeURIComponent(url));
+  }
 }
 
 /**
  * Interactive 3D preview. three.js is imported only when this component mounts (the 3D tab
  * opens), drawing pauses when scrolled off screen, and everything is released on unmount.
  */
-export function ModelViewer({ product, modelUrl }: ModelViewerProps) {
+export function ModelViewer({ product, model: file }: ModelViewerProps) {
   const host = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const [status, setStatus] = useState<Status>('loading');
@@ -40,9 +60,8 @@ export function ModelViewer({ product, modelUrl }: ModelViewerProps) {
 
     (async () => {
       const THREE = await import('three');
-      const { OrbitControls: Controls } = await import(
-        'three/examples/jsm/controls/OrbitControls.js'
-      );
+      const { OrbitControls: Controls } =
+        await import('three/examples/jsm/controls/OrbitControls.js');
       if (cancelled) return;
 
       let renderer;
@@ -75,13 +94,53 @@ export function ModelViewer({ product, modelUrl }: ModelViewerProps) {
       // The part: an uploaded 3MF model, or the sample vase (same profile as the hero printer).
       const partGeos: { dispose: () => void }[] = [];
       const partMats: { dispose: () => void }[] = [];
-      if (modelUrl) {
+      if (file) {
         try {
-          const { ThreeMFLoader } = await import('three/examples/jsm/loaders/3MFLoader.js');
-          const loader = new ThreeMFLoader();
-          const model = await new Promise<InstanceType<typeof THREE.Group>>((resolve, reject) =>
-            loader.load(modelUrl, resolve, undefined, reject),
-          );
+          const buffer = await readModel(file.url);
+          if (cancelled) return;
+          const colour = new THREE.Color(COLOURS[product.colours[0]]);
+          let model: InstanceType<typeof THREE.Object3D>;
+          if (file.type === 'stl') {
+            const { STLLoader } = await import('three/examples/jsm/loaders/STLLoader.js');
+            const geo = new STLLoader().parse(buffer) as unknown as NonNullable<
+              ConstructorParameters<typeof THREE.Mesh>[0]
+            > & { computeVertexNormals: () => void };
+            geo.computeVertexNormals();
+            const mesh = new THREE.Mesh(
+              geo,
+              new THREE.MeshStandardMaterial({
+                color: colour,
+                roughness: 0.55,
+                side: THREE.DoubleSide,
+              }),
+            );
+            mesh.rotation.x = -Math.PI / 2; // STL files are Z-up
+            const holder = new THREE.Group();
+            holder.add(mesh);
+            model = holder;
+          } else if (file.type === 'glb' || file.type === 'gltf') {
+            const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
+            const gltf = await new Promise<{ scene: InstanceType<typeof THREE.Object3D> }>(
+              (resolve, reject) => new GLTFLoader().parse(buffer, '', resolve, reject),
+            );
+            model = gltf.scene;
+          } else if (file.type === 'obj') {
+            const { OBJLoader } = await import('three/examples/jsm/loaders/OBJLoader.js');
+            const group = new OBJLoader().parse(new TextDecoder().decode(buffer));
+            group.traverse((child) => {
+              const m = child as unknown as { isMesh?: boolean; material?: unknown };
+              if (m.isMesh)
+                m.material = new THREE.MeshStandardMaterial({
+                  color: colour,
+                  roughness: 0.55,
+                  side: THREE.DoubleSide,
+                });
+            });
+            model = group;
+          } else {
+            const { ThreeMFLoader } = await import('three/examples/jsm/loaders/3MFLoader.js');
+            model = new ThreeMFLoader().parse(buffer);
+          }
           if (cancelled) return;
           // Fit the model to about 3.4 units tall, standing on the bed, centred.
           const first = new THREE.Box3().setFromObject(model);
@@ -93,7 +152,11 @@ export function ModelViewer({ product, modelUrl }: ModelViewerProps) {
           const centre = box.getCenter(new THREE.Vector3());
           model.position.set(-centre.x, -box.min.y, -centre.z);
           model.traverse((child) => {
-            const mesh = child as { isMesh?: boolean; geometry?: { dispose: () => void }; material?: { dispose: () => void } };
+            const mesh = child as {
+              isMesh?: boolean;
+              geometry?: { dispose: () => void };
+              material?: { dispose: () => void };
+            };
             if (mesh.isMesh) {
               if (mesh.geometry) partGeos.push(mesh.geometry);
               if (mesh.material) partMats.push(mesh.material);
@@ -192,7 +255,7 @@ export function ModelViewer({ product, modelUrl }: ModelViewerProps) {
       cancelled = true;
       dispose?.();
     };
-  }, [product, modelUrl]);
+  }, [product, file]);
 
   useEffect(() => {
     if (controlsRef.current) controlsRef.current.autoRotate = autoRotate;

@@ -176,6 +176,10 @@ add_filter(
 			'/akrinity/v1/business-request' => array( 'biz', 60 ),
 			'/akrinity/v1/register'         => array( 'reg', 80 ),
 			'/akrinity/v1/password/forgot'  => array( 'forgot', 80 ),
+			'/akrinity/v1/contact'          => array( 'contact', 100 ),
+			'/akrinity/v1/newsletter'       => array( 'news', 200 ),
+			'/akrinity/v1/reviews'          => array( 'review', 60 ),
+			'/akrinity/v1/order-lookup'     => array( 'lookup', 300 ),
 			'/akrinity/v1/quote-file'       => array( 'file', 3000 ), // about 2 MB each
 		);
 		$route = $request->get_route();

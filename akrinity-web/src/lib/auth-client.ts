@@ -220,6 +220,71 @@ export async function sendBusinessRequest(
   return { error: null, reference: String((r.data as { reference?: string }).reference ?? '') };
 }
 
+/** Sends a contact message. error is a message to show, or null on success. */
+export async function sendContact(
+  values: Record<string, string>,
+): Promise<{ error: string | null; reference: string }> {
+  const r = await call('contact', {
+    name: values.name,
+    phone: values.phone,
+    email: values.email,
+    topic: values.topic,
+    order: values.order,
+    message: values.message,
+    website: values.website,
+  });
+  if (!r.ok)
+    return {
+      error: explain(r, 'We could not send your message. Please try again.'),
+      reference: '',
+    };
+  return { error: null, reference: String((r.data as { reference?: string }).reference ?? '') };
+}
+
+/** Adds an email to the newsletter list. error is a message to show, or null on success. */
+export async function subscribeNewsletter(email: string, website = ''): Promise<string | null> {
+  const r = await call('newsletter', { email, website });
+  return r.ok ? null : explain(r, 'We could not sign you up. Please try again.');
+}
+
+export interface ReviewItem {
+  id: number;
+  name: string;
+  rating: number;
+  text: string;
+  date: string;
+  verified: boolean;
+}
+export interface ReviewList {
+  count: number;
+  average: number;
+  reviews: ReviewItem[];
+}
+
+/** Approved reviews of a product (empty when there are none or WordPress cannot be reached). */
+export async function loadReviews(productId: string): Promise<ReviewList> {
+  const r = await call('reviews', undefined, '?product=' + encodeURIComponent(productId));
+  const d = r.data as Partial<ReviewList>;
+  return {
+    count: Number(d.count ?? 0),
+    average: Number(d.average ?? 0),
+    reviews: Array.isArray(d.reviews) ? d.reviews : [],
+  };
+}
+
+/** Sends a review. It is held for approval in WordPress. error is a message to show, or null on success. */
+export async function sendReview(values: {
+  product: string;
+  rating: number;
+  name: string;
+  email: string;
+  text: string;
+  website?: string;
+}): Promise<string | null> {
+  const r = await call('review', { ...values, product: Number(values.product) });
+  return r.ok ? null : explain(r, 'We could not send your review. Please try again.');
+}
+
 /** Sends a custom quote request (the quote page). error is a message to show, or null on success. */
 export async function sendQuoteRequest(values: Record<string, string>): Promise<{
   error: string | null;

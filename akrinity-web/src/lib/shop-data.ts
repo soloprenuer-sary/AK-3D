@@ -221,6 +221,8 @@ export interface ShopProduct {
   longDescription?: DescBlock[];
   /** The product page content fields from WordPress (features, A+ pictures, specs table). */
   content?: ProductContent;
+  /** The 3D file uploaded on the product in WordPress, shown in the 3D view. */
+  model?: { url: string; type: string };
   /** Specifications: size, weight and every attribute with a value. */
   specs?: ProductSpec[];
   /** Products set as cross-sells and upsells on this product in WordPress ("wc-<id>"). */

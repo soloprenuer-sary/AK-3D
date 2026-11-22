@@ -974,6 +974,136 @@ async function handleStatus(env: Env): Promise<Response> {
   });
 }
 
+// ---------- contact messages, newsletter and reviews ----------
+
+/** The message to show when WordPress did not take a form. */
+function formFailed(env: Env, what: string, r: WpReply): Response {
+  console.error(`${what}: WordPress returned`, r.status, String(r.data.code ?? ''));
+  return json(
+    {
+      error: 'We could not send this right now. Please try again in a few minutes.',
+      code: 'unavailable',
+      debug: env.AUTH_STATUS === '1' ? { wpStatus: r.status, wpCode: r.data.code } : undefined,
+    },
+    503,
+  );
+}
+
+const slowReply = (): Response =>
+  json(
+    {
+      error: 'This is taking longer than usual. Please wait a minute before sending it again.',
+      code: 'slow',
+    },
+    503,
+  );
+
+const badForm = (): Response =>
+  json({ error: 'Something went wrong with the form. Reload the page and try again.' }, 400);
+
+/** Hidden "website" box that people never fill in; a filled one means a bot. We answer as if it worked. */
+const isBot = (body: Record<string, unknown>): boolean => str(body.website, 100) !== '';
+
+async function handleContact(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  if (!body) return badForm();
+  const name = str(body.name, 80);
+  const phone = str(body.phone, 20).replace(/\s+/g, '');
+  const email = str(body.email, 254).toLowerCase();
+  const topic = str(body.topic, 40);
+  const order = str(body.order, 30);
+  const message = str(body.message, 2000);
+  if (!name) return json({ error: 'Enter your name.', field: 'name' }, 400);
+  if (!PHONE_RE.test(phone)) {
+    return json(
+      { error: 'Enter a 10-digit mobile number, with or without +91.', field: 'phone' },
+      400,
+    );
+  }
+  if (email && !EMAIL_RE.test(email)) {
+    return json({ error: 'Enter a valid email like name@example.com.', field: 'email' }, 400);
+  }
+  if (!message) return json({ error: 'Write your message.', field: 'message' }, 400);
+  if (isBot(body)) return json({ ok: true, reference: '' }, 201);
+  const ip = clientIp(request);
+  const limited = await limitIp(env, request, 'contact', { max: 5, window: 3600 });
+  if (limited) return limited;
+  if (!(await verifyTurnstile(env, str(body.turnstileToken, 2048), ip))) {
+    return json({ error: 'Bot check failed. Please try again.' }, 400);
+  }
+  const r = await wpService(env, '/contact', { name, phone, email, topic, order, message });
+  if (r.status === 0) return slowReply();
+  if (r.status !== 201) return formFailed(env, 'contact', r);
+  return json({ ok: true, reference: String(r.data.reference ?? '') }, 201);
+}
+
+async function handleNewsletter(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  if (!body) return badForm();
+  const email = str(body.email, 254).toLowerCase();
+  if (!EMAIL_RE.test(email)) {
+    return json({ error: 'Enter a valid email like name@example.com.', field: 'email' }, 400);
+  }
+  if (isBot(body)) return json({ ok: true }, 201);
+  const limited = await limitIp(env, request, 'news', { max: 5, window: 3600 });
+  if (limited) return limited;
+  const r = await wpService(env, '/newsletter', { email });
+  if (r.status === 0) return slowReply();
+  if (r.status !== 201) return formFailed(env, 'newsletter', r);
+  return json({ ok: true }, 201);
+}
+
+async function handleReviewPost(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  if (!body) return badForm();
+  const product = Number(body.product);
+  const rating = Number(body.rating);
+  const name = str(body.name, 60);
+  const email = str(body.email, 254).toLowerCase();
+  const text = str(body.text, 1500);
+  if (!Number.isInteger(product) || product < 1) return badForm();
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return json({ error: 'Choose a star rating first.', field: 'rating' }, 400);
+  }
+  if (!name) return json({ error: 'Enter your name.', field: 'name' }, 400);
+  if (!EMAIL_RE.test(email)) {
+    return json(
+      { error: 'Enter a valid email. It is not shown on the page.', field: 'email' },
+      400,
+    );
+  }
+  if (text.length < 10) {
+    return json({ error: 'Write at least a sentence about your order.', field: 'text' }, 400);
+  }
+  if (isBot(body)) return json({ ok: true }, 201);
+  const ip = clientIp(request);
+  const limited = await limitIp(env, request, 'review', { max: 5, window: 3600 });
+  if (limited) return limited;
+  if (!(await verifyTurnstile(env, str(body.turnstileToken, 2048), ip))) {
+    return json({ error: 'Bot check failed. Please try again.' }, 400);
+  }
+  const r = await wpService(env, '/reviews', { product, rating, name, email, text });
+  if (r.status === 0) return slowReply();
+  if (r.status === 409) {
+    return json(
+      { error: 'You have already reviewed this product. Thank you.', code: 'duplicate' },
+      409,
+    );
+  }
+  if (r.status === 404) return json({ error: 'This product could not be found.' }, 404);
+  if (r.status !== 201) return formFailed(env, 'review', r);
+  return json({ ok: true }, 201);
+}
+
+/** Approved reviews of a product, passed through from WordPress. */
+async function handleReviewsGet(request: Request, env: Env): Promise<Response> {
+  const id = Number(new URL(request.url).searchParams.get('product'));
+  if (!Number.isInteger(id) || id < 1) return json({ count: 0, average: 0, reviews: [] });
+  const r = await wpFetch(wp(env, `/akrinity/v1/reviews?product=${id}`), { method: 'GET' });
+  if (r.status !== 200) return json({ count: 0, average: 0, reviews: [] });
+  return json(r.data);
+}
+
 async function handle({ request, env, params }: Ctx): Promise<Response> {
   const action = Array.isArray(params.action) ? params.action[0] : params.action;
   if (!env.WP_URL) return json({ error: 'Accounts are not configured.' }, 503);
@@ -983,6 +1113,7 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
     if (action === 'me') return handleMe(request, env);
     if (action === 'orders') return handleOrders(request, env);
     if (action === 'order') return handleOrder(request, env);
+    if (action === 'reviews') return handleReviewsGet(request, env);
     return json({ error: 'Method not allowed.' }, 405, { Allow: 'POST' });
   }
 
@@ -999,7 +1130,17 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   }
   if (
     !env.AKRINITY_SHARED_SECRET &&
-    ['check', 'register', 'forgot', 'reset', 'business', 'quote'].includes(action ?? '')
+    [
+      'check',
+      'register',
+      'forgot',
+      'reset',
+      'business',
+      'quote',
+      'contact',
+      'newsletter',
+      'review',
+    ].includes(action ?? '')
   ) {
     return json({ error: 'Accounts are not configured.', code: 'unconfigured' }, 503);
   }
@@ -1011,6 +1152,9 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   if (action === 'password') return handlePassword(request, env);
   if (action === 'business') return handleBusiness(request, env);
   if (action === 'quote') return handleQuote(request, env);
+  if (action === 'contact') return handleContact(request, env);
+  if (action === 'newsletter') return handleNewsletter(request, env);
+  if (action === 'review') return handleReviewPost(request, env);
   if (action === 'forgot') return handleForgot(request, env);
   if (action === 'reset') return handleReset(request, env);
   if (action === 'logout') return json({ ok: true }, 200, { 'Set-Cookie': clearCookie() });

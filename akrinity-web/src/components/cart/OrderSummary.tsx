@@ -44,8 +44,8 @@ export function OrderSummary({ showItems = false }: { showItems?: boolean }) {
         </div>
       </dl>
       <p className="meta">
-        Shipping is added at checkout. Prices include GST. Final totals are confirmed when the store
-        is connected to payments.
+        Prices include GST. At checkout you choose your state and the exact GST (CGST and SGST in
+        Maharashtra, IGST elsewhere), shipping and payment are shown before you pay.
       </p>
     </aside>
   );

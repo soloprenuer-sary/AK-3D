@@ -1332,3 +1332,18 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .dg-slide.on{opacity:1}
 .dg-th{transition:opacity .4s ease,box-shadow .4s ease}
 @media (prefers-reduced-motion:reduce){.dg-slide{transition:none}}
+
+/* Hidden spam trap field */
+.hp{position:absolute!important;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+
+/* Reviews */
+.rv-summary{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 0}
+.rv-stars{display:inline-flex;gap:1px;color:#c9c5b8;font-size:18px;line-height:1}
+.rv-stars .on{color:var(--orange)}
+.rv-list{list-style:none;margin:22px 0 8px;padding:0;display:flex;flex-direction:column;gap:14px}
+.rv-item{border:1.5px solid var(--ink);border-radius:18px;background:var(--white);padding:16px 18px}
+.rv-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px}
+.rv-top .muted{margin-left:auto;font-size:13px}
+.rv-item p{margin:0;line-height:1.55;overflow-wrap:anywhere}
+.rv-badge{font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--accent);border:1.5px solid var(--ink)}
+.rv-form-h{font:400 22px/1 var(--display);text-transform:uppercase;margin:26px 0 12px}

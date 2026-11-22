@@ -50,6 +50,7 @@ export interface StoreProduct {
       upsell_ids?: number[];
     };
     akrinity_content?: unknown;
+    akrinity_model?: { url?: string; type?: string };
   };
 }
 
@@ -143,6 +144,13 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
     .sort((a, b) => modeOrder.indexOf(a) - modeOrder.indexOf(b));
 
   const content = parseProductContent(p.extensions?.akrinity_content);
+  const m3 = p.extensions?.akrinity_model;
+  const model =
+    m3?.url &&
+    /^(https:\/\/|http:\/\/localhost[:/])/.test(m3.url) &&
+    ['stl', 'glb', 'gltf', 'obj', '3mf'].includes(m3.type ?? '')
+      ? { url: m3.url, type: m3.type as string }
+      : undefined;
   const onSale =
     Boolean(p.on_sale) &&
     Boolean(p.prices.regular_price) &&
@@ -194,6 +202,7 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
     content,
     longDescription: htmlToBlocks(p.description ?? ''),
     specs: buildSpecs(p.attributes, p.formatted_weight, p.formatted_dimensions),
+    model,
     crossSellIds: p.extensions?.akrinity?.cross_sell_ids?.map((n) => `wc-${n}`),
     upsellIds: p.extensions?.akrinity?.upsell_ids?.map((n) => `wc-${n}`),
   };

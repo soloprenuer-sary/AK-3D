@@ -118,6 +118,7 @@ export function ProductDetail({
     };
   }, []);
   const [view, setView] = useState<'photo' | '3d'>('photo');
+  const model = product.model ?? (DEV_MODEL_URL ? { url: DEV_MODEL_URL, type: '3mf' } : undefined);
   const [material, setMaterial] = useState<Material>(product.material);
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
   const [mode, setMode] = useState<ColourMode>(product.modes[0]);
@@ -193,32 +194,34 @@ export function ProductDetail({
 
       <section className="pdp wrap" aria-labelledby="product-name">
         <div className="gallery">
-          <div className="tabs" role="tablist" aria-label="Product views">
-            <button
-              type="button"
-              id="tab-photo"
-              role="tab"
-              className="tab"
-              aria-selected={view === 'photo'}
-              aria-controls="pv-photo"
-              tabIndex={view === 'photo' ? 0 : -1}
-              onClick={() => setView('photo')}
-            >
-              Photos
-            </button>
-            <button
-              type="button"
-              id="tab-3d"
-              role="tab"
-              className="tab"
-              aria-selected={view === '3d'}
-              aria-controls="pv-3d"
-              tabIndex={view === '3d' ? 0 : -1}
-              onClick={() => setView('3d')}
-            >
-              3D view
-            </button>
-          </div>
+          {model && (
+            <div className="tabs" role="tablist" aria-label="Product views">
+              <button
+                type="button"
+                id="tab-photo"
+                role="tab"
+                className="tab"
+                aria-selected={view === 'photo'}
+                aria-controls="pv-photo"
+                tabIndex={view === 'photo' ? 0 : -1}
+                onClick={() => setView('photo')}
+              >
+                Photos
+              </button>
+              <button
+                type="button"
+                id="tab-3d"
+                role="tab"
+                className="tab"
+                aria-selected={view === '3d'}
+                aria-controls="pv-3d"
+                tabIndex={view === '3d' ? 0 : -1}
+                onClick={() => setView('3d')}
+              >
+                3D view
+              </button>
+            </div>
+          )}
 
           <div
             id="pv-photo"
@@ -276,7 +279,7 @@ export function ProductDetail({
             className="main-3d"
             hidden={view !== '3d'}
           >
-            {view === '3d' && <ModelViewer product={product} modelUrl={DEV_MODEL_URL} />}
+            {model && view === '3d' && <ModelViewer product={product} model={model} />}
           </div>
         </div>
 
@@ -559,7 +562,7 @@ export function ProductDetail({
       </section>
 
       <div className="wrap review-section" id="reviews">
-        <ProductReviews productName={product.name} />
+        <ProductReviews productId={product.id} productName={product.name} />
       </div>
 
       {crossSells.length > 0 && (
