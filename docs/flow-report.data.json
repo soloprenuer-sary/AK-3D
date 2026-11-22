@@ -1,0 +1,187 @@
+{
+  "date": "22 Nov 2026",
+  "tests": [
+    { "name": "Whole-trip browser test (12 steps)", "result": "24 passed, 2 skipped (the place-order step, off by default), desktop and phone", "where": "Live site" },
+    { "name": "Single-flow browser tests (22 flows)", "result": "36 passed, 6 failed, 2 skipped (device-specific), desktop and phone. The 6 failures are 3 real gaps, each seen on desktop and phone: no price sort, no delivery estimate in the pincode check, and placeholder text on live pages", "where": "Live site" },
+    { "name": "Page speed on a phone (Lighthouse)", "result": "Home 78, shop 83, product 87, checkout 94, quote 93. Accessibility 98 to 100, best practices 100, SEO 100 (checkout is 60 on purpose: it is hidden from Google). Desktop was 99 to 100 in the earlier run", "where": "Live site" },
+    { "name": "Page and address check (31 addresses)", "result": "26 pages open (200). Missing: robots.txt, sitemap.xml, web manifest, share image, llms.txt (404)", "where": "Live site" },
+    { "name": "Search-engine tags on 20 pages", "result": "Titles and descriptions are there. No canonical link, no share (Open Graph) tags, no product structured data on any page", "where": "Live site" },
+    { "name": "Store set-up probe", "result": "Cash on delivery on, Cashfree hidden by choice, flat-rate delivery (₹60 plus GST), CGST and SGST for Maharashtra, IGST for Delhi, in-transit fields, reviews, contact and 3D-model routes all answer", "where": "Live store" },
+    { "name": "Security re-check", "result": "Fixed: public username list in the REST API, author redirect, login error text, plugin list. Still open: WPGraphQL still lists the admin username, readme.html is still public", "where": "Live store" },
+    { "name": "Emails", "result": "All 12 designs render without errors with stand-in orders, and the send-once rule passes 15 checks. NOT tested: a real email in a real inbox", "where": "Test harness" },
+    { "name": "Not tested on purpose", "result": "Creating a customer account, sending a quote with a file, sending a contact message, subscribing, posting a review and placing another order: each would create real records on the live store. These were tested earlier on a stand-in store", "where": "-" }
+  ],
+  "flows": [
+    {
+      "id": "find", "name": "1. Find us", "goal": "A stranger finds Akrinity on Google, Instagram or WhatsApp and lands on a page that makes sense.",
+      "steps": [
+        { "step": "Fast, mobile-friendly pages", "ideal": "Opens in under 3 seconds on a phone", "site": "Opens fast; phone scores 78 to 94", "status": "done", "test": "Pass" },
+        { "step": "Search engines can read the site", "ideal": "sitemap.xml, robots.txt, canonical links", "site": "None of the three exist", "status": "missing", "test": "Fail (404)" },
+        { "step": "Link previews on WhatsApp and Instagram", "ideal": "Share picture, title and price when a link is pasted", "site": "No share (Open Graph) tags", "status": "missing", "test": "Fail" },
+        { "step": "Rich results on Google", "ideal": "Product structured data: price, stock, rating", "site": "None", "status": "missing", "test": "Fail" },
+        { "step": "Know where visitors come from", "ideal": "Analytics, Search Console, Merchant Center", "site": "Nothing installed (and no cookie notice yet)", "status": "missing", "test": "-" },
+        { "step": "Clear home page", "ideal": "Says what you make and how to order", "site": "Home page, printing, categories, best sellers, process, knowledge hub", "status": "done", "test": "Pass" }
+      ]
+    },
+    {
+      "id": "browse", "name": "2. Browse and search", "goal": "Find the right product in a few taps.",
+      "steps": [
+        { "step": "Category menu", "ideal": "Main and sub-categories, popular picks", "site": "Menu under the header, driven from WordPress", "status": "done", "test": "Pass (desktop), phone menu pass" },
+        { "step": "Products in the right category", "ideal": "Every product belongs to a category", "site": "Most products have no category in WooCommerce yet; the site guesses from the name", "status": "part", "test": "-" },
+        { "step": "Search", "ideal": "Live results and a clear no-results message", "site": "Search overlay with live results", "status": "done", "test": "Pass" },
+        { "step": "Filter and sort", "ideal": "Filters plus sort by price", "site": "Filters (category, colour option, stock, material); sort is Featured, Name, In stock only", "status": "part", "test": "Filters pass, price sort FAIL" },
+        { "step": "Save and compare", "ideal": "Wishlist and compare", "site": "Both work and survive a reload (kept in the browser, not synced to the account)", "status": "done", "test": "Pass" },
+        { "step": "Wrong address", "ideal": "Friendly 404 with a way home", "site": "Yes", "status": "done", "test": "Pass" }
+      ]
+    },
+    {
+      "id": "choose", "name": "3. Choose a product", "goal": "Be sure it is the right one, then pick options.",
+      "steps": [
+        { "step": "Photos and 3D view", "ideal": "Photos, and a 3D preview for printed items", "site": "Photos yes; 3D field is live but no 3D file is uploaded to any product yet, so the tab never shows", "status": "part", "test": "Pass (tab hidden as designed)" },
+        { "step": "Description, features, specs", "ideal": "Intro, key features, A+ pictures, specs table", "site": "Done (intro and features on the text side; full width without A+ pictures)", "status": "done", "test": "Pass" },
+        { "step": "Options and personalised text", "ideal": "Material, colour, size, name text with checks", "site": "Yes, odd characters refused", "status": "done", "test": "Pass" },
+        { "step": "Bulk prices", "ideal": "Price ranges by quantity", "site": "Shown where the ranges are filled in", "status": "done", "test": "Pass" },
+        { "step": "Delivery estimate for my pincode", "ideal": "Gives a delivery date", "site": "Only says \"shown at checkout\"; checkout does not show a date either", "status": "part", "test": "FAIL" },
+        { "step": "Reviews", "ideal": "Real reviews with stars", "site": "Working and held for your approval; none posted yet", "status": "done", "test": "Pass (earlier, stand-in)" },
+        { "step": "Free-shipping message", "ideal": "\"Add ₹X more for free shipping\"", "site": "Shows the placeholder [AMOUNT]", "status": "part", "test": "FAIL (placeholder)" }
+      ]
+    },
+    {
+      "id": "cart", "name": "4. Cart", "goal": "Review and change the order without friction.",
+      "steps": [
+        { "step": "Add, change quantity, remove", "ideal": "Works, with a drawer and a cart page", "site": "Yes", "status": "done", "test": "Pass" },
+        { "step": "Cart is kept", "ideal": "Survives a reload; follows the customer to another device", "site": "Survives a reload; stays on this device only", "status": "part", "test": "Pass (reload)" },
+        { "step": "Upsell in the cart", "ideal": "Products that go with the cart", "site": "None in the cart (product page has suggested rows)", "status": "missing", "test": "-" },
+        { "step": "Coupon", "ideal": "Coupon box with clear messages", "site": "At checkout; bad code shows the store's message", "status": "done", "test": "Pass (stand-in)" }
+      ]
+    },
+    {
+      "id": "checkout", "name": "5. Checkout and payment", "goal": "Pay with the least effort and the right tax.",
+      "steps": [
+        { "step": "Guest checkout and details", "ideal": "No account needed, address with state and pincode", "site": "Yes, signed-in customers are pre-filled", "status": "done", "test": "Pass" },
+        { "step": "GST by state", "ideal": "CGST and SGST in Maharashtra, IGST elsewhere", "site": "Live on the store: Maharashtra splits, Delhi shows IGST", "status": "done", "test": "Pass" },
+        { "step": "Delivery charge", "ideal": "Real courier rates by weight and pincode", "site": "Flat rate ₹60 plus GST for every pincode (Shiprocket rates not connected)", "status": "part", "test": "Pass" },
+        { "step": "Cash on delivery", "ideal": "Fee and limit, hidden for made-to-order", "site": "Live; fee ₹50 and limit ₹3,000 are placeholders for you to confirm", "status": "done", "test": "Pass (orders #295, #300 were placed)" },
+        { "step": "UPI, cards, netbanking", "ideal": "Online payment with Cashfree", "site": "Built, but hidden on purpose until you have test keys", "status": "hold", "test": "Not run" },
+        { "step": "Business GST details", "ideal": "GSTIN on the order", "site": "Saved on the order; bad GSTIN refused", "status": "done", "test": "Pass" },
+        { "step": "Made-to-order items", "ideal": "Pay online or an advance", "site": "Cannot be bought at all while only cash on delivery is on", "status": "hold", "test": "Pass (message shown)" },
+        { "step": "Advance payment for custom jobs", "ideal": "Pay part now, rest before dispatch", "site": "Not built", "status": "missing", "test": "-" }
+      ]
+    },
+    {
+      "id": "after", "name": "6. After the order", "goal": "The customer always knows where the order is.",
+      "steps": [
+        { "step": "Confirmation page", "ideal": "Shows the real order", "site": "Real order, items, GST, timeline", "status": "done", "test": "Pass" },
+        { "step": "Confirmation email", "ideal": "Branded email with photos and tracker", "site": "Designed and coded; upload and delivery to a real inbox not confirmed", "status": "unverified", "test": "Render only" },
+        { "step": "Track an order", "ideal": "By number plus email or phone", "site": "Works; wrong details give a clear message", "status": "done", "test": "Pass" },
+        { "step": "In transit with tracking ID", "ideal": "You pick the partner and type the ID; the customer gets one email", "site": "Built and live on the store (status, box, once-per-ID email); the email itself not yet seen in a real inbox", "status": "unverified", "test": "Stand-in only (15 checks)" },
+        { "step": "Expected delivery date", "ideal": "Real date from the courier", "site": "Typed by you, or shipped date plus 5 working days (placeholder number)", "status": "part", "test": "Pass (stand-in)" },
+        { "step": "GST invoice", "ideal": "Invoice PDF with the email", "site": "None", "status": "missing", "test": "-" },
+        { "step": "Delivered and review request", "ideal": "Delivered email, then \"how was it?\"", "site": "Delivered email designed; the review request email does not exist", "status": "part", "test": "-" }
+      ]
+    },
+    {
+      "id": "support", "name": "7. Cancel, return, refund and help", "goal": "Problems get solved without a phone call.",
+      "steps": [
+        { "step": "Contact form", "ideal": "Saved in WordPress and emailed", "site": "Works (validation tested live; sending tested earlier)", "status": "done", "test": "Pass" },
+        { "step": "Real contact details", "ideal": "WhatsApp number and support email on the page", "site": "Shows [WhatsApp number] and [support email]", "status": "part", "test": "FAIL (placeholder)" },
+        { "step": "Policies", "ideal": "Shipping, returns, refunds, privacy, terms reviewed by a lawyer", "site": "Pages exist but hold placeholders and sample text", "status": "part", "test": "FAIL (placeholder)" },
+        { "step": "Cancel or return from the order page", "ideal": "A request button", "site": "None; customer must write to you", "status": "missing", "test": "-" },
+        { "step": "Refund email", "ideal": "Branded refund email", "site": "Designed and coded", "status": "unverified", "test": "Render only" },
+        { "step": "Quick chat", "ideal": "WhatsApp button on every page", "site": "None", "status": "missing", "test": "-" }
+      ]
+    },
+    {
+      "id": "account", "name": "8. Account", "goal": "Returning customers reorder in a tap.",
+      "steps": [
+        { "step": "Sign up, sign in, forgot password", "ideal": "Safe and simple", "site": "Works; forgot password gives the same answer whether or not the email exists", "status": "done", "test": "Pass (live sign-up not tested)" },
+        { "step": "Order history and saved addresses", "ideal": "Yes", "site": "Yes", "status": "done", "test": "Pass (signed-out prompt)" },
+        { "step": "Reorder, invoice download", "ideal": "Buy again, download invoice", "site": "Neither exists", "status": "missing", "test": "-" },
+        { "step": "Welcome email", "ideal": "After sign-up", "site": "Designed, but switched off for sign-ups made on the storefront", "status": "part", "test": "-" },
+        { "step": "Email check on sign-up", "ideal": "Confirm the address", "site": "Not built", "status": "missing", "test": "-" }
+      ]
+    },
+    {
+      "id": "custom", "name": "9. Custom print: quote, approve, pay, print", "goal": "A customer with a 3D file gets a price and a finished part.",
+      "steps": [
+        { "step": "Quote form with file upload", "ideal": "Upload up to 300 MB, get a reference", "site": "Works (QR number, file saved privately)", "status": "done", "test": "Validation pass live; upload tested earlier" },
+        { "step": "Your side: view, status, download, delete file", "ideal": "Request screen with statuses", "site": "Works in WordPress (Quote requests)", "status": "done", "test": "Earlier test" },
+        { "step": "Quote received email", "ideal": "Branded email with a summary", "site": "Plain text today; the lime design exists but is not connected", "status": "part", "test": "-" },
+        { "step": "Send the price and let the customer accept", "ideal": "Email with price and an accept-and-pay link", "site": "Not built", "status": "missing", "test": "-" },
+        { "step": "Pay the advance, follow progress", "ideal": "Pay online; status page for the job", "site": "Not built (needs Cashfree and a status page)", "status": "missing", "test": "-" }
+      ]
+    },
+    {
+      "id": "bulk", "name": "10. Business and bulk buyers", "goal": "A company gets a quote and a GST invoice.",
+      "steps": [
+        { "step": "Bulk price ranges and bulk quote form", "ideal": "Ranges on the product; request with GSTIN", "site": "Works", "status": "done", "test": "Validation pass" },
+        { "step": "Tax invoice, payment terms", "ideal": "GST invoice, optional credit terms", "site": "None", "status": "missing", "test": "-" }
+      ]
+    },
+    {
+      "id": "retain", "name": "11. Keep customers coming back", "goal": "Turn one order into the next.",
+      "steps": [
+        { "step": "Newsletter", "ideal": "Sign-up with a welcome email", "site": "Works (saved in WordPress, welcome email)", "status": "done", "test": "Earlier test" },
+        { "step": "Abandoned cart, back in stock, review request", "ideal": "Automatic reminder emails", "site": "None", "status": "missing", "test": "-" },
+        { "step": "Offers and referral", "ideal": "Coupon campaigns, share-and-earn", "site": "Coupons work; no campaigns", "status": "missing", "test": "-" }
+      ]
+    },
+    {
+      "id": "ops", "name": "12. Your daily work in WordPress", "goal": "An order arrives, gets printed, shipped and closed without mistakes.",
+      "steps": [
+        { "step": "New order alert", "ideal": "Email with items, options and photos", "site": "Designed and coded (not seen in a real inbox)", "status": "unverified", "test": "Render only" },
+        { "step": "Order statuses", "ideal": "Processing, In transit, Completed", "site": "In transit added; tracking box with partner list", "status": "done", "test": "Stand-in" },
+        { "step": "Courier tracking links", "ideal": "Each partner's link works", "site": "Links are my best knowledge and need checking; \"Other\" lets you type one", "status": "part", "test": "-" },
+        { "step": "Shiprocket", "ideal": "Labels, live rates, tracking sync", "site": "Plugin present, not connected to checkout or tracking", "status": "missing", "test": "-" },
+        { "step": "Security clean-up", "ideal": "No public username, unused plugins removed, 2FA", "site": "Mostly fixed; WPGraphQL still shows the admin username; readme.html public; plugins and 2FA unconfirmed", "status": "part", "test": "Re-checked" }
+      ]
+    }
+  ],
+  "emails": [
+    { "name": "Order confirmed (customer)", "status": "Designed, coded", "note": "Product photos, tracker, more from the category" },
+    { "name": "In transit with tracking ID (customer)", "status": "Designed, coded, send-once rule tested", "note": "Needs the tracking box on the order" },
+    { "name": "Order delivered (customer)", "status": "Designed, coded", "note": "Review button, more from the category" },
+    { "name": "Payment needed and On hold (customer)", "status": "Designed, coded", "note": "Pay button" },
+    { "name": "Payment failed (customer)", "status": "Designed, coded", "note": "Try again button" },
+    { "name": "Refund issued (customer)", "status": "Designed, coded", "note": "Amount and method" },
+    { "name": "A note from us (customer)", "status": "Designed, coded", "note": "Your note on the order" },
+    { "name": "Welcome (customer)", "status": "Designed, coded, switched off", "note": "The account snippet turns it off for storefront sign-ups" },
+    { "name": "Reset password (customer)", "status": "Designed, coded", "note": "Uses the storefront reset link" },
+    { "name": "New order, cancelled, failed (to you)", "status": "Designed, coded", "note": "Print options and customer note" },
+    { "name": "Quote request received (customer)", "status": "Designed only", "note": "Still sent as plain text" },
+    { "name": "Contact, newsletter welcome, bulk request, review waiting", "status": "Plain text", "note": "Not yet in the lime design" },
+    { "name": "Review request, abandoned cart, back in stock, order delayed, GST invoice", "status": "Not started", "note": "" }
+  ],
+  "pending": {
+    "you": [
+      "Give the real values: WhatsApp number, support email, GSTIN, free-shipping amount, COD fee and limit, delivery days, refund time, return and warranty terms (they replace the [placeholders] on every page).",
+      "Send the Cashfree test keys so online payment can be switched on and tested.",
+      "Have the policies and the tax set-up reviewed by a lawyer and your CA.",
+      "Upload your own product photos in place of Amazon-hosted pictures; put every product into a category in WooCommerce.",
+      "Upload a .glb or .stl file on the products you want a 3D view for.",
+      "Place one cash on delivery order, set it to In transit with a tracking ID, and send me a screenshot of both emails from your inbox."
+    ],
+    "backend": [
+      "Confirm akrinity-emails.php and the akrinity-emails folder are uploaded; confirm WP Mail SMTP sends.",
+      "Connect Shiprocket (or enter courier rates) and check each delivery partner's tracking link.",
+      "Deactivate WPGraphQL and unused plugins, delete readme.html, add 2FA, remove the claude-agent account before launch.",
+      "Set the real working-day numbers in wp-config (AKRINITY_PRINT_DAYS, AKRINITY_DELIVERY_DAYS) and the COD fee and limit.",
+      "Configure daily backups and the host firewall.",
+      "Delete the test orders (#295, #300) and test quote requests."
+    ],
+    "frontend": [
+      "P1 Search engines: sitemap.xml, robots.txt, canonical links, share tags, product structured data.",
+      "P1 Replace the [placeholders] with values from the owner (a settings file, one place).",
+      "P1 Pincode check that gives a real delivery date; free-shipping progress bar.",
+      "P1 Price sort and a few more filters (price range).",
+      "P2 Cancel and return request on the order page; WhatsApp chat button.",
+      "P2 GST invoice (PDF) on the order page and in the email.",
+      "P2 Reorder button and wishlist sync in the account; cart synced to the account.",
+      "P2 Quote reply flow: price email, accept-and-pay link, quote status page.",
+      "P2 Move the quote, contact, newsletter, bulk and review emails into the lime design.",
+      "P3 Abandoned-cart, back-in-stock and review-request emails; offers and referral.",
+      "P3 Analytics and a cookie notice once you choose the tools.",
+      "After Cashfree keys: online payment, advance payment for custom jobs, refunds to the original method."
+    ]
+  }
+}
