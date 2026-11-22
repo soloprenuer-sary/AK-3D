@@ -7,6 +7,8 @@
 export type DescBlock =
   | { t: 'h'; text: string }
   | { t: 'p'; text: string }
+  /** The intro: shown larger than the normal text. */
+  | { t: 'lead'; text: string }
   | { t: 'ul'; items: string[] }
   | { t: 'img'; src: string; alt: string };
 

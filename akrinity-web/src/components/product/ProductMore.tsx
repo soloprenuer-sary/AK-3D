@@ -14,21 +14,23 @@ const FACTS: { match: RegExp; label: string }[] = [
 ];
 const TILE_CLASS = ['t-lime', 't-violet', 't-orange', 't-ink'];
 
-/** A+ content: the About blocks, then the Product details lines. */
+/** The A+ section blocks: a heading and its text each. */
 function aboutBlocks(c: ProductContent): DescBlock[] {
   const out: DescBlock[] = [];
   for (const a of c.about) {
     if (a.title) out.push({ t: 'h', text: a.title });
     if (a.text) out.push({ t: 'p', text: a.text });
   }
-  if (c.details.length) {
-    out.push({ t: 'h', text: 'Product details' });
-    out.push({
-      t: 'ul',
-      items: c.details.map((d) => (d.label ? `${d.label}: ${d.value}` : d.value)),
-    });
-  }
   return out;
+}
+
+/** The Product details lines. */
+function detailBlocks(c: ProductContent): DescBlock[] {
+  if (!c.details.length) return [];
+  return [
+    { t: 'h', text: 'Product details' },
+    { t: 'ul', items: c.details.map((d) => (d.label ? `${d.label}: ${d.value}` : d.value)) },
+  ];
 }
 
 /**
@@ -57,7 +59,7 @@ export function ProductMore({ product }: { product: ShopProduct }) {
       (p) => !(p.width > 0 && p.height > 0 && p.width / p.height > 2.4),
     );
     pictures = usable.map((p) => ({ src: p.url, alt: p.alt, caption: p.caption }));
-    // The right side holds only pictures, so the lists live in the text on the left.
+    // The right side holds only the A+ pictures (when there are any); the text always lives on the left.
     const keyFeatures: DescBlock[] = content.features.length
       ? [
           { t: 'h', text: 'Key features' },
@@ -70,12 +72,19 @@ export function ProductMore({ product }: { product: ShopProduct }) {
           { t: 'ul', items: content.package },
         ]
       : [];
-    if (content.layout === 'pictures' && usable.length > 0) {
-      blocks = [...aboutBlocks(content), ...keyFeatures, ...inTheBox];
-    } else {
-      const paragraphs = content.description.map((p) => ({ t: 'p', text: p }) as DescBlock);
-      blocks = [...keyFeatures, ...paragraphs, ...inTheBox];
-    }
+    // Everything the owner wrote shows on the description side, in the order of the WordPress box:
+    // key features, intro, the section blocks, package, product details.
+    // The first intro paragraph is the lead; any others follow as normal text.
+    const intro = content.description.map(
+      (t, i) => ({ t: i === 0 ? 'lead' : 'p', text: t }) as DescBlock,
+    );
+    blocks = [
+      ...keyFeatures,
+      ...intro,
+      ...aboutBlocks(content),
+      ...inTheBox,
+      ...detailBlocks(content),
+    ];
   } else {
     const all = product.longDescription ?? [];
     blocks = all.filter((b) => b.t !== 'img');
@@ -83,13 +92,6 @@ export function ProductMore({ product }: { product: ShopProduct }) {
       .filter((b): b is Extract<DescBlock, { t: 'img' }> => b.t === 'img')
       .map((b) => ({ src: b.src, alt: b.alt, caption: '' }));
   }
-  // No A+ pictures: the normal product photos fill the picture area.
-  if (pictures.length === 0 && (product.images?.length ?? 0) > 0) {
-    pictures = (product.images ?? [])
-      .slice(0, 8)
-      .map((src) => ({ src, alt: product.name, caption: '' }));
-  }
-
   const hasDesc = blocks.length > 0;
 
   // The specs table: the owner's own rows, or (older products) the attributes when there are at least three.

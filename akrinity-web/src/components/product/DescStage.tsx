@@ -16,6 +16,12 @@ function Prose({ blocks }: { blocks: DescBlock[] }) {
       {blocks.map((b, i) => {
         if (b.t === 'h') return <h3 key={i}>{b.text}</h3>;
         if (b.t === 'p') return <p key={i}>{b.text}</p>;
+        if (b.t === 'lead')
+          return (
+            <p key={i} className="lead">
+              {b.text}
+            </p>
+          );
         if (b.t === 'ul')
           return (
             <ul key={i} className="ticks">
