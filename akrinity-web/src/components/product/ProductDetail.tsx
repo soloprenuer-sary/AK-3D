@@ -202,34 +202,32 @@ export function ProductDetail({
 
       <section className="pdp wrap" aria-labelledby="product-name">
         <div className="gallery">
-          {model && (
-            <div className="tabs" role="tablist" aria-label="Product views">
-              <button
-                type="button"
-                id="tab-photo"
-                role="tab"
-                className="tab"
-                aria-selected={view === 'photo'}
-                aria-controls="pv-photo"
-                tabIndex={view === 'photo' ? 0 : -1}
-                onClick={() => setView('photo')}
-              >
-                Photos
-              </button>
-              <button
-                type="button"
-                id="tab-3d"
-                role="tab"
-                className="tab"
-                aria-selected={view === '3d'}
-                aria-controls="pv-3d"
-                tabIndex={view === '3d' ? 0 : -1}
-                onClick={() => setView('3d')}
-              >
-                3D view
-              </button>
-            </div>
-          )}
+          <div className="tabs" role="tablist" aria-label="Product views">
+            <button
+              type="button"
+              id="tab-photo"
+              role="tab"
+              className="tab"
+              aria-selected={view === 'photo'}
+              aria-controls="pv-photo"
+              tabIndex={view === 'photo' ? 0 : -1}
+              onClick={() => setView('photo')}
+            >
+              Photos
+            </button>
+            <button
+              type="button"
+              id="tab-3d"
+              role="tab"
+              className="tab"
+              aria-selected={view === '3d'}
+              aria-controls="pv-3d"
+              tabIndex={view === '3d' ? 0 : -1}
+              onClick={() => setView('3d')}
+            >
+              3D view
+            </button>
+          </div>
 
           <div
             id="pv-photo"
@@ -287,7 +285,13 @@ export function ProductDetail({
             className="main-3d"
             hidden={view !== '3d'}
           >
-            {model && view === '3d' && <ModelViewer product={product} model={model} />}
+            {view === '3d' && <ModelViewer product={product} model={model} />}
+            {view === '3d' && !model && (
+              <p className="meta" style={{ margin: '10px 4px 0' }}>
+                Sample 3D preview in this product&apos;s colour. The exact 3D model of this product
+                is coming soon.
+              </p>
+            )}
           </div>
         </div>
 
