@@ -37,6 +37,17 @@ export const maxDuration = 60;
 
 const COOKIE = 'akr_cart';
 const MAX_BODY = 20000;
+
+/**
+ * Payment ways the storefront offers, from the ENABLED_PAYMENT_METHODS setting in Vercel (comma
+ * separated, for example "cod,cashfree"). Cashfree is on hold, so only cash on delivery is offered
+ * until "cashfree" is added there.
+ */
+const enabledMethods = (): string[] =>
+  (process.env.ENABLED_PAYMENT_METHODS ?? 'cod')
+    .split(',')
+    .map((m) => m.trim().toLowerCase())
+    .filter(Boolean);
 const MAX_LINES = 20;
 const PHONE_RE = /^\+?\d{10,13}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -164,7 +175,9 @@ function normalise(c: Row): CartView {
     tax: m(t.total_tax),
     total: m(t.total_price),
     rates,
-    paymentMethods: Array.isArray(c.payment_methods) ? (c.payment_methods as string[]) : [],
+    paymentMethods: (Array.isArray(c.payment_methods) ? (c.payment_methods as string[]) : []).filter(
+      (m) => enabledMethods().includes(m),
+    ),
     coupons: rows(c.coupons).map((x) => ({
       code: String(x.code ?? ''),
       amount: m(((x.totals ?? {}) as Row).total_discount),
@@ -322,7 +335,7 @@ async function prepare(
   if (q.rate) {
     await wc(env, s, 'POST', '/cart/select-shipping-rate', { package_id: 0, rate_id: q.rate });
   }
-  if (q.method) {
+  if (q.method && enabledMethods().includes(q.method)) {
     await wc(env, s, 'POST', '/cart/extensions', {
       namespace: 'akrinity',
       data: { method: q.method },

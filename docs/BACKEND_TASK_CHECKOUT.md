@@ -41,6 +41,13 @@ Test: add a product, set state Maharashtra, the cart shows CGST and SGST; set Ka
 
 ## 4. Payments
 
+**Right now only cash on delivery is offered.** Cashfree is on hold: the storefront hides it until the setting `ENABLED_PAYMENT_METHODS` in Vercel includes it (default is `cod`; later set `cod,cashfree`). The Cashfree steps below can wait.
+
+**To take a cash on delivery order, the store needs just three things** (WooCommerce settings, no code):
+1. Settings > Payments: turn on **Cash on delivery**.
+2. Settings > Shipping: add a shipping zone for India with a **Flat rate** (for example ₹60) and optionally **Free shipping** above a limit. Without a shipping method, WooCommerce cannot place any order.
+3. Upload `akrinity-shop.php` (so the COD fee, limit and options note work) and, for the GST split, section 2 above.
+
 **Cashfree** (plugin "Cashfree for WooCommerce" is installed):
 - [ ] Settings: enter the **test** App ID and Secret first; mode = test. VERIFY the plugin settings page for the exact field names.
 - [ ] Add the storefront and admin domains to Cashfree's allowed list; set the webhook address the plugin shows.

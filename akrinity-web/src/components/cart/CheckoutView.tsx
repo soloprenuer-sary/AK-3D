@@ -315,8 +315,8 @@ export function CheckoutView() {
                     {available
                       ? METHOD_NOTE[m]
                       : mtoCart
-                        ? 'Not available for this cart. Made-to-order and personalised items are paid online.'
-                        : 'Not available for this order (the order is above the cash on delivery limit, or it is not set up yet).'}
+                        ? 'Not available for made-to-order items. Online payment is coming soon: until then, send a quote request and we will arrange payment with you.'
+                        : 'Not available for this order: it is above the cash on delivery limit, or cash on delivery is not switched on in the store yet.'}
                   </span>
                 </span>
               </label>
