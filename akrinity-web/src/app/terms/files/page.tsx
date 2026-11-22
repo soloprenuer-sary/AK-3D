@@ -46,7 +46,7 @@ export default function FileTermsPage() {
         {
           heading: 'Report a problem',
           paragraphs: [
-            'If you believe a design on this site or a file we printed breaks someone\'s rights, contact us at [support email]. See also the grievance officer page.',
+            'If you believe a design on this site or a file we printed breaks someone\'s rights, contact us through the contact page. See also the grievance officer page.',
           ],
         },
       ]}

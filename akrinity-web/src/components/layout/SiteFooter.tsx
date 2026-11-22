@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { NewsletterForm } from './NewsletterForm';
 import type { ShopCategory } from '@/lib/shop-data';
+import { paymentLine, site } from '@/lib/site-config';
 
 export function SiteFooter({ tree }: { tree: ShopCategory[] }) {
   return (
@@ -48,8 +49,11 @@ export function SiteFooter({ tree }: { tree: ShopCategory[] }) {
           </div>
         </div>
         <div className="fbar">
-          <span>© Akrinity · GSTIN [YOUR GSTIN] · <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link></span>
-          <span>UPI · Cards · Netbanking · Cash on Delivery</span>
+          <span>
+            © Akrinity{site.gstin ? ` · GSTIN ${site.gstin}` : ''} ·{' '}
+            <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link>
+          </span>
+          <span>{paymentLine}</span>
         </div>
       </div>
     </footer>

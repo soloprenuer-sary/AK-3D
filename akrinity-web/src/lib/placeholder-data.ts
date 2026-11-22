@@ -1,3 +1,5 @@
+import { site } from './site-config';
+
 /**
  * Placeholder content for the home page, taken from the approved design. Replace with WordPress
  * data (WPGraphQL and ACF fields) when the backend is connected. Bracketed text is not real.
@@ -5,8 +7,10 @@
 export const stats = [
   { value: '4', label: 'Material families' },
   { value: 'Pan-India', label: 'Tracked shipping' },
-  { value: 'GST', label: 'Invoices for business' },
-  { value: '[X] hrs', label: 'Quote reply time' },
+  { value: 'GST', label: 'Included in every price' },
+  site.replyHours > 0
+    ? { value: `${site.replyHours} hrs`, label: 'Quote reply time' }
+    : { value: 'Mumbai', label: 'Printed in our own studio' },
 ];
 
 export const categories = [

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { ProductDetail } from '@/components/product/ProductDetail';
 import { getProducts } from '@/lib/catalogue';
 import { productSlug, type ShopProduct } from '@/lib/shop-data';
+import { site } from '@/lib/site-config';
 
 /** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
 export const revalidate = 60;
@@ -56,7 +57,26 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const product = findProduct(await getProducts(), slug);
-  return { title: product ? product.name : 'Product' };
+  if (!product) return { title: 'Product' };
+  const text = (product.description ?? '').replace(/\s+/g, ' ').trim();
+  const description =
+    text.length > 20
+      ? text.slice(0, 155)
+      : `${product.name}. 3D printed in Mumbai, shipped across India. Prices include GST.`;
+  const image = product.images?.[0];
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical: `/product/${productSlug(product)}` },
+    openGraph: {
+      type: 'website',
+      title: product.name,
+      description,
+      url: `/product/${productSlug(product)}`,
+      ...(image ? { images: [{ url: image, alt: product.name }] } : {}),
+    },
+    twitter: { card: 'summary_large_image', ...(image ? { images: [image] } : {}) },
+  };
 }
 
 export default async function ProductPage({ params }: Params) {
@@ -65,5 +85,47 @@ export default async function ProductPage({ params }: Params) {
   const product = findProduct(products, slug);
   if (!product) notFound();
   const { crossSells, suggested } = rowsFor(products, product);
-  return <ProductDetail product={product} crossSells={crossSells} related={suggested} />;
+  const price = Number((product.price ?? '').replace(/[^\d.]/g, ''));
+  // What Google reads to show price, stock and stars next to the result.
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    image: product.images?.slice(0, 6),
+    description: (product.description ?? '').replace(/\s+/g, ' ').trim() || product.name,
+    brand: { '@type': 'Brand', name: 'Akrinity' },
+    url: `${site.url}/product/${productSlug(product)}`,
+    ...(price > 0
+      ? {
+          offers: {
+            '@type': 'Offer',
+            priceCurrency: 'INR',
+            price: price.toFixed(2),
+            availability: product.inStock
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+            itemCondition: 'https://schema.org/NewCondition',
+            url: `${site.url}/product/${productSlug(product)}`,
+          },
+        }
+      : {}),
+    ...(product.reviewCount && product.reviewCount > 0 && product.rating
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: product.rating,
+            reviewCount: product.reviewCount,
+          },
+        }
+      : {}),
+  };
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, '\\u003c') }}
+      />
+      <ProductDetail product={product} crossSells={crossSells} related={suggested} />
+    </>
+  );
 }

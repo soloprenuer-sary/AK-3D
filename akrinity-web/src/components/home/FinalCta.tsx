@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { site } from '@/lib/site-config';
 
 export function FinalCta() {
   return (
@@ -20,22 +21,34 @@ export function FinalCta() {
           </div>
         </div>
         <div className="contact">
-          <div>
-            <span>WhatsApp</span>
-            <p>[WhatsApp number]</p>
-          </div>
-          <div>
-            <span>Email</span>
-            <p>[support email]</p>
-          </div>
+          {site.whatsappText && (
+            <div>
+              <span>WhatsApp</span>
+              <p>
+                <a href={site.whatsappLink} rel="noopener noreferrer">
+                  {site.whatsappText}
+                </a>
+              </p>
+            </div>
+          )}
+          {site.supportEmail && (
+            <div>
+              <span>Email</span>
+              <p>
+                <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>
+              </p>
+            </div>
+          )}
           <div>
             <span>Studio</span>
             <p>Mumbai, India</p>
           </div>
-          <div>
-            <span>Reply time</span>
-            <p>Within [X] hours</p>
-          </div>
+          {site.replyHours > 0 && (
+            <div>
+              <span>Reply time</span>
+              <p>Within {site.replyHours} hours</p>
+            </div>
+          )}
         </div>
       </div>
     </section>

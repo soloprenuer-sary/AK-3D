@@ -1359,3 +1359,9 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
   .dg-solo .prose ul.ticks{display:grid;grid-template-columns:1fr 1fr;gap:10px 48px}
   .dg-solo .prose p.lead{font-size:24px;padding:22px 28px}
 }
+
+/* WhatsApp button */
+.wa-fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));z-index:40;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--ink);border:1.5px solid var(--ink);box-shadow:0 4px 0 var(--ink);transition:transform .15s var(--ease)}
+.wa-fab:hover{transform:translateY(-2px)}
+.wa-fab:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.wa-fab{transition:none}}

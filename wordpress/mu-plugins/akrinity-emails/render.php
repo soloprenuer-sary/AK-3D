@@ -680,3 +680,50 @@ function akr_em_build( string $kind, array $a ): string {
 	}
 	return '';
 }
+
+/* ---------- notices: quote, bulk, contact, newsletter and review emails ---------- */
+
+/**
+ * A short email in the same design from plain lines. $d: tag, title (plain), hl (the highlighted last words),
+ * head, intro (plain), summary ("Label: value" lines, one per line), steps (list), help.
+ * A line that starts with "Open it:" becomes a button.
+ */
+function akr_em_notice( array $d ): string {
+	$c      = akr_em_c();
+	$rows   = '';
+	$button = '';
+	foreach ( preg_split( '/\r?\n/', (string) ( $d['summary'] ?? '' ) ) as $line ) {
+		$line = trim( $line );
+		if ( '' === $line || false === strpos( $line, ': ' ) ) {
+			continue;
+		}
+		list( $label, $value ) = explode( ': ', $line, 2 );
+		if ( 'Open it' === $label ) {
+			$button = akr_em_btn( 'Open it in WordPress', $value );
+			continue;
+		}
+		$rows .= '<tr><td valign="top" style="padding:6px 12px 6px 0;font-family:' . $c['body'] . ';font-size:14px;color:' . $c['muted'] . ';white-space:nowrap;">' . esc_html( $label ) . '</td>' .
+			'<td valign="top" style="padding:6px 0;font-family:' . $c['body'] . ';font-size:14.5px;font-weight:600;color:' . $c['ink'] . ';overflow-wrap:anywhere;">' . nl2br( esc_html( $value ) ) . '</td></tr>';
+	}
+	$blocks = array();
+	if ( '' !== $rows ) {
+		$blocks[] = '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="' . akr_em_card_style() . '"><tr><td style="padding:16px 22px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">' . $rows . '</table></td></tr></table>';
+	}
+	if ( ! empty( $d['steps'] ) ) {
+		$blocks[] = akr_em_title( 'What happens next' ) . akr_em_steps( array_map( 'esc_html', (array) $d['steps'] ) );
+	}
+	if ( '' !== $button ) {
+		$blocks[] = $button;
+	}
+	return akr_em_shell(
+		array(
+			'tag'    => (string) ( $d['tag'] ?? '' ),
+			'title'  => esc_html( (string) ( $d['title'] ?? '' ) ) . ( ! empty( $d['hl'] ) ? ' ' . akr_em_hl( (string) $d['hl'] ) : '' ),
+			'head'   => esc_html( (string) ( $d['head'] ?? '' ) ),
+			'pre'    => (string) ( $d['intro'] ?? '' ),
+			'intro'  => esc_html( (string) ( $d['intro'] ?? '' ) ),
+			'blocks' => $blocks,
+			'help'   => isset( $d['help'] ) ? esc_html( (string) $d['help'] ) : '',
+		)
+	);
+}

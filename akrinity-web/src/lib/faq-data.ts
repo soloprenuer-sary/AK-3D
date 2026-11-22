@@ -30,7 +30,7 @@ export const FAQ: FaqItem[] = [
   },
   {
     q: 'How long does printing take?',
-    a: 'Each product shows its lead time. Made-to-order items are ready in [X] working days.',
+    a: 'Each product shows its lead time. Made-to-order items show the lead time after you order.',
     more: { href: '/shipping', label: 'Shipping' },
   },
   {
@@ -45,7 +45,7 @@ export const FAQ: FaqItem[] = [
   },
   {
     q: 'What if my order arrives damaged or wrong?',
-    a: 'Tell us within [X] days with a photo and we will repair, replace or refund it.',
+    a: 'Tell us as soon as you notice, with a photo, and we will repair, replace or refund it.',
     more: { href: '/returns', label: 'Returns and warranty' },
   },
 ];

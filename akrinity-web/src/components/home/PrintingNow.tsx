@@ -144,14 +144,12 @@ export function PrintingNow() {
           <div className="bt bt-tile bt-plate">
             <PlateArt />
             <b>Build plate</b>
-            <span>
-              Heated flat plate, [X] × [X] mm. The first layer decides how well a part sticks.
-            </span>
+            <span>Heated flat plate. The first layer decides how well a part sticks.</span>
           </div>
           <div className="bt bt-tile bt-size">
             <SizeArt />
             <b>Part size</b>
-            <span>Up to [X] × [X] × [X] mm in one piece. Bigger parts print in sections.</span>
+            <span>Large parts print in sections and are joined afterwards.</span>
           </div>
         </div>
       </div>

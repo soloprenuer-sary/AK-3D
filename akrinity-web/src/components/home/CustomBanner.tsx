@@ -30,7 +30,7 @@ export function CustomBanner() {
               </span>
               <b>Choose files or drop them here</b>
               <span className="muted" style={{ fontSize: 14 }}>
-                STL, 3MF, OBJ, STEP, IGES · up to [XX] MB each
+                STL, 3MF, OBJ, STEP, IGES · up to 300 MB each
               </span>
             </div>
             <div className="pills">

@@ -350,7 +350,7 @@ export function QuoteForm() {
       </button>
 
       <p id="quote-note" className="meta">
-        We reply within [X] hours. No payment is taken at this step.
+        We reply as soon as we can. No payment is taken at this step.
       </p>
       {serverError && (
         <p className="err" role="alert">

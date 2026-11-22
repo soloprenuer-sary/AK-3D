@@ -20,6 +20,7 @@ import { splitLabel } from '@/lib/product-content';
 import { ProductMore } from './ProductMore';
 import { CompareButton, WishButton } from '@/components/shop/ProductActions';
 import { useCart } from '@/lib/cart-store';
+import { addWorkingDays, site } from '@/lib/site-config';
 
 /**
  * Local test model, set in .env.local and only used by the development server. It is never part
@@ -169,13 +170,20 @@ export function ProductDetail({
   };
 
   const checkPincode = () => {
-    if (!/^\d{6}$/.test(pin)) {
+    if (!/^[1-9]\d{5}$/.test(pin)) {
       setPinMessage({ ok: false, text: 'Enter a 6-digit pincode.' });
       return;
     }
+    // An estimate from the printing and delivery days set for the shop (the exact date comes with the tracking link).
+    const by = addWorkingDays(new Date(), site.printDays + site.deliveryDays);
+    const day = by.toLocaleDateString('en-IN', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
     setPinMessage({
       ok: true,
-      text: 'Thanks. We deliver across India, and the delivery estimate for your pincode is shown at checkout.',
+      text: `Estimated delivery to ${pin}: by ${day}. We deliver across India with tracking; the exact date comes with your tracking link.`,
     });
   };
 
@@ -483,8 +491,8 @@ export function ProductDetail({
             <div className="notice">
               <span className="label">
                 {product.inStock
-                  ? 'In stock, ships in [X] working days'
-                  : 'Made to order, ready in [X] working days'}
+                  ? `In stock, ships in ${site.printDays} working days`
+                  : 'Made to order, we confirm the lead time after you order'}
               </span>
               <span className="muted" style={{ fontSize: 14 }}>
                 {product.inStock

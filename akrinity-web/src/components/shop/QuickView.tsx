@@ -77,7 +77,7 @@ function QuickViewBody({
         </h2>
         <p className="muted">
           {product.material} · {product.category}
-          {product.inStock ? '' : ' · Ready in [X] working days'}
+          {product.inStock ? '' : ' · Made to order'}
         </p>
         <div className="price">
           <span className="amt">{product.price ?? '₹[price]'}</span>

@@ -146,7 +146,11 @@ export function SimpleForm({
                   aria-invalid={Boolean(errors[field.name])}
                 />
               ) : type === 'select' ? (
-                <select id={fid} name={field.name} defaultValue={field.options?.[0]}>
+                <select
+                  id={fid}
+                  name={field.name}
+                  defaultValue={field.defaultValue ?? field.options?.[0]}
+                >
                   {field.options?.map((o) => (
                     <option key={o}>{o}</option>
                   ))}

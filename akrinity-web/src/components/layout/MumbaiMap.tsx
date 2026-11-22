@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { site } from '@/lib/site-config';
 
 /** Google Maps search for Mumbai. Change the query to the studio's exact address once it is confirmed. */
-const QUERY = 'Mumbai, Maharashtra, India';
+const QUERY = site.studioAddress || 'Mumbai, Maharashtra, India';
 const OPEN_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(QUERY)}`;
 const EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(QUERY)}&output=embed`;
 
@@ -23,7 +24,8 @@ export function MumbaiMap() {
           </h2>
           <p>
             The studio is in Mumbai, Maharashtra. Orders ship from here across India. Visits are by
-            appointment, so please message us first. <b>[Full address to be added]</b>
+            appointment, so please message us first.
+            {site.studioAddress ? <b> {site.studioAddress}</b> : null}
           </p>
           <div className="map-actions">
             <a

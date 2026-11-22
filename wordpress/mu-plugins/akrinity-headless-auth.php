@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Akrinity headless account
  * Description: Customer sign-up, account details and orders, bulk prices and bulk quote requests for the headless storefront. The one approved WordPress snippet (decisions 20, 32 and 34).
- * Version: 2.5.0
+ * Version: 2.6.0
  *
  * Install: copy this file to wp-content/mu-plugins/ and add to wp-config.php:
  *   define( 'AKRINITY_FRONTEND_URL', 'https://www.example.com' );
@@ -96,6 +96,19 @@ add_filter(
 		return ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ? false : $enabled;
 	}
 );
+
+/**
+ * Sends an email. With a $style (and the Akrinity email design from akrinity-emails.php present) it goes out as the
+ * lime-poster HTML email built from $style['summary'] ("Label: value" lines); otherwise as the plain text given.
+ */
+function akr_mail( $to, $subject, $plain, $headers = array(), $style = null ) {
+	if ( is_array( $style ) && function_exists( 'akr_em_notice' ) ) {
+		$headers   = is_array( $headers ) ? $headers : array_filter( array( (string) $headers ) );
+		$headers[] = 'Content-Type: text/html; charset=UTF-8';
+		return wp_mail( $to, $subject, akr_em_notice( $style ), $headers );
+	}
+	return wp_mail( $to, $subject, $plain, $headers );
+}
 
 /* ---------- Helpers for account data ---------- */
 
@@ -962,17 +975,37 @@ function akr_handle_quote_request( WP_REST_Request $req ) {
 
 	akr_after_response(
 		function () use ( $admin, $email, $ref, $summary, $reply, $job, $f ) {
-			wp_mail(
+			akr_mail(
 				$admin,
 				'New custom quote request ' . $ref . ' (' . $job . ')',
 				"Someone asked for a custom quote on the website.\r\n\r\n" . $summary . "\r\n",
-				'' !== $reply ? array( $reply ) : array()
+				'' !== $reply ? array( $reply ) : array(),
+				array(
+					'tag'     => 'New quote request',
+					'title'   => 'Quote',
+					'hl'      => $ref,
+					'head'    => 'Studio',
+					'intro'   => 'Someone asked for a custom quote on the website.',
+					'summary' => $summary,
+					'help'    => 'Reply to this email to answer the customer. Set the status on the request as you go.',
+				)
 			);
 			if ( '' !== $email ) {
-				wp_mail(
+				akr_mail(
 					$email,
 					'We received your quote request (' . $ref . ')',
-					"Thank you. We have received your quote request and will reply with a price and lead time.\r\n\r\n" . ( '' !== $f['file_name'] ? 'If your file did not finish uploading on the website, please send it to us on WhatsApp or by replying to this email, and mention ' . $ref . ".\r\n\r\n" : '' ) . "Here is what you sent us:\r\n\r\n" . $summary . "\r\n"
+					"Thank you. We have received your quote request and will reply with a price and lead time.\r\n\r\n" . ( '' !== $f['file_name'] ? 'If your file did not finish uploading on the website, please send it to us on WhatsApp or by replying to this email, and mention ' . $ref . ".\r\n\r\n" : '' ) . "Here is what you sent us:\r\n\r\n" . $summary . "\r\n",
+					array(),
+					array(
+						'tag'     => 'Quote request',
+						'title'   => 'We have your',
+						'hl'      => 'request.',
+						'head'    => $ref,
+						'intro'   => 'Thank you. We will look at it and reply with a price and lead time. Pay only after you approve the quote.' . ( '' !== $f['file_name'] ? ' If your file did not finish uploading, send it to us by replying to this email and mention ' . $ref . '.' : '' ),
+						'summary' => preg_replace( '/^(Open it|Email|Company|GSTIN): .*$/m', '', $summary ),
+						'steps'   => array( 'We check your file and the material.', 'We email you a price and lead time.', 'You approve the quote, pay, and we print.' ),
+						'help'    => 'Questions? Reply to this email and mention ' . $ref . '.',
+					)
 				);
 			}
 		}
@@ -1304,16 +1337,35 @@ function akr_handle_business_request( WP_REST_Request $req ) {
 
 	akr_after_response(
 		function () use ( $admin, $email, $ref, $summary, $reply, $product_name ) {
-			wp_mail(
+			akr_mail(
 				$admin,
 				'New bulk quote request ' . $ref . ( '' !== $product_name ? ' for ' . $product_name : '' ),
 				"A business sent a bulk quote request.\r\n\r\n" . $summary . "\r\n",
-				array( $reply )
+				array( $reply ),
+				array(
+					'tag'     => 'New bulk request',
+					'title'   => 'Bulk quote',
+					'hl'      => $ref,
+					'head'    => 'Studio',
+					'intro'   => 'A business sent a bulk quote request.',
+					'summary' => $summary,
+					'help'    => 'Reply to this email to answer the buyer.',
+				)
 			);
-			wp_mail(
+			akr_mail(
 				$email,
 				'We received your bulk quote request (' . $ref . ')',
-				"Thank you. We have received your bulk quote request and will reply with a quote.\r\n\r\nHere is what you sent us:\r\n\r\n" . $summary . "\r\n\r\nIf anything is wrong, just reply to this email.\r\n"
+				"Thank you. We have received your bulk quote request and will reply with a quote.\r\n\r\nHere is what you sent us:\r\n\r\n" . $summary . "\r\n\r\nIf anything is wrong, just reply to this email.\r\n",
+				array(),
+				array(
+					'tag'     => 'Bulk quote',
+					'title'   => 'We have your',
+					'hl'      => 'request.',
+					'head'    => $ref,
+					'intro'   => 'Thank you. We will reply with a quote. If anything below is wrong, just reply to this email.',
+					'summary' => $summary,
+					'steps'   => array( 'We check the quantity and the product.', 'We email you a quote with GST.', 'You approve it and we start.' ),
+				)
 			);
 		}
 	);
@@ -1405,9 +1457,36 @@ function akr_handle_contact( WP_REST_Request $req ) {
 	$email = $f['email'];
 	akr_after_response(
 		function () use ( $admin, $email, $ref, $summary, $reply, $f ) {
-			wp_mail( $admin, 'New website message ' . $ref . ( '' !== $f['topic'] ? ' (' . $f['topic'] . ')' : '' ), "Someone wrote to us on the website.\r\n\r\n" . $summary . "\r\n", '' !== $reply ? array( $reply ) : array() );
+			akr_mail(
+				$admin,
+				'New website message ' . $ref . ( '' !== $f['topic'] ? ' (' . $f['topic'] . ')' : '' ),
+				"Someone wrote to us on the website.\r\n\r\n" . $summary . "\r\n",
+				'' !== $reply ? array( $reply ) : array(),
+				array(
+					'tag'     => 'New message',
+					'title'   => 'Message',
+					'hl'      => $ref,
+					'head'    => 'Studio',
+					'intro'   => 'Someone wrote to us on the website.',
+					'summary' => $summary,
+					'help'    => 'Reply to this email to answer them.',
+				)
+			);
 			if ( '' !== $email ) {
-				wp_mail( $email, 'We got your message (' . $ref . ')', "Thank you for writing to Akrinity. We have your message and will reply soon.\r\n\r\nHere is what you sent us:\r\n\r\n" . $summary . "\r\n" );
+				akr_mail(
+					$email,
+					'We got your message (' . $ref . ')',
+					"Thank you for writing to Akrinity. We have your message and will reply soon.\r\n\r\nHere is what you sent us:\r\n\r\n" . $summary . "\r\n",
+					array(),
+					array(
+						'tag'     => 'Message received',
+						'title'   => 'We got your',
+						'hl'      => 'message.',
+						'head'    => $ref,
+						'intro'   => 'Thank you for writing to Akrinity. We will reply soon. Here is what you sent us.',
+						'summary' => preg_replace( '/^(Open it|Reference): .*$/m', '', $summary ),
+					)
+				);
 			}
 		}
 	);
@@ -1449,7 +1528,19 @@ function akr_handle_newsletter( WP_REST_Request $req ) {
 		akr_request_log( $id, 'Signed up on the website.' );
 		akr_after_response(
 			function () use ( $email ) {
-				wp_mail( $email, 'You are on the Akrinity list', "Thank you for signing up. We will write only when we have something worth sharing: new prints, offers and how-to guides.\r\n\r\nIf this was not you, just ignore this email.\r\n" );
+				akr_mail(
+					$email,
+					'You are on the Akrinity list',
+					"Thank you for signing up. We will write only when we have something worth sharing: new prints, offers and how-to guides.\r\n\r\nIf this was not you, just ignore this email.\r\n",
+					array(),
+					array(
+						'tag'   => 'Welcome',
+						'title' => 'You are on the',
+						'hl'    => 'list.',
+						'head'  => 'Newsletter',
+						'intro' => 'Thank you for signing up. We will write only when we have something worth sharing: new prints, offers and how-to guides. If this was not you, just ignore this email.',
+					)
+				);
 			}
 		);
 	}
@@ -1547,10 +1638,19 @@ function akr_handle_review_post( WP_REST_Request $req ) {
 	$title = get_the_title( $product_id );
 	akr_after_response(
 		function () use ( $title, $name, $rating, $text, $id ) {
-			wp_mail(
+			akr_mail(
 				get_option( 'admin_email' ),
 				'New review waiting for approval: ' . $title,
-				$name . ' gave ' . $rating . ' of 5 stars.' . "\r\n\r\n" . $text . "\r\n\r\nApprove or delete it: " . admin_url( 'comment.php?action=editcomment&c=' . $id ) . "\r\n"
+				$name . ' gave ' . $rating . ' of 5 stars.' . "\r\n\r\n" . $text . "\r\n\r\nApprove or delete it: " . admin_url( 'comment.php?action=editcomment&c=' . $id ) . "\r\n",
+				array(),
+				array(
+					'tag'     => 'New review',
+					'title'   => 'Review',
+					'hl'      => 'to approve.',
+					'head'    => 'Studio',
+					'intro'   => 'A customer posted a review. It shows on the product page once you approve it.',
+					'summary' => 'Product: ' . $title . "\r\n" . 'From: ' . $name . "\r\n" . 'Rating: ' . $rating . ' of 5' . "\r\n" . 'Review: ' . preg_replace( '/\s+/', ' ', $text ) . "\r\n" . 'Open it: ' . admin_url( 'comment.php?action=editcomment&c=' . $id ),
+				)
 			);
 		}
 	);

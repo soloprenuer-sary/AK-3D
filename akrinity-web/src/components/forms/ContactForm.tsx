@@ -1,11 +1,22 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SimpleForm } from './SimpleForm';
 import { sendContact } from '@/lib/auth-client';
 
 /** The contact page form. Messages are saved in WordPress under Quote requests and emailed to the studio. */
+const TOPICS = [
+  'Order question',
+  'Cancel or return an order',
+  'Custom print',
+  'Design help',
+  'Something else',
+];
+
 export function ContactForm() {
+  const params = useSearchParams();
+  const topic = params.get('topic') ?? '';
   const [reference, setReference] = useState('');
   return (
     <SimpleForm
@@ -47,10 +58,17 @@ export function ContactForm() {
           label: 'Topic',
           type: 'select',
           half: true,
-          options: ['Order question', 'Custom print', 'Design help', 'Something else'],
+          options: TOPICS,
+          defaultValue: TOPICS.includes(topic) ? topic : undefined,
           required: true,
         },
-        { name: 'order', label: 'Order number', half: true, placeholder: 'For example #1234' },
+        {
+          name: 'order',
+          label: 'Order number',
+          half: true,
+          placeholder: 'For example #1234',
+          defaultValue: (params.get('order') ?? '').replace(/[^0-9]/g, '').slice(0, 12),
+        },
         {
           name: 'message',
           label: 'Message',

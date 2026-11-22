@@ -18,7 +18,13 @@ import { ProductCard } from './ProductCard';
 import { QuickView } from './QuickView';
 
 type Availability = 'all' | 'stock' | 'mto';
-type Sort = 'featured' | 'name' | 'stock';
+type Sort = 'featured' | 'low' | 'high' | 'name' | 'stock';
+
+/** "₹1,499" as a number, or null while a price is still missing. */
+const priceOf = (p: { price?: string }): number | null => {
+  const n = Number((p.price ?? '').replace(/[^\d.]/g, ''));
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
 type ModeFilter = 'all' | ColourMode;
 
 const AVAILABILITY: { value: Availability; label: string }[] = [
@@ -129,6 +135,8 @@ export function ShopBrowser({
   };
 
   let list = products.filter((p) => matches(p));
+  if (sort === 'low') list = [...list].sort((a, b) => (priceOf(a) ?? 1e9) - (priceOf(b) ?? 1e9));
+  if (sort === 'high') list = [...list].sort((a, b) => (priceOf(b) ?? -1) - (priceOf(a) ?? -1));
   if (sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
   if (sort === 'stock') list = [...list].sort((a, b) => Number(b.inStock) - Number(a.inStock));
 
@@ -283,6 +291,8 @@ export function ShopBrowser({
               onChange={(e) => setSort(e.target.value as Sort)}
             >
               <option value="featured">Featured</option>
+              <option value="low">Price: low to high</option>
+              <option value="high">Price: high to low</option>
               <option value="name">Name A to Z</option>
               <option value="stock">In stock first</option>
             </select>

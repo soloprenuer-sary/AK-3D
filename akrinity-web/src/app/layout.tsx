@@ -9,10 +9,43 @@ import { CartProvider } from '@/lib/cart-store';
 import { buildMenu, getCategoryTree } from '@/lib/category-content';
 import { CategoryTreeProvider } from '@/components/layout/CategoryTree';
 import { CompareTray } from '@/components/layout/CompareTray';
+import { WhatsAppButton } from '@/components/layout/WhatsAppButton';
+import { site } from '@/lib/site-config';
+
+const DESCRIPTION = '3D printed products, custom prints and design-and-print from Mumbai.';
 
 export const metadata: Metadata = {
-  title: { default: 'Akrinity', template: '%s · Akrinity' },
-  description: '3D printed products, custom prints and design-and-print from Mumbai.',
+  metadataBase: new URL(site.url),
+  title: {
+    default: 'Akrinity: 3D printed products and custom prints from Mumbai',
+    template: '%s · Akrinity',
+  },
+  description: DESCRIPTION,
+  // Each page names itself as the preferred address (the part after the site address).
+  alternates: { canonical: './' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Akrinity',
+    locale: 'en_IN',
+    title: 'Akrinity',
+    description: DESCRIPTION,
+    images: [
+      { url: '/og-default.png', width: 1200, height: 630, alt: 'Akrinity: we print anything' },
+    ],
+  },
+  twitter: { card: 'summary_large_image', images: ['/og-default.png'] },
+};
+
+/** Who we are, for Google (shown once, on every page). */
+const ORGANISATION = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Akrinity',
+  url: site.url,
+  logo: `${site.url}/icon.svg`,
+  description: DESCRIPTION,
+  address: { '@type': 'PostalAddress', addressLocality: 'Mumbai', addressCountry: 'IN' },
+  ...(site.supportEmail ? { email: site.supportEmail } : {}),
 };
 
 export const viewport: Viewport = {
@@ -27,6 +60,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(ORGANISATION).replace(/</g, '\\u003c'),
+          }}
+        />
         <a className="skip" href="#main">
           Skip to content
         </a>
@@ -37,6 +76,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {children}
             <SiteFooter tree={tree} />
             <CompareTray />
+            <WhatsAppButton />
           </CartProvider>
         </CategoryTreeProvider>
       </body>

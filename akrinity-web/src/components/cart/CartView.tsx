@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { CartThumb } from './CartThumb';
 import { OrderSummary } from './OrderSummary';
+import { FreeShippingNote } from './FreeShippingNote';
 import { formatRupees, parsePrice, useCart } from '@/lib/cart-store';
 import { useWishlist } from '@/lib/lists-store';
 
@@ -111,9 +112,7 @@ export function CartView() {
             Clear cart
           </button>
         </div>
-        <p className="meta" style={{ marginTop: 14 }}>
-          Add ₹[AMOUNT] more for free shipping.
-        </p>
+        <FreeShippingNote />
       </section>
 
       <div className="cart-side">

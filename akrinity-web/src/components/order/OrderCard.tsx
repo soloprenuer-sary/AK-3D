@@ -102,6 +102,19 @@ export function OrderCard({ order: o }: { order: OrderLookup }) {
         </p>
       )}
 
+      <p className="meta">
+        Need help with this order?{' '}
+        <a href={`/contact?topic=${encodeURIComponent('Order question')}&order=${o.number}`}>
+          Ask a question
+        </a>
+        {' · '}
+        <a
+          href={`/contact?topic=${encodeURIComponent('Cancel or return an order')}&order=${o.number}`}
+        >
+          Cancel or return
+        </a>
+      </p>
+
       <ul className="sum-lines">
         {o.items.map((i, n) => (
           <li key={`${i.name}-${n}`}>
