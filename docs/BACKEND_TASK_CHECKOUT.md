@@ -4,6 +4,8 @@ For the backend team. Frontend is ready and tested against a stand-in store; thi
 
 ## 1. Upload the snippets (wp-content/mu-plugins/)
 
+**Emails (new):** upload `akrinity-emails.php` **and the folder `akrinity-emails/`** (it holds `render.php` and `stub.php`) next to the other files, and replace `akrinity-shop.php` with version 1.1.0 (it adds the In transit status). After that, WooCommerce > Settings > Emails shows a new email, **In transit order**; the other order emails switch to the Akrinity design on their own. Send yourself a test order first (WooCommerce > Settings > Emails > pick an email > Send a test or place a cash on delivery order) and check it in Gmail and on a phone.
+
 | File | Version | New in this round |
 |---|---|---|
 | `akrinity-headless-auth.php` | 2.5.0 | Contact messages (`/contact`), newsletter (`/newsletter`), product reviews (`/reviews` list and post) |
@@ -37,7 +39,8 @@ Test: add a product, set state Maharashtra, the cart shows CGST and SGST; set Ka
 - [ ] Shiprocket plugin connected with the studio pincode; the courier rates must appear as WooCommerce shipping methods in a shipping zone for India (WooCommerce > Settings > Shipping). Until it does, checkout shows "We could not find a delivery option".
 - [ ] If live rates are not ready, add a **Flat rate** (for example ₹60) and a **Free shipping above ₹[amount]** method to the India zone as a stop-gap.
 - [ ] Product weight and size are filled in (rates depend on them).
-- [ ] When an order ships, open it and fill the **Shipping and tracking** box (courier, tracking number, tracking link). The first time a tracking number is saved, the customer is emailed, and the storefront order and tracking pages show the link. VERIFY the Shiprocket plugin's own tracking meta names; if it writes a tracking number somewhere else, tell the frontend so it can read it.
+- [ ] **Shipping an order (manual for now):** open the order, set the status to **In transit**. A box "In transit: delivery partner and tracking" appears. Choose the delivery partner, type the tracking ID (AWB), optionally the expected delivery date, then press **Update**. The customer gets the "In transit" email once; the order page and the storefront tracking page then show the partner, the tracking ID and a "Track the parcel" button. Change the tracking ID and press Update to send it again. Set the order to **Completed** after delivery.
+- [ ] VERIFY the tracking web addresses of each delivery partner in `akr_delivery_partners()` (`akrinity-shop.php`). Where a partner has no direct link, type the tracking link by hand in the box.
 
 ## 4. Payments
 

@@ -9,7 +9,7 @@ const rupees = (s: string | number): string => {
 /** The steps an order moves through, worked out from the WooCommerce status and the tracking number. */
 export function orderSteps(o: OrderLookup): TimelineStep[] {
   const cod = o.payment_method === 'cod';
-  const shipped = Boolean(o.tracking.awb) || o.status === 'completed';
+  const shipped = Boolean(o.tracking.awb) || o.status === 'completed' || o.status === 'in-transit';
   const dead = ['cancelled', 'refunded', 'failed'].includes(o.status);
   const waiting = o.status === 'pending';
 
@@ -49,9 +49,17 @@ export function orderSteps(o: OrderLookup): TimelineStep[] {
       note: o.tracking.awb
         ? `${o.tracking.courier || 'Courier'} · ${o.tracking.awb}`
         : 'You get a tracking link by email.',
+
       state: o.status === 'completed' ? 'done' : shipped ? 'now' : 'next',
     },
-    { title: 'Delivered', state: o.status === 'completed' ? 'done' : 'next' },
+    {
+      title: 'Delivered',
+      note:
+        o.tracking.eta && o.status !== 'completed'
+          ? `Expected ${new Date(o.tracking.eta).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}`
+          : undefined,
+      state: o.status === 'completed' ? 'done' : 'next',
+    },
   ];
 }
 

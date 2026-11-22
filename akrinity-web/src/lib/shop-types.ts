@@ -110,7 +110,7 @@ export interface OrderLookup {
   name: string;
   city: string;
   state: string;
-  tracking: { courier: string; awb: string; url: string };
+  tracking: { courier: string; awb: string; url: string; eta?: string; shipped_at?: number };
   email: string;
   pay_url?: string;
 }

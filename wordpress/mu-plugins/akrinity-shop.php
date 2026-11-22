@@ -1,12 +1,14 @@
 <?php
 /**
  * Plugin Name: Akrinity shop
- * Description: What the headless storefront needs from WooCommerce for checkout, orders and the 3D preview. Works with akrinity-headless-auth.php (version 2.5.0 or newer). Version 1.0.0.
+ * Description: What the headless storefront needs from WooCommerce for checkout, orders and the 3D preview. Works with akrinity-headless-auth.php (version 2.5.0 or newer). Version 1.1.0.
  *
  * Install: copy this file to wp-content/mu-plugins/ next to the other Akrinity files. It uses the same
  * AKRINITY_FRONTEND_URL and AKRINITY_SHARED_SECRET constants. Optional constants for wp-config.php:
  *   define( 'AKRINITY_COD_FEE', 50 );      // cash on delivery fee in rupees, BEFORE GST (default 50; GST is added)
  *   define( 'AKRINITY_COD_LIMIT', 3000 );  // largest cart value (with GST) that may pay cash on delivery (default 3000)
+ *   define( 'AKRINITY_PRINT_DAYS', 2 );    // working days to print and pack an order (default 2)
+ *   define( 'AKRINITY_DELIVERY_DAYS', 5 ); // working days from dispatch to delivery (default 5)
  *
  * What it does:
  *  1. Bulk prices: the cart uses the bulk price for the quantity in each line (same ranges as the storefront shows).
@@ -16,8 +18,9 @@
  *  4. After Cashfree payment the customer comes back to the storefront order page, not the WordPress thank-you page.
  *  5. POST /akrinity/v1/order-lookup (shared secret): the order page and the tracking page read an order with its order key,
  *     or with the order number plus the email or phone used.
- *  6. A "Shipping and tracking" box on each order (courier, tracking number, tracking link). Saving a tracking number
- *     for the first time sends the customer a note by email.
+ *  6. An "In transit" order status. Picking it on the order shows a box to choose the delivery partner and type the
+ *     tracking ID (and, if wanted, the expected delivery date). Saving with a tracking ID emails the customer once
+ *     (the email itself is in akrinity-emails.php).
  *  7. A "3D model" field on products (STL, GLB, GLTF, OBJ or 3MF) shown as extensions.akrinity_model in the Store API.
  */
 
@@ -247,14 +250,6 @@ function akr_digits_tail( $phone ): string {
 	return strlen( $d ) >= 10 ? substr( $d, -10 ) : $d;
 }
 
-function akr_order_tracking( WC_Order $o ): array {
-	return array(
-		'courier' => (string) $o->get_meta( '_akr_courier' ),
-		'awb'     => (string) $o->get_meta( '_akr_awb' ),
-		'url'     => esc_url_raw( (string) $o->get_meta( '_akr_tracking_url' ) ),
-	);
-}
-
 function akr_handle_order_lookup( WP_REST_Request $req ) {
 	$p       = $req->get_json_params();
 	$number  = preg_replace( '/\D+/', '', (string) ( $p['order'] ?? '' ) );
@@ -359,8 +354,129 @@ add_action(
 	}
 );
 
-/* ---------- 6. Shipping and tracking box on each order ---------- */
+/* ---------- 6. The "In transit" status, delivery partner and tracking ---------- */
 
+/** Working days between the order and the parcel arriving. Set the real numbers in wp-config.php. */
+function akr_print_days(): int {
+	return defined( 'AKRINITY_PRINT_DAYS' ) ? max( 0, (int) AKRINITY_PRINT_DAYS ) : 2;
+}
+
+function akr_delivery_days(): int {
+	return defined( 'AKRINITY_DELIVERY_DAYS' ) ? max( 0, (int) AKRINITY_DELIVERY_DAYS ) : 5;
+}
+
+/** A date some working days later (Monday to Saturday count; Sunday does not). Returns a timestamp. */
+function akr_add_working_days( int $from, int $days ): int {
+	$ts = $from;
+	while ( $days > 0 ) {
+		$ts = strtotime( '+1 day', $ts );
+		if ( 'Sun' !== wp_date( 'D', $ts ) ) {
+			--$days;
+		}
+	}
+	return $ts;
+}
+
+/**
+ * Delivery partners shown in the list, with the address where a parcel is tracked ({id} becomes the tracking
+ * number). The addresses are the partners' public tracking pages: VERIFY each one before launch, or type the
+ * link by hand in the "Tracking link" box. Add or remove partners with the filter akr_delivery_partners.
+ */
+function akr_delivery_partners(): array {
+	return apply_filters(
+		'akr_delivery_partners',
+		array(
+			'Shiprocket'      => 'https://shiprocket.co/tracking/{id}',
+			'Delhivery'       => 'https://www.delhivery.com/track/package/{id}',
+			'Blue Dart'       => 'https://www.bluedart.com/tracking?trackFor=0&trackNo={id}',
+			'DTDC'            => 'https://www.dtdc.in/tracking.asp',
+			'Ecom Express'    => 'https://ecomexpress.in/tracking/?awb_field={id}',
+			'Xpressbees'      => 'https://www.xpressbees.com/shipment/tracking',
+			'Shadowfax'       => 'https://tracker.shadowfax.in/#/track/{id}',
+			'Amazon Shipping' => 'https://track.amazon.in/tracking/{id}',
+			'India Post'      => 'https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx',
+			'Other'           => '',
+		)
+	);
+}
+
+function akr_order_tracking( WC_Order $o ): array {
+	$eta = (string) $o->get_meta( '_akr_eta' );
+	return array(
+		'courier'    => (string) $o->get_meta( '_akr_courier' ),
+		'awb'        => (string) $o->get_meta( '_akr_awb' ),
+		'url'        => esc_url_raw( (string) $o->get_meta( '_akr_tracking_url' ) ),
+		'eta'        => $eta,
+		'shipped_at' => (int) $o->get_meta( '_akr_shipped_at' ),
+	);
+}
+
+// The status itself: it sits after Processing in the order list, counts as paid, and has its own colour.
+add_action(
+	'init',
+	function () {
+		register_post_status(
+			'wc-in-transit',
+			array(
+				'label'                     => 'In transit',
+				'public'                    => true,
+				'exclude_from_search'       => false,
+				'show_in_admin_all_list'    => true,
+				'show_in_admin_status_list' => true,
+				/* translators: %s: number of orders */
+				'label_count'               => _n_noop( 'In transit <span class="count">(%s)</span>', 'In transit <span class="count">(%s)</span>' ),
+			)
+		);
+	}
+);
+
+add_filter(
+	'wc_order_statuses',
+	function ( $statuses ) {
+		$out = array();
+		foreach ( $statuses as $key => $label ) {
+			$out[ $key ] = $label;
+			if ( 'wc-processing' === $key ) {
+				$out['wc-in-transit'] = 'In transit';
+			}
+		}
+		if ( ! isset( $out['wc-in-transit'] ) ) {
+			$out['wc-in-transit'] = 'In transit';
+		}
+		return $out;
+	}
+);
+
+foreach ( array( 'woocommerce_order_is_paid_statuses', 'woocommerce_reports_order_statuses', 'woocommerce_analytics_actionable_order_statuses' ) as $akr_hook ) {
+	add_filter(
+		$akr_hook,
+		function ( $statuses ) {
+			if ( is_array( $statuses ) && ! in_array( 'in-transit', $statuses, true ) ) {
+				$statuses[] = 'in-transit';
+			}
+			return $statuses;
+		}
+	);
+}
+
+foreach ( array( 'bulk_actions-edit-shop_order', 'bulk_actions-woocommerce_page_wc-orders' ) as $akr_hook ) {
+	add_filter(
+		$akr_hook,
+		function ( $actions ) {
+			$actions['mark_in-transit'] = 'Change status to in transit';
+			return $actions;
+		}
+	);
+}
+
+add_action(
+	'admin_head',
+	function () {
+		echo '<style>mark.order-status.status-in-transit{background:#d8ff3a;color:#0b0b0c}.order-status.status-in-transit>span{color:#0b0b0c}#akr_order_tracking .akr-field{margin:0 0 12px}#akr_order_tracking label{font-weight:600;display:block;margin-bottom:3px}#akr_order_tracking input[type=text],#akr_order_tracking input[type=url],#akr_order_tracking input[type=date],#akr_order_tracking select{width:100%}</style>';
+	}
+);
+
+// The tracking box.
 add_action(
 	'add_meta_boxes',
 	function () {
@@ -370,26 +486,70 @@ add_action(
 		}
 		add_meta_box(
 			'akr_order_tracking',
-			'Shipping and tracking',
+			'In transit: delivery partner and tracking',
 			function ( $post_or_order ) {
 				$order = $post_or_order instanceof WC_Order ? $post_or_order : wc_get_order( $post_or_order->ID );
 				if ( ! $order ) {
 					return;
 				}
-				$t = akr_order_tracking( $order );
+				$t        = akr_order_tracking( $order );
+				$partners = akr_delivery_partners();
+				$picked   = (string) $order->get_meta( '_akr_partner' );
+				if ( '' === $picked && '' !== $t['courier'] ) {
+					$picked = isset( $partners[ $t['courier'] ] ) ? $t['courier'] : 'Other';
+				}
 				wp_nonce_field( 'akr_tracking_save', 'akr_tracking_nonce' );
-				printf( '<p><label>Courier<br><input type="text" name="akr_courier" value="%s" style="width:100%%"></label></p>', esc_attr( $t['courier'] ) );
-				printf( '<p><label>Tracking number (AWB)<br><input type="text" name="akr_awb" value="%s" style="width:100%%"></label></p>', esc_attr( $t['awb'] ) );
-				printf( '<p><label>Tracking link<br><input type="url" name="akr_tracking_url" value="%s" style="width:100%%" placeholder="https://"></label></p>', esc_attr( $t['url'] ) );
-				echo '<p class="description">Saving a tracking number for the first time emails the customer.</p>';
+				echo '<p class="description" style="margin-top:0">Pick the delivery partner and type the tracking ID, then press Update. The customer gets the "in transit" email once, when the status is In transit and a tracking ID is saved.</p>';
+				echo '<div class="akr-field"><label for="akr_partner">Delivery partner</label><select id="akr_partner" name="akr_partner"><option value="">Choose a partner</option>';
+				foreach ( array_keys( $partners ) as $name ) {
+					printf( '<option value="%1$s"%2$s>%1$s</option>', esc_attr( $name ), selected( $picked, $name, false ) );
+				}
+				echo '</select></div>';
+				$other = ( 'Other' === $picked && ! isset( $partners[ $t['courier'] ] ) ) ? $t['courier'] : '';
+				printf( '<div class="akr-field akr-other"><label for="akr_partner_other">Partner name</label><input type="text" id="akr_partner_other" name="akr_partner_other" value="%s"></div>', esc_attr( $other ) );
+				printf( '<div class="akr-field"><label for="akr_awb">Tracking ID (AWB)</label><input type="text" id="akr_awb" name="akr_awb" value="%s" autocomplete="off"></div>', esc_attr( $t['awb'] ) );
+				printf( '<div class="akr-field"><label for="akr_tracking_url">Tracking link (optional)</label><input type="url" id="akr_tracking_url" name="akr_tracking_url" value="%s" placeholder="Leave empty to use the partner\'s page"></div>', esc_attr( $t['url'] ) );
+				printf( '<div class="akr-field"><label for="akr_eta">Expected delivery date (optional)</label><input type="date" id="akr_eta" name="akr_eta" value="%s"><span class="description">Empty = shipped date + %d working days.</span></div>', esc_attr( $t['eta'] ), akr_delivery_days() );
+				$sent = (string) $order->get_meta( '_akr_transit_sent' );
+				if ( '' !== $sent ) {
+					echo '<p class="description">The in-transit email was sent for tracking ID <b>' . esc_html( $sent ) . '</b>. Changing the tracking ID sends it again.</p>';
+				}
 			},
 			$screen,
 			'side',
-			'default'
+			'high'
 		);
 	}
 );
 
+// The box shows only while "In transit" is picked (or when tracking details already exist).
+add_action(
+	'admin_footer',
+	function () {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || ! in_array( $screen->id, array( 'shop_order', 'woocommerce_page_wc-orders' ), true ) ) {
+			return;
+		}
+		?>
+		<script>
+		jQuery(function ($) {
+			var box = $('#akr_order_tracking'), status = $('#order_status'), partner = $('#akr_partner');
+			if (!box.length || !status.length) { return; }
+			function sync() {
+				var on = status.val() === 'wc-in-transit' || $.trim($('#akr_awb').val()) !== '';
+				box.toggle(on);
+				$('.akr-other').toggle(partner.val() === 'Other');
+			}
+			status.on('change', sync);
+			partner.on('change', sync);
+			sync();
+		});
+		</script>
+		<?php
+	}
+);
+
+/** Saves the tracking details with the order. Runs before WooCommerce saves the new status. */
 add_action(
 	'woocommerce_process_shop_order_meta',
 	function ( $order_id ) {
@@ -401,20 +561,99 @@ add_action(
 		if ( ! $order ) {
 			return;
 		}
-		$had     = (string) $order->get_meta( '_akr_awb' );
-		$courier = sanitize_text_field( wp_unslash( $_POST['akr_courier'] ?? '' ) );
-		$awb     = sanitize_text_field( wp_unslash( $_POST['akr_awb'] ?? '' ) );
-		$url     = esc_url_raw( wp_unslash( $_POST['akr_tracking_url'] ?? '' ) );
-		$order->update_meta_data( '_akr_courier', $courier );
+		$partners = akr_delivery_partners();
+		$partner  = sanitize_text_field( wp_unslash( $_POST['akr_partner'] ?? '' ) );
+		if ( ! isset( $partners[ $partner ] ) ) {
+			$partner = '';
+		}
+		$name = $partner;
+		if ( 'Other' === $partner ) {
+			$name = sanitize_text_field( wp_unslash( $_POST['akr_partner_other'] ?? '' ) );
+			$name = '' !== $name ? $name : 'Other';
+		}
+		$awb = trim( sanitize_text_field( wp_unslash( $_POST['akr_awb'] ?? '' ) ) );
+		$url = esc_url_raw( wp_unslash( $_POST['akr_tracking_url'] ?? '' ) );
+		if ( '' === $url && '' !== $awb && '' !== $partner && ! empty( $partners[ $partner ] ) ) {
+			$url = esc_url_raw( str_replace( '{id}', rawurlencode( $awb ), $partners[ $partner ] ) );
+		}
+		$eta = sanitize_text_field( wp_unslash( $_POST['akr_eta'] ?? '' ) );
+		$eta = preg_match( '/^\d{4}-\d{2}-\d{2}$/', $eta ) ? $eta : '';
+
+		$order->update_meta_data( '_akr_partner', $partner );
+		$order->update_meta_data( '_akr_courier', $name );
 		$order->update_meta_data( '_akr_awb', $awb );
 		$order->update_meta_data( '_akr_tracking_url', $url );
+		$order->update_meta_data( '_akr_eta', $eta );
 		$order->save();
-		if ( '' === $had && '' !== $awb ) {
-			$text = 'Your order has shipped' . ( '' !== $courier ? ' with ' . $courier : '' ) . '. Tracking number: ' . $awb . '.' . ( '' !== $url ? ' Track it here: ' . $url : '' );
-			$order->add_order_note( $text, true ); // true = also emailed to the customer
-		}
 	},
 	20
+);
+
+/**
+ * Sends the "in transit" email once per tracking ID, when the order is In transit and has a tracking ID.
+ * Returns true when the email went out.
+ */
+function akr_maybe_send_in_transit( int $order_id ): bool {
+	$order = wc_get_order( $order_id );
+	if ( ! $order || 'in-transit' !== $order->get_status() ) {
+		return false;
+	}
+	$awb = trim( (string) $order->get_meta( '_akr_awb' ) );
+	if ( '' === $awb ) {
+		set_transient( 'akr_missing_awb_' . get_current_user_id(), $order_id, 120 );
+		return false;
+	}
+	if ( $awb === (string) $order->get_meta( '_akr_transit_sent' ) ) {
+		return false;
+	}
+	if ( ! $order->get_meta( '_akr_shipped_at' ) ) {
+		$order->update_meta_data( '_akr_shipped_at', time() );
+	}
+	if ( '' === (string) $order->get_meta( '_akr_eta' ) ) {
+		$order->update_meta_data( '_akr_eta', wp_date( 'Y-m-d', akr_add_working_days( (int) $order->get_meta( '_akr_shipped_at' ), akr_delivery_days() ) ) );
+	}
+	$order->update_meta_data( '_akr_transit_sent', $awb );
+	$order->save();
+	do_action( 'akr_order_in_transit_notification', $order->get_id(), $order );
+	$order->add_order_note(
+		sprintf( 'In-transit email sent to the customer (%s, tracking ID %s).', (string) $order->get_meta( '_akr_courier' ) ?: 'delivery partner not set', $awb )
+	);
+	return true;
+}
+
+// From the order screen: after the status and the tracking details are both saved.
+add_action(
+	'woocommerce_process_shop_order_meta',
+	function ( $order_id ) {
+		$nonce = isset( $_POST['akr_tracking_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['akr_tracking_nonce'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'akr_tracking_save' ) ) {
+			return;
+		}
+		akr_maybe_send_in_transit( (int) $order_id );
+	},
+	60
+);
+
+// From anywhere else (a bulk change, the API): note the date, and send if a tracking ID is already there.
+add_action(
+	'woocommerce_order_status_in-transit',
+	function ( $order_id ) {
+		if ( is_admin() && isset( $_POST['akr_tracking_nonce'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return; // the order screen handles it after saving
+		}
+		akr_maybe_send_in_transit( (int) $order_id );
+	}
+);
+
+add_action(
+	'admin_notices',
+	function () {
+		$id = get_transient( 'akr_missing_awb_' . get_current_user_id() );
+		if ( $id ) {
+			delete_transient( 'akr_missing_awb_' . get_current_user_id() );
+			printf( '<div class="notice notice-warning is-dismissible"><p>Order #%d is In transit but has no tracking ID, so the customer has not been emailed. Add the delivery partner and tracking ID, then press Update.</p></div>', (int) $id );
+		}
+	}
 );
 
 /* ---------- 7. 3D model on products ---------- */

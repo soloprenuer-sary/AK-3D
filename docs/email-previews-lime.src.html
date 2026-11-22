@@ -1,0 +1,396 @@
+<title>Akrinity lime emails</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  /* Layout: a list of emails on the left, the chosen email in a mail-width frame on the right. */
+  :root {
+    --bg: #F3F1EA; --panel: #FFFFFF; --fg: #0B0B0C; --muted: #55514A; --line: #D9D5C8;
+    --accent: #D8FF3A; --accent-fg: #0B0B0C; --violet: #5B2BE0; --stage: #E3DFD2;
+    --f-display: "Anton", Impact, "Arial Narrow", sans-serif;
+    --f-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #0B0B0C; --panel: #17171A; --fg: #F3F1EA; --muted: #B8B4A8; --line: #34343A; --stage: #1E1E22; color-scheme: dark; }
+  }
+  :root[data-theme="dark"] { --bg: #0B0B0C; --panel: #17171A; --fg: #F3F1EA; --muted: #B8B4A8; --line: #34343A; --stage: #1E1E22; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.5; padding-block: 28px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .page { max-width: 1280px; margin: 0 auto; display: grid; gap: 24px; }
+  h1 { font: 400 clamp(36px, 6vw, 56px)/1 var(--f-display); text-transform: uppercase; margin: 0; text-wrap: balance; }
+  h1 mark { background: var(--accent); color: var(--accent-fg); padding: 0 .18em; }
+  .lede { margin: 8px 0 0; color: var(--muted); max-width: 66ch; }
+  .layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px; align-items: start; }
+  nav.list { background: var(--panel); border: 1.5px solid var(--fg); border-radius: 20px; padding: 14px; display: grid; gap: 4px; position: sticky; top: 16px; }
+  nav.list h2 { font: 600 12px/1 var(--f-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 10px 8px 6px; }
+  nav.list h2:first-child { margin-top: 2px; }
+  nav.list button { all: unset; box-sizing: border-box; cursor: pointer; padding: 9px 12px; border-radius: 12px; display: grid; gap: 1px; }
+  nav.list button b { font-weight: 600; font-size: 14px; }
+  nav.list button span { font-size: 12.5px; color: var(--muted); }
+  nav.list button:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+  nav.list button[aria-current="true"] { background: var(--accent); color: var(--accent-fg); }
+  nav.list button[aria-current="true"] span { color: #3a3a30; }
+  nav.list button:focus-visible { outline: 3px solid var(--violet); outline-offset: 2px; }
+  .main { display: grid; gap: 16px; min-width: 0; }
+  .facts { background: var(--panel); border: 1.5px solid var(--fg); border-radius: 20px; padding: 18px 20px; display: grid; gap: 14px; }
+  .facts h2 { font: 400 28px/1 var(--f-display); text-transform: uppercase; margin: 0; }
+  dl.meta { margin: 0; display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 6px 14px; font-size: 14px; }
+  dl.meta dt { color: var(--muted); }
+  dl.meta dd { margin: 0; overflow-wrap: anywhere; }
+  dl.meta code { font-size: 13px; background: color-mix(in srgb, var(--fg) 8%, transparent); padding: 1px 6px; border-radius: 6px; }
+  .tools { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+  .seg { display: inline-flex; border: 1.5px solid var(--fg); border-radius: 999px; overflow: hidden; }
+  .seg button { all: unset; box-sizing: border-box; cursor: pointer; padding: 7px 16px; font-weight: 600; font-size: 13.5px; }
+  .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .seg button:focus-visible { outline: 3px solid var(--violet); outline-offset: -3px; }
+  .tools label { font-size: 13px; color: var(--muted); display: inline-flex; gap: 8px; align-items: center; }
+  .tools select { font: inherit; font-size: 13.5px; padding: 6px 10px; border-radius: 10px; border: 1.5px solid var(--fg); background: var(--panel); color: var(--fg); }
+  .stage { background: var(--stage); border: 1.5px solid var(--line); border-radius: 20px; padding: 18px; display: flex; justify-content: center; overflow-x: auto; }
+  .frame { width: 640px; max-width: 100%; transition: width .25s ease; }
+  .frame.phone { width: 390px; }
+  iframe { display: block; width: 100%; border: 0; background: #E9E6DC; border-radius: 12px; min-height: 480px; }
+  .note { color: var(--muted); font-size: 13.5px; margin: 0; max-width: 80ch; }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    nav.list { position: static; display: flex; overflow-x: auto; gap: 6px; padding: 10px; }
+    nav.list h2 { display: none; }
+    nav.list button { flex: 0 0 auto; min-width: 150px; }
+    dl.meta { grid-template-columns: minmax(0, 1fr); gap: 0 14px; }
+    dl.meta dt { margin-top: 8px; }
+    .stage { padding: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .frame { transition: none; } }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Lime <mark>emails</mark></h1>
+    <p class="lede">The lime poster design, now with the product photo in every order, a clearer order tracker, and more products from the same category at the bottom. Pick an email, switch to phone width, and tell me what to change.</p>
+  </header>
+  <div class="layout">
+    <nav class="list" id="list" aria-label="Emails"></nav>
+    <div class="main">
+      <section class="facts" aria-live="polite">
+        <h2 id="e-title"></h2>
+        <dl class="meta">
+          <dt>Sent to</dt><dd id="e-to"></dd>
+          <dt>Sent when</dt><dd id="e-when"></dd>
+          <dt>Subject</dt><dd id="e-subject"></dd>
+          <dt>WooCommerce email</dt><dd id="e-tpl"></dd>
+        </dl>
+      </section>
+      <div class="tools">
+        <div class="seg" role="group" aria-label="Screen size">
+          <button type="button" id="b-desk" aria-pressed="true">Desktop</button>
+          <button type="button" id="b-phone" aria-pressed="false">Phone</button>
+        </div>
+        <label>Heading font
+          <select id="font">
+            <option value="anton">Anton (Apple Mail, iPhone)</option>
+            <option value="impact">Impact (Gmail, Outlook)</option>
+          </select>
+        </label>
+      </div>
+      <div class="stage"><div class="frame" id="frame"><iframe id="mail" title="Email preview" sandbox="allow-same-origin"></iframe></div></div>
+      <p class="note">Sample order: your real test order (Akrinity 16 Badminton Racket Wall Mount Holder, ₹729 including GST, cash on delivery, Maharashtra). The product photos are the real ones from the store. The category used for "more from" below is a sample: most products in the store have no category yet, so the live email can only suggest products once each product is placed in a category (it then picks in-stock products from the same category as the order, and fills up from the parent category if fewer than three). Dates and anything in [square brackets] are placeholders.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var C = { ink: '#0B0B0C', paper: '#F3F1EA', white: '#FFFFFF', lime: '#D8FF3A', violet: '#5B2BE0', orange: '#FF6A1F', muted: '#55514A', line: '#D9D5C8', stage: '#E9E6DC' };
+  var BODY = "Inter,'Segoe UI',Helvetica,Arial,sans-serif";
+  var DISP = "Anton,Impact,'Arial Narrow Bold',Arial,sans-serif";
+  var IMG = __IMGDATA__;
+
+  /* ---------- sample order (the real test order) ---------- */
+  var O = {
+    no: '295', date: '22 Nov 2026', name: 'Asha Kulkarni', first: 'Asha', email: 'asha@example.com', phone: '98765 43210',
+    addr: ['12 Hill Road, Bandra West', 'Mumbai, Maharashtra 400050'],
+    item: { name: IMG[281].name, opts: 'Single colour · PLA+ · black · Medium', qty: 1, price: '₹729.00', img: IMG[281].data },
+    sub: '₹729.00', ship: '₹70.80', fee: '₹59.00', total: '₹858.80', cgst: '₹65.50', sgst: '₹65.50'
+  };
+  var CATEGORY = 'Sports equipment holders';
+  var COD = 'Cash on delivery';
+  function rs(n) { return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+  /* ---------- building blocks (tables and inline styles, as real email needs) ---------- */
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function p(text, extra) { return '<p style="margin:0 0 14px;font-family:' + BODY + ';font-size:16px;line-height:1.55;color:' + C.ink + ';' + (extra || '') + '">' + text + '</p>'; }
+  function small(text) { return '<span style="font-family:' + BODY + ';font-size:13px;line-height:1.5;color:' + C.muted + ';">' + text + '</span>'; }
+  function btn(label, bg, fg, size) {
+    var pad = size === 'sm' ? '9px 18px' : '14px 26px', fs = size === 'sm' ? '13px' : '15px';
+    return '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px 12px 6px 0;display:inline-table"><tr><td bgcolor="' + bg + '" style="border-radius:999px;border:1.5px solid ' + C.ink + ';">' +
+      '<a href="#" style="display:inline-block;padding:' + pad + ';font-family:' + BODY + ';font-size:' + fs + ';font-weight:700;color:' + fg + ';text-decoration:none;">' + label + '</a></td></tr></table>';
+  }
+  function primary(label) { return btn(label, C.ink, C.lime); }
+  function accent(label) { return btn(label, C.lime, C.ink); }
+  function ghost(label) { return btn(label, C.white, C.ink); }
+  function hl(word) { return '<span style="background:' + C.ink + ';color:' + C.lime + ';padding:0 8px;">' + word + '</span>'; }
+  function sectionTitle(text) { return '<div class="d" style="font-family:' + DISP + ';font-size:26px;line-height:1.1;text-transform:uppercase;color:' + C.ink + ';padding-bottom:6px;">' + text + '</div>'; }
+  var CARD = 'background:' + C.paper + ';border:1.5px solid ' + C.ink + ';border-radius:18px;';
+
+  /* ink bars that grow, like a print building up, along the bottom of the lime poster */
+  function layersInk() {
+    var rows = ['46%', '64%', '82%', '100%'];
+    return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' + rows.map(function (w) {
+      return '<tr><td style="font-size:0;line-height:0;padding:0 0 3px;"><table role="presentation" width="' + w + '" cellpadding="0" cellspacing="0"><tr><td bgcolor="' + C.ink + '" height="9" style="font-size:0;line-height:0;height:9px;">&nbsp;</td></tr></table></td></tr>';
+    }).join('') + '</table>';
+  }
+
+  /* ---------- order tracking: a stepper with a line, a time under each step and a "right now" card ---------- */
+  function track(current, steps) {
+    var n = steps.length, w = Math.floor(100 / n);
+    function seg(color) { return '<td width="50%" valign="middle" style="padding:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td height="4" bgcolor="' + color + '" style="height:4px;font-size:0;line-height:0;">&nbsp;</td></tr></table></td>'; }
+    function gap() { return '<td width="50%" style="padding:0;font-size:0;line-height:0;">&nbsp;</td>'; }
+    var cols = steps.map(function (s, i) {
+      var k = i + 1, done = k < current, now = k === current;
+      var left = i === 0 ? gap() : seg(k <= current ? C.ink : C.line);
+      var right = i === n - 1 ? gap() : seg(k < current ? C.ink : C.line);
+      var circle = done
+        ? '<td align="center" valign="middle" width="34" height="34" bgcolor="' + C.ink + '" style="width:34px;height:34px;border-radius:17px;border:2px solid ' + C.ink + ';font-family:' + BODY + ';font-size:16px;font-weight:700;color:' + C.lime + ';">&#10003;</td>'
+        : now
+          ? '<td align="center" valign="middle" width="34" height="34" bgcolor="' + C.lime + '" style="width:34px;height:34px;border-radius:17px;border:2px solid ' + C.ink + ';font-family:' + BODY + ';font-size:15px;font-weight:700;color:' + C.ink + ';">' + k + '</td>'
+          : '<td align="center" valign="middle" width="34" height="34" bgcolor="' + C.white + '" style="width:34px;height:34px;border-radius:17px;border:2px solid ' + C.line + ';font-family:' + BODY + ';font-size:15px;font-weight:600;color:#8A857A;">' + k + '</td>';
+      return '<td width="' + w + '%" valign="top" align="center" style="padding:0 2px;">' +
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>' + left + '<td width="40" style="padding:0;width:40px;min-width:40px;"><table role="presentation" width="34" cellpadding="0" cellspacing="0" align="center" style="width:34px;min-width:34px;"><tr>' + circle + '</tr></table></td>' + right + '</tr></table>' +
+        '<div style="font-family:' + BODY + ';font-size:13px;font-weight:' + (now ? '800' : '600') + ';color:' + (k <= current ? C.ink : '#8A857A') + ';padding-top:10px;">' + s.label + '</div>' +
+        '<div style="font-family:' + BODY + ';font-size:11.5px;line-height:1.4;color:' + C.muted + ';padding-top:2px;">' + (s.when || '&nbsp;') + '</div></td>';
+    }).join('');
+    return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>' + cols + '</tr></table>';
+  }
+
+  /* The card under the stepper: what is happening now, and when it should arrive. */
+  function nowCard(title, text, eta) {
+    return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="' + CARD + '"><tr><td style="padding:16px 20px;">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td valign="top" class="stack">' +
+      '<div style="font-family:' + BODY + ';font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:' + C.muted + ';">Right now</div>' +
+      '<div class="d" style="font-family:' + DISP + ';font-size:24px;line-height:1.15;text-transform:uppercase;color:' + C.ink + ';padding:4px 0 4px;">' + title + '</div>' +
+      '<div style="font-family:' + BODY + ';font-size:14.5px;line-height:1.5;color:' + C.ink + ';">' + text + '</div></td>' +
+      (eta ? '<td class="stack" valign="top" align="right" width="170" style="padding-left:14px;"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td bgcolor="' + C.lime + '" style="border:1.5px solid ' + C.ink + ';border-radius:14px;padding:10px 14px;">' +
+        '<div style="font-family:' + BODY + ';font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:' + C.ink + ';">' + eta[0] + '</div>' +
+        '<div class="d" style="font-family:' + DISP + ';font-size:22px;line-height:1.15;text-transform:uppercase;color:' + C.ink + ';padding-top:2px;">' + eta[1] + '</div></td></tr></table></td>' : '') +
+      '</tr></table></td></tr></table>';
+  }
+
+  function row(label, value, strong) {
+    return '<tr><td style="padding:5px 0;font-family:' + BODY + ';font-size:14.5px;color:' + (strong ? C.ink : C.muted) + ';' + (strong ? 'font-weight:700;' : '') + '">' + label + '</td>' +
+      '<td align="right" style="padding:5px 0;font-family:' + BODY + ';font-size:14.5px;color:' + C.ink + ';font-weight:' + (strong ? '700' : '500') + ';">' + value + '</td></tr>';
+  }
+
+  /* The order: each item with its photo, then totals and the GST already inside the total. */
+  function orderCard(opts) {
+    opts = opts || {};
+    var it = O.item;
+    var item = '<tr><td width="84" valign="top" style="padding:14px 14px 14px 0;border-bottom:1.5px solid ' + C.line + ';"><img src="' + it.img + '" width="84" height="84" alt="" style="display:block;width:84px;height:84px;border-radius:12px;border:1.5px solid ' + C.ink + ';background:#fff;"></td>' +
+      '<td valign="top" style="padding:14px 0;border-bottom:1.5px solid ' + C.line + ';"><div style="font-family:' + BODY + ';font-size:15px;line-height:1.35;font-weight:700;color:' + C.ink + ';">' + esc(it.name) + '</div>' +
+      '<div style="font-family:' + BODY + ';font-size:13px;line-height:1.45;color:' + C.muted + ';padding-top:4px;">' + esc(it.opts) + '<br>Qty ' + it.qty + '</div>' +
+      '<div style="font-family:' + BODY + ';font-size:16px;font-weight:700;color:' + C.ink + ';padding-top:6px;">' + it.price + '</div></td></tr>';
+    return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="' + CARD + '"><tr><td style="padding:20px 24px;">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td class="d" style="font-family:' + DISP + ';font-size:24px;text-transform:uppercase;color:' + C.ink + ';">Order #' + O.no + '</td>' +
+      '<td align="right" style="font-family:' + BODY + ';font-size:13px;color:' + C.muted + ';">' + O.date + '</td></tr></table>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' + item + '</table>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">' + row('Subtotal', O.sub) + row('Delivery', O.ship) + (opts.noFee ? '' : row(COD + ' fee', O.fee)) +
+      '<tr><td colspan="2" style="padding-top:6px;"><div style="border-top:1.5px solid ' + C.ink + ';font-size:0;line-height:0;">&nbsp;</div></td></tr>' +
+      row('Total', O.total, true) + '</table>' +
+      '<div style="font-family:' + BODY + ';font-size:12.5px;color:' + C.muted + ';padding-top:8px;">Includes GST: CGST ' + O.cgst + ', SGST ' + O.sgst + '. Prices include GST.</div></td></tr></table>';
+  }
+
+  /* More products from the category of the order: three in-stock products, never the one bought. */
+  function upsell(lead) {
+    var picks = [206, 179, 222];
+    var cards = picks.map(function (id, i) {
+      var x = IMG[id];
+      return '<td class="stack" width="33%" valign="top" style="padding:0 ' + (i < 2 ? '8px' : '0') + ' 0 0;">' +
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="' + CARD + 'border-radius:16px;"><tr><td style="padding:0;">' +
+        '<img src="' + x.data + '" width="170" alt="" style="display:block;width:100%;height:auto;border-radius:14px 14px 0 0;border-bottom:1.5px solid ' + C.ink + ';background:#fff;">' +
+        '<div style="padding:12px 14px 14px;"><div style="font-family:' + BODY + ';font-size:14px;line-height:1.35;font-weight:700;color:' + C.ink + ';height:38px;overflow:hidden;">' + esc(x.name.replace('Akrinity ', '')) + '</div>' +
+        '<div style="font-family:' + BODY + ';font-size:13px;color:' + C.muted + ';padding:6px 0 8px;">' + rs(x.price) + ' incl. GST</div>' + btn('View', C.ink, C.lime, 'sm') + '</div></td></tr></table></td>';
+    }).join('');
+    return sectionTitle('More from ' + CATEGORY) + '<div style="font-family:' + BODY + ';font-size:14px;color:' + C.muted + ';padding-bottom:12px;">' + (lead || 'Picked from the same collection as your order.') + '</div>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>' + cards + '</tr></table>' +
+      '<div style="padding-top:12px;font-family:' + BODY + ';font-size:14px;"><a href="#" style="color:' + C.ink + ';font-weight:700;text-decoration:underline;">See all ' + CATEGORY.toLowerCase() + ' &rarr;</a></div>';
+  }
+
+  function twoCol(aTitle, aBody, bTitle, bBody) {
+    function cell(t, b) {
+      return '<td class="stack" width="50%" valign="top" style="padding:0 8px 0 0;"><div style="font-family:' + BODY + ';font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:' + C.muted + ';padding-bottom:6px;">' + t + '</div>' +
+        '<div style="font-family:' + BODY + ';font-size:14.5px;line-height:1.55;color:' + C.ink + ';">' + b + '</div></td>';
+    }
+    return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>' + cell(aTitle, aBody) + cell(bTitle, bBody) + '</tr></table>';
+  }
+  var DELIVER = '<b>' + O.name + '</b><br>' + O.addr[0] + '<br>' + O.addr[1] + '<br>' + O.phone;
+
+  function steps(items) {
+    return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0">' + items.map(function (t, i) {
+      return '<tr><td width="34" valign="top" style="padding:6px 0;"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td align="center" width="26" height="26" bgcolor="' + C.ink + '" style="border-radius:13px;font-family:' + DISP + ';font-size:13px;color:' + C.lime + ';width:26px;height:26px;" class="d">' + (i + 1) + '</td></tr></table></td>' +
+        '<td valign="top" style="padding:7px 0;font-family:' + BODY + ';font-size:15px;line-height:1.5;color:' + C.ink + ';">' + t + '</td></tr>';
+    }).join('') + '</table>';
+  }
+
+  /* ---------- the shell: the lime poster ---------- */
+  function shell(o) {
+    var head = o.rightHead || ('Order #' + O.no), parts = [];
+    parts.push('<tr><td bgcolor="' + C.lime + '" class="pad" style="padding:22px 32px 0;border-radius:18px 18px 0 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>' +
+      '<td class="d" style="font-family:' + DISP + ';font-size:30px;letter-spacing:.5px;color:' + C.ink + ';text-transform:uppercase;">AKRINITY<span>&nbsp;&#9679;</span></td>' +
+      '<td align="right" style="font-family:' + BODY + ';font-size:13px;font-weight:600;color:' + C.ink + ';">' + head + '</td></tr></table></td></tr>');
+    parts.push('<tr><td bgcolor="' + C.lime + '" class="pad" style="padding:30px 32px 26px;">' +
+      '<table role="presentation" cellpadding="0" cellspacing="0"><tr><td bgcolor="' + C.ink + '" style="border-radius:999px;border:1.5px solid ' + C.ink + ';padding:5px 14px;font-family:' + BODY + ';font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:' + C.lime + ';">' + o.tag + '</td></tr></table>' +
+      '<h1 class="d h1" style="margin:18px 0 14px;font-family:' + DISP + ';font-size:64px;line-height:1.02;font-weight:400;text-transform:uppercase;color:' + C.ink + ';">' + o.title + '</h1>' +
+      (o.intro ? p(o.intro, 'max-width:480px;') : '') + '</td></tr>');
+    parts.push('<tr><td bgcolor="' + C.lime + '" style="font-size:0;line-height:0;">' + layersInk() + '</td></tr>');
+    parts.push('<tr><td bgcolor="' + C.white + '" style="font-size:0;line-height:0;height:26px;">&nbsp;</td></tr>');
+    (o.blocks || []).forEach(function (b) {
+      parts.push('<tr><td bgcolor="' + C.white + '" class="pad" style="padding:0 32px 26px;">' + b + '</td></tr>');
+    });
+    parts.push('<tr><td bgcolor="' + C.ink + '" class="pad" style="padding:28px 32px;border-radius:0 0 18px 18px;">' +
+      '<div style="font-family:' + BODY + ';font-size:15px;line-height:1.55;color:#F3F1EA;">' + (o.help || 'Questions about your order? Reply to this email or message us on WhatsApp at [WhatsApp number].') + '</div>' +
+      '<div style="padding-top:14px;font-family:' + BODY + ';font-size:13px;line-height:1.9;">' + ['Track an order', 'Shipping', 'Returns', 'Contact'].map(function (l) { return '<a href="#" style="color:' + C.lime + ';text-decoration:underline;">' + l + '</a>'; }).join(' &nbsp;·&nbsp; ') + '</div>' +
+      '<div style="padding-top:16px;border-top:1px solid #34343A;margin-top:16px;font-family:' + BODY + ';font-size:12px;line-height:1.6;color:#B8B4A8;">Akrinity · 3D printing from Mumbai, India · GSTIN [YOUR GSTIN]<br>Prices include GST. You are getting this because of your activity on [website].</div></td></tr>');
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">' +
+      '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">' +
+      '<style>body{margin:0;padding:0;background:' + C.stage + ';-webkit-text-size-adjust:100%}table{border-collapse:separate}a{color:inherit}' +
+      '@media (max-width:480px){.pad{padding-left:20px!important;padding-right:20px!important}.h1{font-size:44px!important}.stack{display:block!important;width:100%!important;padding:0 0 14px!important}}</style></head>' +
+      '<body><div style="display:none;max-height:0;overflow:hidden;color:' + C.stage + ';">' + (o.pre || '') + '</div>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="' + C.stage + '"><tr><td align="center" style="padding:24px 10px;">' +
+      '<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;">' + parts.join('') + '</table></td></tr></table></body></html>';
+  }
+
+  var TRACK = function (cur, whens) {
+    var labels = ['Order placed', 'Printing', 'Shipped', 'Delivered'];
+    return track(cur, labels.map(function (l, i) { return { label: l, when: whens[i] }; }));
+  };
+
+  /* ---------- the emails ---------- */
+  var E = [
+    { group: 'Customer', id: 'confirmed', name: 'Order confirmed', short: 'Order placed',
+      to: 'The customer', when: 'Right after an order is placed: at once for cash on delivery, and when the Cashfree payment is confirmed.',
+      subject: 'Your Akrinity order #295 is confirmed', tpl: 'Processing order (customer-processing-order)',
+      html: function () { return shell({ tag: 'Order confirmed', title: 'Order #' + O.no + ' is ' + hl('in.'), pre: 'We are starting your print. Total ' + O.total + ', pay on delivery.',
+        intro: 'Thank you, ' + O.first + '. We have your order and are starting to print it. You pay ' + O.total + ' in cash or UPI when it arrives.',
+        blocks: [TRACK(2, ['22 Nov, 3:40 pm', 'Now', 'By [24 Nov]', 'By [27 Nov]']), nowCard('Printing your order', 'We print it, check every part and pack it. You get a tracking link by email when it ships.', ['Expected delivery', '[Fri 27 Nov]']),
+          primary('Track your order'), orderCard(), twoCol('Delivering to', DELIVER, 'Payment', COD + '<br>' + O.total + ' due on delivery'), upsell()] }); } },
+
+    { group: 'Customer', id: 'shipped', name: 'Order shipped', short: 'With tracking link',
+      to: 'The customer', when: 'When you save a tracking number in the Shipping and tracking box on the order (the first time).',
+      subject: 'Your Akrinity order #295 has shipped', tpl: 'Customer note (customer-note), filled by the tracking box',
+      html: function () { return shell({ tag: 'Shipped', title: 'On its ' + hl('way.'), pre: 'Your order left the studio. Tracking number inside.',
+        intro: O.first + ', your order left our studio today. Use the tracking number below to follow the parcel.',
+        blocks: [TRACK(3, ['22 Nov', '23 Nov', 'Today, 24 Nov', 'By [27 Nov]']), nowCard('On the road', 'Your parcel is with the courier. Tracking updates can take a few hours to appear.', ['Expected delivery', '[Fri 27 Nov]']),
+          '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="' + CARD + '"><tr><td style="padding:18px 24px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">' + row('Courier', '[Courier name]') + row('Tracking number', '<b>[AWB 1234567890]</b>') + '</table>' + accent('Track the parcel') + '</td></tr></table>',
+          orderCard(), twoCol('Delivering to', DELIVER, 'Payment', COD + '<br>' + O.total + ' due on delivery'), upsell()] }); } },
+
+    { group: 'Customer', id: 'completed', name: 'Order delivered', short: 'Completed',
+      to: 'The customer', when: 'When you mark the order Completed in WooCommerce.',
+      subject: 'Your Akrinity order #295 is complete', tpl: 'Completed order (customer-completed-order)',
+      html: function () { return shell({ tag: 'Delivered', title: 'It has ' + hl('arrived.'), pre: 'Your order is complete. Tell us how it turned out.',
+        intro: 'Your order is complete, ' + O.first + '. We hope the print looks as good in your hands as it did on our printer. If anything is wrong, reply to this email and we will sort it out.',
+        blocks: [TRACK(4, ['22 Nov', '23 Nov', '24 Nov', 'Delivered 27 Nov']), accent('Write a review') + ghost('Download GST invoice'), orderCard(), upsell('Liked it? These come from the same collection.')] }); } },
+
+    { group: 'Customer', id: 'pending', name: 'Payment needed', short: 'Pay for this order',
+      to: 'The customer', when: 'When an order is waiting for payment (on hold or pending) and you send the invoice, or the customer abandons the Cashfree page.',
+      subject: 'Pay for your Akrinity order #295', tpl: 'Customer invoice (customer-invoice) and On-hold order (customer-on-hold-order)',
+      html: function () { return shell({ tag: 'Payment needed', title: 'One step ' + hl('left.'), pre: 'Your order starts printing once the payment goes through.',
+        intro: 'Your order #' + O.no + ' is saved but not paid yet. We start printing as soon as the payment goes through.',
+        blocks: [TRACK(1, ['Saved 22 Nov', 'After payment', '', '']), nowCard('Waiting for payment', 'The button opens a secure Cashfree page. Card and UPI details are never typed on akrinity.'), primary('Pay ' + O.total), orderCard({ noFee: true })] }); } },
+
+    { group: 'Customer', id: 'failed', name: 'Payment failed', short: 'Try again',
+      to: 'The customer', when: 'When Cashfree reports the payment as failed.',
+      subject: 'Your payment for order #295 did not go through', tpl: 'Failed order (customer-failed-order)',
+      html: function () { return shell({ tag: 'Payment failed', title: 'That payment ' + hl('did not') + ' go through.', pre: 'Your order is saved. Try paying again.',
+        intro: 'The payment for order #' + O.no + ' did not complete, so we have not started printing. Your order is saved and you can try again. If money left your account, it returns in [X] working days.',
+        blocks: [primary('Try paying again') + ghost('Choose cash on delivery'), orderCard({ noFee: true }), small('Cash on delivery is only offered for stocked items under the order limit.')] }); } },
+
+    { group: 'Customer', id: 'refunded', name: 'Refund issued', short: 'Full or part',
+      to: 'The customer', when: 'When you refund an order in WooCommerce (full or partial).',
+      subject: 'Your Akrinity refund for order #295', tpl: 'Refunded order (customer-refunded-order)',
+      html: function () { return shell({ tag: 'Refund', title: 'Refund on its ' + hl('way.'), pre: O.total + ' is on its way back to you.',
+        intro: 'We refunded ' + O.total + ' for order #' + O.no + '. It reaches your original payment method in [X] working days, depending on your bank.',
+        blocks: ['<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="' + CARD + '"><tr><td style="padding:18px 24px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">' + row('Refund amount', O.total, true) + row('Refunded to', '[Original payment method]') + row('Reason', '[Reason from the order note]') + '</table></td></tr></table>', orderCard(), p('Questions about the refund? Reply to this email with your order number.')] }); } },
+
+    { group: 'Customer', id: 'note', name: 'A note from us', short: 'Message about an order',
+      to: 'The customer', when: 'When you add a "Note to customer" on an order.',
+      subject: 'A note about your Akrinity order #295', tpl: 'Customer note (customer-note)',
+      html: function () { return shell({ tag: 'A note from Akrinity', title: 'About order ' + hl('#' + O.no), pre: 'We wrote you a short note about your order.',
+        intro: 'Hi ' + O.first + ', we have a short note for you about your order.',
+        blocks: ['<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="' + C.lime + '" style="border-radius:18px;border:1.5px solid ' + C.ink + ';"><tr><td style="padding:20px 24px;font-family:' + BODY + ';font-size:16px;line-height:1.6;color:' + C.ink + ';">[The note you type on the order appears here. For example: your print is a little darker than the photo because of the black filament, and it will ship tomorrow.]</td></tr></table>', orderCard()] }); } },
+
+    { group: 'Customer', id: 'welcome', name: 'Welcome', short: 'New account',
+      to: 'The customer', when: 'When someone creates an account on the website.',
+      subject: 'Welcome to Akrinity', tpl: 'New account (customer-new-account)',
+      html: function () { return shell({ tag: 'Welcome', title: 'Your account is ' + hl('ready.'), rightHead: 'Account', pre: 'Track orders and reorder in two taps.',
+        intro: 'Hi ' + O.first + ', your Akrinity account is ready. Your username is <b>' + O.email + '</b>.',
+        blocks: [primary('Go to your account'), sectionTitle('With an account you can') + steps(['Follow every order from print to delivery.', 'Save your addresses for a faster checkout.', 'Reorder a print in two taps.']), small('Prices include GST. Business buyer? Add your GSTIN in your account for tax invoices.')], help: 'Need help? Reply to this email or message us on WhatsApp at [WhatsApp number].' }); } },
+
+    { group: 'Customer', id: 'reset', name: 'Reset password', short: 'Forgot password',
+      to: 'The customer', when: 'When the customer asks for a password reset on the website.',
+      subject: 'Reset your Akrinity password', tpl: 'Reset password (customer-reset-password)',
+      html: function () { return shell({ tag: 'Password', title: 'Choose a ' + hl('new') + ' password.', rightHead: 'Account', pre: 'Use this link to set a new password.',
+        intro: 'Someone asked to reset the password for <b>' + O.email + '</b>. Use the button to choose a new one. The link works for [X] hours.',
+        blocks: [primary('Choose a new password'), small('If you did not ask for this, ignore this email. Your password stays the same.')], help: 'Did not ask for this? Reply to this email so we can look into it.' }); } },
+
+    { group: 'Customer', id: 'quote', name: 'Quote request received', short: 'Custom print',
+      to: 'The customer', when: 'When a custom quote is sent from the Quote page (our own message, not a WooCommerce one).',
+      subject: 'We received your quote request (QR-139)', tpl: 'Sent by the Akrinity snippet (akrinity-headless-auth.php)',
+      html: function () { return shell({ tag: 'Quote request', title: 'We have your ' + hl('file.'), rightHead: 'QR-139', pre: 'We will reply with a price and lead time. Pay only after you approve.',
+        intro: 'Thank you, ' + O.first + '. We will look at your file and reply with a price and lead time. Pay only after you approve the quote.',
+        blocks: [track(1, [{ label: 'Request sent', when: 'Today' }, { label: 'Quoted', when: 'Within [X] hrs' }, { label: 'Approved', when: '' }, { label: 'Printing', when: '' }]),
+          '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="' + CARD + '"><tr><td style="padding:18px 24px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">' + row('Reference', 'QR-139') + row('Job', 'Print my file') + row('Material', 'PLA+') + row('Quantity', '10') + row('File', 'bracket-v3.stl (4.2 MB)') + '</table></td></tr></table>',
+          sectionTitle('What happens next') + steps(['We check your file and the material.', 'We email you a price and lead time within [X] hours.', 'You approve the quote, pay, and we print.'])],
+        help: 'Questions? Reply to this email and mention QR-139, or message us on WhatsApp at [WhatsApp number].' }); } },
+
+    { group: 'Studio', id: 'neworder', name: 'New order', short: 'To the studio',
+      to: 'You, at the store email address', when: 'Every time a customer places an order.',
+      subject: '[Akrinity] New order #295 from Asha Kulkarni', tpl: 'New order (new-order)',
+      html: function () { return shell({ tag: 'New order', title: 'Order ' + hl('#' + O.no) + ' from ' + O.first + '.', rightHead: 'Studio', pre: O.total + ', cash on delivery, Maharashtra.',
+        intro: 'A new order is in. Check the options below before you start printing.',
+        blocks: ['<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>' + ['Total|' + O.total, 'Payment|' + COD, 'Ship to|Maharashtra'].map(function (x) { var a = x.split('|'); return '<td class="stack" width="33%" valign="top" style="padding:0 8px 0 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="' + CARD + 'border-radius:14px;"><tr><td style="padding:12px 14px;"><div style="font-family:' + BODY + ';font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:' + C.muted + ';">' + a[0] + '</div><div style="font-family:' + BODY + ';font-size:16px;font-weight:700;color:' + C.ink + ';padding-top:3px;">' + a[1] + '</div></td></tr></table></td>'; }).join('') + '</tr></table>',
+          orderCard(), twoCol('Customer', DELIVER + '<br>' + O.email, 'Print notes', '<b>Options:</b> ' + O.item.opts + '<br><b>Made to order:</b> No<br><b>Customer note:</b> Please call before delivery'), primary('Open order in WooCommerce')],
+        help: 'Set the status to Processing, then Completed once it ships. Add the tracking number in the Shipping and tracking box.' }); } },
+
+    { group: 'Studio', id: 'cancelled', name: 'Order cancelled', short: 'To the studio',
+      to: 'You, at the store email address', when: 'When an order is cancelled by you or the customer.',
+      subject: '[Akrinity] Order #295 has been cancelled', tpl: 'Cancelled order (cancelled-order)',
+      html: function () { return shell({ tag: 'Order cancelled', title: 'Order ' + hl('#' + O.no) + ' is off.', rightHead: 'Studio', pre: 'Stop any printing for this order.',
+        intro: 'Order #' + O.no + ' was cancelled. Stop any printing or packing for it. Stock for the item goes back on the shelf automatically.',
+        blocks: [orderCard(), primary('Open order in WooCommerce')], help: 'If the customer already paid, issue the refund from the order screen.' }); } }
+  ];
+
+  /* ---------- the page ---------- */
+  var list = document.getElementById('list'), frame = document.getElementById('frame'), mail = document.getElementById('mail');
+  var cur = 0, font = 'anton';
+  var groups = ['Customer', 'Studio'], titles = { Customer: 'Customer emails', Studio: 'Studio emails (to you)' };
+  function build() {
+    var html = '';
+    groups.forEach(function (g) {
+      html += '<h2>' + titles[g] + '</h2>';
+      E.forEach(function (e, i) { if (e.group === g) html += '<button type="button" data-i="' + i + '" aria-current="' + (i === cur) + '"><b>' + e.name + '</b><span>' + e.short + '</span></button>'; });
+    });
+    list.innerHTML = html;
+  }
+  function size() { try { var d = mail.contentDocument; if (d && d.body) mail.style.height = Math.max(480, d.documentElement.scrollHeight) + 'px'; } catch (x) { /* blocked */ } }
+  function show() {
+    var e = E[cur];
+    document.getElementById('e-title').textContent = e.name;
+    document.getElementById('e-to').textContent = e.to;
+    document.getElementById('e-when').textContent = e.when;
+    document.getElementById('e-subject').textContent = e.subject;
+    document.getElementById('e-tpl').innerHTML = '<code>' + e.tpl.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</code>';
+    var html = e.html();
+    if (font === 'impact') html = html.replace('</head>', '<style>.d{font-family:Impact,\'Arial Narrow Bold\',Arial,sans-serif!important;letter-spacing:.5px}</style></head>');
+    mail.srcdoc = html;
+    Array.prototype.forEach.call(list.querySelectorAll('button'), function (b) { b.setAttribute('aria-current', String(Number(b.dataset.i) === cur)); });
+  }
+  mail.addEventListener('load', function () { size(); setTimeout(size, 400); setTimeout(size, 1200); });
+  window.addEventListener('resize', size);
+  list.addEventListener('click', function (ev) { var b = ev.target.closest('button'); if (!b) return; cur = Number(b.dataset.i); show(); });
+  document.getElementById('b-desk').addEventListener('click', function () { frame.classList.remove('phone'); this.setAttribute('aria-pressed', 'true'); document.getElementById('b-phone').setAttribute('aria-pressed', 'false'); setTimeout(size, 300); });
+  document.getElementById('b-phone').addEventListener('click', function () { frame.classList.add('phone'); this.setAttribute('aria-pressed', 'true'); document.getElementById('b-desk').setAttribute('aria-pressed', 'false'); setTimeout(size, 300); });
+  document.getElementById('font').addEventListener('change', function () { font = this.value; show(); });
+  try { var h = location.hash.replace('#', ''); var f = E.findIndex(function (x) { return x.id === h; }); if (f >= 0) cur = f; } catch (x) { /* ignore */ }
+  build(); show();
+})();
+</script>
