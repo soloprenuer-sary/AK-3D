@@ -189,7 +189,9 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
     regularPrice: onSale
       ? formatRupees(p.prices.regular_price as string, p.prices.currency_minor_unit)
       : undefined,
-    description: stripTags(p.short_description || p.description || '') || undefined,
+    // Stray ** from text pasted out of Amazon listings are dropped.
+    description:
+      stripTags(p.short_description || p.description || '').replace(/\*+/g, '') || undefined,
     rating: Number(p.average_rating) > 0 ? Number(p.average_rating) : undefined,
     reviewCount: p.review_count && p.review_count > 0 ? p.review_count : undefined,
     // Key features from the content fields when they are filled in, otherwise the short description bullets.

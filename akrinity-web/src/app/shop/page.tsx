@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ShopBrowser } from '@/components/shop/ShopBrowser';
-import { getProducts } from '@/lib/catalogue';
+import { getListProducts } from '@/lib/catalogue';
 import { getCategoryTree } from '@/lib/category-content';
 
 /** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
@@ -10,7 +10,7 @@ export const revalidate = 60;
 export const metadata: Metadata = { title: 'Shop' };
 
 export default async function ShopPage() {
-  const [products, tree] = await Promise.all([getProducts(), getCategoryTree()]);
+  const [products, tree] = await Promise.all([getListProducts(), getCategoryTree()]);
   return (
     <main id="main">
       <nav className="crumbs" aria-label="Breadcrumb">

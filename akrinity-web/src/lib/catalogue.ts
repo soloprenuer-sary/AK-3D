@@ -18,6 +18,35 @@ export async function getProducts(): Promise<ShopProduct[]> {
   return products;
 }
 
+/**
+ * A product trimmed to what cards, filters, search and quick view need. Pages that hand a list of
+ * products to the browser use this, so the page does not carry every product's long description,
+ * content fields and spec table (the product page itself still gets the whole product).
+ */
+export function slimProduct(p: ShopProduct, keep: { specs?: boolean } = {}): ShopProduct {
+  const c: ShopProduct = { ...p };
+  delete c.longDescription;
+  delete c.content;
+  delete c.highlights;
+  delete c.model;
+  delete c.crossSellIds;
+  delete c.upsellIds;
+  if (!keep.specs) delete c.specs;
+  if (c.description && c.description.length > 260)
+    c.description = c.description.slice(0, 257) + '…';
+  return c;
+}
+
+/** Every product, trimmed for list pages. */
+export async function getListProducts(): Promise<ShopProduct[]> {
+  return (await getProducts()).map((p) => slimProduct(p));
+}
+
+/** Every product for the compare page: trimmed, but with the size and weight rows. */
+export async function getCompareProducts(): Promise<ShopProduct[]> {
+  return (await getProducts()).map((p) => slimProduct(p, { specs: true }));
+}
+
 export async function getGuides(): Promise<Guide[]> {
   const posts = await fetchPosts();
   if (posts === null) {

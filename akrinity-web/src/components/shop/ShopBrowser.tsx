@@ -210,7 +210,7 @@ export function ShopBrowser({
                     <button
                       key={c}
                       type="button"
-                      className="cat-btn"
+                      className="side-cat"
                       aria-pressed={category === c}
                       onClick={() => setCategory(c)}
                     >

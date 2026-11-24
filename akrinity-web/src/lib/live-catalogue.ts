@@ -29,9 +29,15 @@ function load<T>(kind: 'products' | 'posts', map: (raw: never) => T): Promise<T>
   return p;
 }
 
-function useLive<T>(initial: T, kind: 'products' | 'posts', map: (raw: never) => T): T {
+function useLive<T>(
+  initial: T,
+  kind: 'products' | 'posts',
+  map: (raw: never) => T,
+  enabled = true,
+): T {
   const [value, setValue] = useState<T>(initial);
   useEffect(() => {
+    if (!enabled) return;
     let live = true;
     load(kind, map)
       .then((fresh) => {
@@ -43,7 +49,7 @@ function useLive<T>(initial: T, kind: 'products' | 'posts', map: (raw: never) =>
     };
     // map is a module-level function, so it never changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kind]);
+  }, [kind, enabled]);
   return value;
 }
 
@@ -52,11 +58,21 @@ const mapArticles = (raw: GqlPost[]): Guide[] => mapPosts(raw);
 /** The product list, refreshed from WooCommerce after the page opens. */
 export function useLiveProducts(initial: ShopProduct[]): ShopProduct[] {
   const tree = useCategoryTree();
-  const raw = useLive<StoreProduct[] | null>(null, 'products', ((r: StoreProduct[]) => r) as (raw: never) => StoreProduct[] | null);
-  return useMemo(() => (raw ? raw.map((p) => mapStoreProduct(p, tree)) : initial), [raw, tree, initial]);
+  // Every page is rebuilt in the background once a minute, so a page that already carries its products
+  // does not download them a second time. Only the search box, which starts empty, asks for them.
+  const raw = useLive<StoreProduct[] | null>(
+    null,
+    'products',
+    ((r: StoreProduct[]) => r) as (raw: never) => StoreProduct[] | null,
+    initial.length === 0,
+  );
+  return useMemo(
+    () => (raw ? raw.map((p) => mapStoreProduct(p, tree)) : initial),
+    [raw, tree, initial],
+  );
 }
 
 /** The article list, refreshed from WordPress after the page opens. */
 export function useLiveGuides(initial: Guide[]): Guide[] {
-  return useLive(initial, 'posts', mapArticles as (raw: never) => Guide[]);
+  return useLive(initial, 'posts', mapArticles as (raw: never) => Guide[], initial.length === 0);
 }

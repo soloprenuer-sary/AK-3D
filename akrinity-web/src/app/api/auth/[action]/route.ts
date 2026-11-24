@@ -563,6 +563,7 @@ async function handleMe(request: Request, env: Env): Promise<Response> {
       phone: d.phone,
       billing: d.billing,
       shipping: d.shipping,
+      email_verified: d.email_verified !== false,
     },
   });
 }
@@ -866,6 +867,35 @@ async function handleForgot(request: Request, env: Env): Promise<Response> {
   return json(GENERIC_OK); // same answer whether or not the email has an account
 }
 
+/** Confirms the link from the verification email. */
+async function handleVerify(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  const id = Number(body?.id ?? 0);
+  const token = str(body?.token, 200);
+  if (!body || !Number.isInteger(id) || id <= 0 || !token)
+    return json({ error: 'This link is not valid. Request a new one.', code: 'invalid' }, 400);
+  const r = await wpService(env, '/verify', { id, token });
+  if (r.status !== 200)
+    return json(
+      { error: 'This link has expired or was already used. Request a new one.', code: 'invalid' },
+      400,
+    );
+  return json({ ok: true });
+}
+
+/** Sends a new confirmation link. The same answer whether or not the email has an account. */
+async function handleVerifyResend(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  const email = str(body?.email, 254).toLowerCase();
+  if (!body || !EMAIL_RE.test(email)) return json({ error: 'Enter a valid email.' }, 400);
+  const limited = await limitIp(env, request, 'verify-resend', { max: 5, window: 3600 });
+  if (limited) return limited;
+  if (!(await verifyTurnstile(env, str(body.turnstileToken, 2048), clientIp(request))))
+    return json({ error: 'Bot check failed. Please try again.' }, 400);
+  await wpService(env, '/verify/resend', { email });
+  return json(GENERIC_OK);
+}
+
 async function handleReset(request: Request, env: Env): Promise<Response> {
   const body = await readJson(request);
   const key = str(body?.key, 100);
@@ -1135,6 +1165,8 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
       'register',
       'forgot',
       'reset',
+      'verify',
+      'verify-resend',
       'business',
       'quote',
       'contact',
@@ -1156,6 +1188,8 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   if (action === 'newsletter') return handleNewsletter(request, env);
   if (action === 'review') return handleReviewPost(request, env);
   if (action === 'forgot') return handleForgot(request, env);
+  if (action === 'verify') return handleVerify(request, env);
+  if (action === 'verify-resend') return handleVerifyResend(request, env);
   if (action === 'reset') return handleReset(request, env);
   if (action === 'logout') return json({ ok: true }, 200, { 'Set-Cookie': clearCookie() });
   return json({ error: 'Not found.' }, 404);

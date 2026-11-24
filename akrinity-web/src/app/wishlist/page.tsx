@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { WishlistView } from '@/components/shop/WishlistView';
-import { getProducts } from '@/lib/catalogue';
+import { getListProducts } from '@/lib/catalogue';
 
 export const revalidate = 60;
 export const metadata: Metadata = { title: 'Wishlist', description: 'Products you have saved.' };
 
 export default async function WishlistPage() {
-  const products = await getProducts();
+  const products = await getListProducts();
   return (
     <main id="main">
       <nav className="crumbs" aria-label="Breadcrumb">

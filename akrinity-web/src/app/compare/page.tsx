@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CompareView } from '@/components/shop/CompareView';
-import { getProducts } from '@/lib/catalogue';
+import { getCompareProducts } from '@/lib/catalogue';
 
 export const revalidate = 60;
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ComparePage() {
-  const products = await getProducts();
+  const products = await getCompareProducts();
   return (
     <main id="main">
       <nav className="crumbs" aria-label="Breadcrumb">

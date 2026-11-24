@@ -12,7 +12,7 @@
  *   NEXT_PUBLIC_REPLY_HOURS        usual reply time in hours, for example 4
  *   NEXT_PUBLIC_PRINT_DAYS         working days to print and pack (default 2)
  *   NEXT_PUBLIC_DELIVERY_DAYS      working days from dispatch to delivery (default 5)
- *   NEXT_PUBLIC_ONLINE_PAYMENTS    1 once Cashfree is switched on (changes the "UPI, cards" wording)
+ *   NEXT_PUBLIC_ONLINE_PAYMENTS    set to 0 to hide the "UPI, cards" wording (on by default)
  */
 
 const text = (v: string | undefined): string => (v ?? '').trim();
@@ -49,7 +49,7 @@ export const site = {
   replyHours: num(process.env.NEXT_PUBLIC_REPLY_HOURS, 0),
   printDays: num(process.env.NEXT_PUBLIC_PRINT_DAYS, 2),
   deliveryDays: num(process.env.NEXT_PUBLIC_DELIVERY_DAYS, 5),
-  onlinePayments: text(process.env.NEXT_PUBLIC_ONLINE_PAYMENTS) === '1',
+  onlinePayments: text(process.env.NEXT_PUBLIC_ONLINE_PAYMENTS) !== '0',
 } as const;
 
 /** Working days (Monday to Saturday) after a date. */

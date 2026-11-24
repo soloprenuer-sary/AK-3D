@@ -6,7 +6,7 @@ import { CategoryHero, CategoryInfo } from '@/components/category/CategoryHero';
 import { getCategoryCopy, getCategoryTree } from '@/lib/category-content';
 import { findCategory } from '@/lib/shop-data';
 import { themeFor } from '@/lib/category-themes';
-import { getProducts } from '@/lib/catalogue';
+import { getListProducts } from '@/lib/catalogue';
 
 /** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
 export const revalidate = 60;
@@ -33,7 +33,7 @@ export default async function CategoryPage({ params }: Params) {
   const cat = findCategory(category, tree);
   if (!cat) notFound();
   const theme = themeFor(category, tree.indexOf(cat));
-  const [products, allCopy] = await Promise.all([getProducts(), getCategoryCopy()]);
+  const [products, allCopy] = await Promise.all([getListProducts(), getCategoryCopy()]);
   const copy = allCopy[cat.slug];
   const mine = products.filter((p) => p.category === cat.name);
   const prices = mine

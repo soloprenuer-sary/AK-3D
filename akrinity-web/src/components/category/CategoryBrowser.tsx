@@ -265,9 +265,9 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
   const row = (title: string, key: string, list: ShopProduct[], target: string) => (
     <section className="cb-group" key={target} aria-label={title}>
       <div className="cb-group-h">
-        <h3 className="d">
+        <h2 className="d">
           {title} <span className="cb-count">{list.length}</span>
-        </h3>
+        </h2>
         {target === MORE ? (
           <button type="button" className="link-btn" onClick={() => choose(target)}>
             View all →
@@ -472,9 +472,9 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
         ) : (
           <section aria-label={heading}>
             <div className="cb-group-h">
-              <h3 className="d">
+              <h2 className="d">
                 {heading} <span className="cb-count">{flat.length}</span>
-              </h3>
+              </h2>
               {sub !== 'All' && (
                 <button type="button" className="link-btn" onClick={() => choose('All')}>
                   ← All {category.name.toLowerCase()}

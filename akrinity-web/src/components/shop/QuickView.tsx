@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import Link from 'next/link';
 import { Pic } from '@/components/ui/Pic';
-import { COLOURS, type ColourKey, type ShopProduct } from '@/lib/shop-data';
+import { COLOURS, productSlug, type ColourKey, type ShopProduct } from '@/lib/shop-data';
 
 interface QuickViewProps {
   product: ShopProduct | null;
@@ -85,7 +86,7 @@ function QuickViewBody({
             incl. GST
           </span>
         </div>
-        {product.description && <p>{product.description}</p>}
+        {product.description && <p className="qv-desc">{product.description}</p>}
         <div className="swatches" role="group" aria-label="Colour">
           {product.colours.map((key) => (
             <button
@@ -103,6 +104,9 @@ function QuickViewBody({
           <button type="button" className="btn btn-primary" onClick={() => onAdd(product)}>
             Add to cart
           </button>
+          <Link className="btn" href={`/product/${productSlug(product)}`} onClick={() => onClose()}>
+            Full details
+          </Link>
         </div>
       </div>
     </div>

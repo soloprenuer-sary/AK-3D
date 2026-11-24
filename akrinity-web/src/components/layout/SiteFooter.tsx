@@ -16,7 +16,7 @@ export function SiteFooter({ tree }: { tree: ShopCategory[] }) {
             <NewsletterForm />
           </div>
           <div>
-            <h3>Shop</h3>
+            <h2>Shop</h2>
             <Link href="/shop">All products</Link>
             {tree.slice(0, 6).map((c) => (
               <Link key={c.slug} href={`/shop/${c.slug}`}>
@@ -25,7 +25,7 @@ export function SiteFooter({ tree }: { tree: ShopCategory[] }) {
             ))}
           </div>
           <div>
-            <h3>Custom</h3>
+            <h2>Custom</h2>
             <Link href="/quote">Request a quote</Link>
             <Link href="/design-service">Design service</Link>
             <Link href="/materials">Materials</Link>
@@ -34,7 +34,7 @@ export function SiteFooter({ tree }: { tree: ShopCategory[] }) {
             <Link href="/guides">Knowledge hub</Link>
           </div>
           <div>
-            <h3>Help</h3>
+            <h2>Help</h2>
             <Link href="/track-order">Track an order</Link>
             <Link href="/account">Account</Link>
             <Link href="/wishlist">Wishlist</Link>

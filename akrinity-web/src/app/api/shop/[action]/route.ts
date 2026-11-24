@@ -40,11 +40,10 @@ const MAX_BODY = 20000;
 
 /**
  * Payment ways the storefront offers, from the ENABLED_PAYMENT_METHODS setting in Vercel (comma
- * separated, for example "cod,cashfree"). Cashfree is on hold, so only cash on delivery is offered
- * until "cashfree" is added there.
+ * separated, for example "cod,cashfree"). Both are on by default; remove one there to hide it.
  */
 const enabledMethods = (): string[] =>
-  (process.env.ENABLED_PAYMENT_METHODS ?? 'cod')
+  (process.env.ENABLED_PAYMENT_METHODS ?? 'cod,cashfree')
     .split(',')
     .map((m) => m.trim().toLowerCase())
     .filter(Boolean);
@@ -175,9 +174,10 @@ function normalise(c: Row): CartView {
     tax: m(t.total_tax),
     total: m(t.total_price),
     rates,
-    paymentMethods: (Array.isArray(c.payment_methods) ? (c.payment_methods as string[]) : []).filter(
-      (m) => enabledMethods().includes(m),
-    ),
+    paymentMethods: (Array.isArray(c.payment_methods)
+      ? (c.payment_methods as string[])
+      : []
+    ).filter((m) => enabledMethods().includes(m)),
     coupons: rows(c.coupons).map((x) => ({
       code: String(x.code ?? ''),
       amount: m(((x.totals ?? {}) as Row).total_discount),
@@ -285,6 +285,12 @@ async function prepare(
   const s: Session = { token: first.token || cookieToken(request), nonce: first.nonce };
   let cart = first.data;
   const problems: { id: string; message: string }[] = [];
+  /** Every change answers with the whole cart, so the newest answer is the final cart (no extra read needed). */
+  const take = (r: WcReply) => {
+    if (r.status > 0 && r.status < 400 && Array.isArray(r.data.items)) cart = r.data;
+    if (r.token) s.token = r.token;
+    if (r.nonce) s.nonce = r.nonce;
+  };
 
   // 1. The items.
   const wanted = q.lines
@@ -293,7 +299,7 @@ async function prepare(
     .join(';');
   if (signature(rows(cart.items)) !== wanted) {
     for (const item of rows(cart.items)) {
-      await wc(env, s, 'POST', '/cart/remove-item', { key: item.key });
+      take(await wc(env, s, 'POST', '/cart/remove-item', { key: item.key }));
     }
     for (const l of q.lines) {
       const r = await wc(env, s, 'POST', '/cart/add-item', {
@@ -303,6 +309,7 @@ async function prepare(
         akr_mto: l.mto ? '1' : '0',
       });
       if (r.status === 0) return { fail: json({ error: 'The shop is not answering.' }, 503) };
+      take(r);
       if (r.status >= 400) {
         problems.push({
           id: l.id,
@@ -319,33 +326,38 @@ async function prepare(
       billing_address: wcAddress({ ...a, name: a.name || 'Customer' }, true),
       shipping_address: wcAddress({ ...a, name: a.name || 'Customer' }, false),
     });
+    take(r);
     if (r.status >= 400) problems.push({ id: '', message: wcMessage(r, 'Check the address.') });
   }
 
   // 3. Coupon.
   let couponMessage: string | undefined;
-  if (q.removeCoupon) await wc(env, s, 'POST', '/cart/remove-coupon', { code: q.removeCoupon });
+  if (q.removeCoupon)
+    take(await wc(env, s, 'POST', '/cart/remove-coupon', { code: q.removeCoupon }));
   if (q.coupon) {
     const r = await wc(env, s, 'POST', '/cart/apply-coupon', { code: q.coupon });
+    take(r);
     couponMessage =
       r.status >= 400 ? wcMessage(r, 'This coupon cannot be used.') : 'Coupon applied.';
   }
 
   // 4. Shipping option, payment choice.
   if (q.rate) {
-    await wc(env, s, 'POST', '/cart/select-shipping-rate', { package_id: 0, rate_id: q.rate });
+    take(
+      await wc(env, s, 'POST', '/cart/select-shipping-rate', { package_id: 0, rate_id: q.rate }),
+    );
   }
   if (q.method && enabledMethods().includes(q.method)) {
-    await wc(env, s, 'POST', '/cart/extensions', {
-      namespace: 'akrinity',
-      data: { method: q.method },
-    });
+    take(
+      await wc(env, s, 'POST', '/cart/extensions', {
+        namespace: 'akrinity',
+        data: { method: q.method },
+      }),
+    );
   }
 
-  const last = await wc(env, s, 'GET', '/cart');
-  if (last.status === 200) cart = last.data;
   return {
-    session: { token: last.token || s.token, nonce: last.nonce || s.nonce },
+    session: { token: s.token, nonce: s.nonce },
     cart,
     problems,
     couponMessage,

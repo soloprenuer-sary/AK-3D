@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { CartThumb } from './CartThumb';
 import { OrderSummary } from './OrderSummary';
 import { FreeShippingNote } from './FreeShippingNote';
+import { CartUpsell } from './CartUpsell';
 import { formatRupees, parsePrice, useCart } from '@/lib/cart-store';
 import { useWishlist } from '@/lib/lists-store';
 
@@ -104,6 +105,7 @@ export function CartView() {
             );
           })}
         </ul>
+        <CartUpsell lines={lines} />
         <div className="cart-actions">
           <Link className="btn" href="/shop">
             Continue shopping

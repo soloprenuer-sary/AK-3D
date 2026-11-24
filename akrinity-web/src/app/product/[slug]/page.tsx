@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ProductDetail } from '@/components/product/ProductDetail';
-import { getProducts } from '@/lib/catalogue';
+import { getProducts, slimProduct } from '@/lib/catalogue';
 import { productSlug, type ShopProduct } from '@/lib/shop-data';
 import { site } from '@/lib/site-config';
 
@@ -125,7 +125,11 @@ export default async function ProductPage({ params }: Params) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, '\\u003c') }}
       />
-      <ProductDetail product={product} crossSells={crossSells} related={suggested} />
+      <ProductDetail
+        product={product}
+        crossSells={crossSells.map((p) => slimProduct(p))}
+        related={suggested.map((p) => slimProduct(p))}
+      />
     </>
   );
 }

@@ -295,7 +295,8 @@ export function CheckoutView() {
         </h2>
         <div className="pay-options" role="radiogroup" aria-label="Payment method">
           {payChoices.map((m) => {
-            const available = methods.includes(m);
+            // Until the store has answered, both ways to pay can already be picked; the store confirms when you pay.
+            const available = !view || methods.includes(m);
             if (!available && m !== 'cod') return null;
             return (
               <label
@@ -315,14 +316,23 @@ export function CheckoutView() {
                     {available
                       ? METHOD_NOTE[m]
                       : mtoCart
-                        ? 'Not available for made-to-order items. Online payment is coming soon: until then, send a quote request and we will arrange payment with you.'
-                        : 'Not available for this order: it is above the cash on delivery limit, or cash on delivery is not switched on in the store yet.'}
+                        ? 'Not offered for made-to-order items. Pay online instead.'
+                        : 'Not available for this order: it is above the cash on delivery limit.'}
                   </span>
                 </span>
               </label>
             );
           })}
-          {methods.length === 0 && !loading && (
+          {!view && loading && <p className="meta">Checking payment options and your total…</p>}
+          {!view && !loading && (
+            <p className="meta">
+              We could not load your total yet.{' '}
+              <button type="button" className="link-btn" onClick={() => void run()}>
+                Try again
+              </button>
+            </p>
+          )}
+          {view && methods.length === 0 && !loading && (
             <p className="meta">No payment method is available right now. Please contact us.</p>
           )}
         </div>
@@ -363,14 +373,16 @@ export function CheckoutView() {
         <button
           className="btn btn-primary btn-wide"
           type="submit"
-          disabled={placing || loading || !view}
+          disabled={placing || !view}
           aria-busy={placing}
         >
           {placing
             ? 'Placing your order…'
-            : method === 'cod'
-              ? `Place order${view ? ` · ${money(view.total)}` : ''}`
-              : `Pay${view ? ` ${money(view.total)}` : ''}`}
+            : !view
+              ? 'Loading your total…'
+              : method === 'cod'
+                ? `Place order${view ? ` · ${money(view.total)}` : ''}`
+                : `Pay${view ? ` ${money(view.total)}` : ''}`}
         </button>
         {problem && (
           <p className="err" role="alert">

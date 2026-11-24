@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Akrinity headless account
  * Description: Customer sign-up, account details and orders, bulk prices and bulk quote requests for the headless storefront. The one approved WordPress snippet (decisions 20, 32 and 34).
- * Version: 2.6.0
+ * Version: 2.7.0
  *
  * Install: copy this file to wp-content/mu-plugins/ and add to wp-config.php:
  *   define( 'AKRINITY_FRONTEND_URL', 'https://www.example.com' );
@@ -30,6 +30,42 @@ defined( 'ABSPATH' ) || exit;
 
 function akr_frontend_url(): string {
 	return defined( 'AKRINITY_FRONTEND_URL' ) ? rtrim( (string) AKRINITY_FRONTEND_URL, '/' ) : '';
+}
+
+/** Makes a new one-time token for the customer, stores only its hash for 7 days, and emails the link. */
+function akr_send_verify_email( int $id ): void {
+	$user = get_user_by( 'id', $id );
+	$base = akr_frontend_url();
+	if ( ! $user || '' === $base || ! function_exists( 'akr_mail' ) ) {
+		return;
+	}
+	$token = wp_generate_password( 40, false );
+	update_user_meta( $id, 'akr_verify_hash', wp_hash( $token ) );
+	update_user_meta( $id, 'akr_verify_until', time() + 7 * DAY_IN_SECONDS );
+	$url   = $base . '/verify?id=' . $id . '&token=' . rawurlencode( $token );
+	$first = trim( (string) get_user_meta( $id, 'first_name', true ) );
+	$hello = '' !== $first ? "Hi $first,\r\n\r\n" : "Hello,\r\n\r\n";
+	$text  = $hello . "Welcome to Akrinity. Please confirm your email address with this link (it works for 7 days):\r\n{$url}\r\n\r\n"
+		. "If you did not create an account, ignore this email.\r\n";
+	akr_after_response(
+		function () use ( $user, $text, $url ) {
+			akr_mail(
+				$user->user_email,
+				'Confirm your email for Akrinity',
+				$text,
+				array(),
+				array(
+					'tag'   => 'Confirm email',
+					'title' => 'Confirm your',
+					'hl'    => 'email.',
+					'head'  => 'Welcome',
+					'intro' => 'One click confirms your address. You can shop before you do.',
+					'steps' => array(),
+					'help'  => 'If you did not create an account, ignore this email.',
+				)
+			);
+		}
+	);
 }
 
 /** True when the request carries the shared secret. Without a long secret in wp-config.php nothing is allowed. */
@@ -256,7 +292,47 @@ add_action(
 				if ( '' !== $phone ) {
 					update_user_meta( $id, 'billing_phone', $phone );
 				}
+				// Soft email check: the account works at once, a banner asks the customer to confirm the address.
+				update_user_meta( $id, 'akr_email_verified', '0' );
+				akr_send_verify_email( (int) $id );
 				return new WP_REST_Response( array( 'id' => $id ), 201 );
+			},
+			$service
+		);
+
+		// Confirms the link from the verification email: POST { id, token }.
+		$route(
+			'/verify',
+			'POST',
+			function ( WP_REST_Request $req ) {
+				$p     = $req->get_json_params();
+				$id    = (int) ( $p['id'] ?? 0 );
+				$token = (string) ( $p['token'] ?? '' );
+				$hash  = (string) get_user_meta( $id, 'akr_verify_hash', true );
+				$until = (int) get_user_meta( $id, 'akr_verify_until', true );
+				if ( $id <= 0 || '' === $token || '' === $hash || time() > $until || ! hash_equals( $hash, wp_hash( $token ) ) ) {
+					return new WP_REST_Response( array( 'code' => 'invalid' ), 400 );
+				}
+				update_user_meta( $id, 'akr_email_verified', '1' );
+				delete_user_meta( $id, 'akr_verify_hash' );
+				delete_user_meta( $id, 'akr_verify_until' );
+				return new WP_REST_Response( array( 'ok' => true ), 200 );
+			},
+			$service
+		);
+
+		// Sends a new link. The answer is the same whether or not the email has an account.
+		$route(
+			'/verify/resend',
+			'POST',
+			function ( WP_REST_Request $req ) {
+				$p     = $req->get_json_params();
+				$email = sanitize_email( (string) ( $p['email'] ?? '' ) );
+				$user  = is_email( $email ) ? get_user_by( 'email', $email ) : false;
+				if ( $user && '0' === (string) get_user_meta( $user->ID, 'akr_email_verified', true ) ) {
+					akr_send_verify_email( (int) $user->ID );
+				}
+				return new WP_REST_Response( array( 'ok' => true ), 200 );
 			},
 			$service
 		);
@@ -342,6 +418,7 @@ add_action(
 					'phone'        => (string) get_user_meta( $user->ID, 'billing_phone', true ),
 					'billing'      => akr_read_address( $user->ID, 'billing' ),
 					'shipping'     => akr_read_address( $user->ID, 'shipping' ),
+					'email_verified' => '0' !== (string) get_user_meta( $user->ID, 'akr_email_verified', true ),
 				);
 			},
 			$customer

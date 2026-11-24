@@ -171,7 +171,6 @@ export const CATEGORIES: ShopCategory[] = BUILT_IN.map((c) => {
   };
 });
 
-export const SHOP_CATEGORIES = CATEGORIES.map((c) => c.name);
 export const SIZE_OPTIONS = ['Small', 'Medium', 'Large'];
 export const SHOP_MATERIALS: Material[] = ['PLA+', 'PETG', 'ABS / ASA', 'Resin'];
 
@@ -251,11 +250,6 @@ export function subKey(s: string): string {
   return slugify(s)
     .replace(/(^|-)and(-|$)/g, '-')
     .replace(/^-+|-+$/g, '');
-}
-
-/** Page address part for a sub-category, e.g. "Vases and planters" -> "vases-and-planters". */
-export function subSlug(name: string): string {
-  return slugify(name);
 }
 
 export function findSub(cat: ShopCategory, slug: string): string | undefined {

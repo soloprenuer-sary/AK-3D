@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { InfoPage } from '@/components/layout/InfoPage';
 import { BusinessForm } from '@/components/forms/BusinessForm';
-import { getProducts } from '@/lib/catalogue';
+import { getListProducts } from '@/lib/catalogue';
 
 /** Refreshed in the background, so new products can be named in the form without a deploy. */
 export const revalidate = 60;
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Business() {
-  const products = await getProducts();
+  const products = await getListProducts();
   return (
     <InfoPage
       title="Business and bulk orders"

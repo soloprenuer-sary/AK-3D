@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { SimpleForm, type FieldDef } from '@/components/forms/SimpleForm';
+import { ConfirmBanner } from './ConfirmBanner';
 import {
   changePassword,
   currentUser,
@@ -99,6 +100,7 @@ export function AccountArea() {
         <p>
           Signed in as <b>{user.name || user.email}</b> ({user.email}).
         </p>
+        {user.email_verified === false && <ConfirmBanner email={user.email} />}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
           <Link className="btn btn-primary" href="/shop">
             Keep shopping

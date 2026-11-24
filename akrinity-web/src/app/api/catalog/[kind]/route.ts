@@ -38,6 +38,40 @@ const failure = (message: string, status: number): Response =>
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
   });
 
+type Raw = Record<string, unknown>;
+const list = (v: unknown): Raw[] => (Array.isArray(v) ? (v as Raw[]) : []);
+
+/**
+ * Only what the search box and the product lists use: name, price, stock, rating, the first picture,
+ * categories and attributes. The long description, the content fields and every extra picture size
+ * stay out, which makes the reply a fraction of the size.
+ */
+function slim(p: Raw): Raw {
+  const short = typeof p.short_description === 'string' ? p.short_description : '';
+  return {
+    id: p.id,
+    name: p.name,
+    slug: p.slug,
+    short_description: short.length > 600 ? short.slice(0, 600) : short,
+    on_sale: p.on_sale,
+    prices: p.prices,
+    average_rating: p.average_rating,
+    review_count: p.review_count,
+    is_in_stock: p.is_in_stock,
+    is_on_backorder: p.is_on_backorder,
+    formatted_weight: p.formatted_weight,
+    formatted_dimensions: p.formatted_dimensions,
+    images: list(p.images)
+      .slice(0, 1)
+      .map((i) => ({ src: i.src, alt: i.alt })),
+    categories: list(p.categories).map((c) => ({ id: c.id, name: c.name })),
+    attributes: list(p.attributes).map((a) => ({
+      name: a.name,
+      terms: list(a.terms).map((t) => ({ name: t.name })),
+    })),
+  };
+}
+
 async function products(base: string): Promise<Response> {
   const all: unknown[] = [];
   for (let page = 1; page <= 20; page++) {
@@ -53,7 +87,7 @@ async function products(base: string): Promise<Response> {
     all.push(...data);
     if (page >= Number(res.headers.get('x-wp-totalpages') ?? 1) || data.length === 0) break;
   }
-  return reply(JSON.stringify(all));
+  return reply(JSON.stringify((all as Raw[]).map(slim)));
 }
 
 async function posts(base: string): Promise<Response> {

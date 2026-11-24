@@ -6,6 +6,7 @@ export type Address = Record<string, string>;
 export interface AuthUser {
   name: string;
   email: string;
+  email_verified?: boolean;
   first_name?: string;
   last_name?: string;
   phone?: string;
@@ -331,5 +332,18 @@ export async function resetPassword(
   return generic(
     await call('reset', { key, login, password }),
     'This reset link is invalid or has expired. Ask for a new one.',
+  );
+}
+
+// ---------- email confirmation (soft: the account works before it is confirmed) ----------
+
+export async function confirmEmail(id: number, token: string): Promise<string | null> {
+  return generic(await call('verify', { id, token }), 'This link is not valid. Request a new one.');
+}
+
+export async function resendConfirmation(email: string): Promise<string | null> {
+  return generic(
+    await call('verify-resend', { email }),
+    'We could not send that. Please try again.',
   );
 }

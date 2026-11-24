@@ -20,13 +20,6 @@ export const categories = [
   { name: 'Gifts and personalized', background: 'var(--ink)', color: 'var(--paper)' },
 ];
 
-export const bestSellers = [
-  { name: '[Product name]', price: '₹[price]', inStock: true },
-  { name: '[Product name]', price: '₹[price]', inStock: false },
-  { name: '[Product name]', price: '₹[price]', inStock: true },
-  { name: '[Product name]', price: '₹[price]', inStock: false },
-];
-
 export const processSteps = [
   { title: 'Upload', body: 'Send your 3D file or a sketch, and pick material and quantity.' },
   { title: 'Quote', body: 'We reply with a price and lead time.' },

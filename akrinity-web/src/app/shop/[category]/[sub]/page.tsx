@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ShopBrowser } from '@/components/shop/ShopBrowser';
 import { findCategory, findSub, subHref } from '@/lib/shop-data';
-import { getProducts } from '@/lib/catalogue';
+import { getListProducts } from '@/lib/catalogue';
 import { getCategoryTree } from '@/lib/category-content';
 
 /** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
@@ -32,7 +32,7 @@ export default async function SubCategoryPage({ params }: Params) {
   const cat = findCategory(category, await getCategoryTree());
   const name = cat ? findSub(cat, sub) : undefined;
   if (!cat || !name) notFound();
-  const products = await getProducts();
+  const products = await getListProducts();
   const base = `/shop/${cat.slug}`;
 
   return (

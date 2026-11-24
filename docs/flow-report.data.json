@@ -1,10 +1,10 @@
 {
-  "date": "22 Nov 2026 (updated after the fixes)",
+  "date": "24 Nov 2026 (updated after the whole-site clean-up)",
   "tests": [
     {
       "name": "Whole-trip browser test + single-flow tests (all 78 checks)",
-      "result": "Final run on a local production build: 72 passed, 6 skipped (2 place-order steps off by default, 2 device-specific, 2 policy-text checks parked until the lawyer text exists), 0 failed. Two earlier hiccups were test faults: a menu click before the page finished loading, and my own repeated runs hitting the forgot-password limit",
-      "where": "Local build (same code as the next deploy)"
+      "result": "Latest run on the clean-up build: 72 passed, 6 skipped (2 place-order steps off by default, 2 device-specific, 2 policy-text checks parked until the lawyer text exists), 0 failed. Type check and lint are clean. One earlier run showed a forgot-password failure caused by my own repeated runs hitting the rate limit; it passed on a fresh server",
+      "where": "Local build (not yet deployed; the changes are not committed)"
     },
     {
       "name": "Same tests before the fixes, on the live site",
@@ -22,9 +22,14 @@
       "where": "Local build"
     },
     {
-      "name": "Page speed on a phone (Lighthouse, live)",
-      "result": "Home 78, shop 83, product 87, checkout 94, quote 93. Accessibility 98 to 100, best practices 100, SEO 100 (checkout is 60 on purpose: hidden from Google). Desktop was 99 to 100 earlier",
-      "where": "Live site"
+      "name": "Page speed on a phone (Lighthouse)",
+      "result": "Local production build, phone: home 96, shop 97 to 98, category 92, product 92, FAQ 97, cart 97, checkout 97; total blocking time 30 to 120 ms. Before the speed work: home 82 to 92 here, 78 on the live site. Left: render-blocking CSS (about 20 KB gzipped) and about 27 KB of unused script. The live site has not been re-measured; do that after the deploy",
+      "where": "Local production build (live site measured before: home 78, shop 83, product 87)"
+    },
+    {
+      "name": "Accessibility and code clean-up",
+      "result": "Footer and category-list headings skipped a level (h3 straight after h1): now h2, same look. Accessibility is 100 on home, shop, category, product, cart, checkout and FAQ (was 98 on shop, cart, checkout and category). Removed unused code: lib/env.ts, bestSellers, SHOP_CATEGORIES, subSlug. Not touched: about 49 CSS classes that look unused (some style WordPress A+ content), needs a visual check first",
+      "where": "Local production build"
     },
     {
       "name": "Store set-up probe",
@@ -56,9 +61,9 @@
         {
           "step": "Fast, mobile-friendly pages",
           "ideal": "Opens in under 3 seconds on a phone",
-          "site": "Opens fast; phone scores 78 to 94",
+          "site": "Phone score is 92 to 98 on every page measured (live site was 78 to 94 before; confirm after the deploy)",
           "status": "done",
-          "test": "Pass"
+          "test": "Pass (local build)"
         },
         {
           "step": "Search engines can read the site",
@@ -126,14 +131,14 @@
         {
           "step": "Filter and sort",
           "ideal": "Filters plus sort by price",
-          "site": "Filters plus sort by price now on the shop page too",
+          "site": "Filters plus sort by price on the shop page; the black box on the filter list when hovering is fixed",
           "status": "done",
           "test": "Pass"
         },
         {
           "step": "Save and compare",
           "ideal": "Wishlist and compare",
-          "site": "Both work and survive a reload (kept in the browser, not synced to the account)",
+          "site": "Wishlist and compare both work and survive a reload (kept in the browser, not synced to the account). Compare page rebuilt: sticky header with Add to cart, \"show only differences\", lowest price and best rating marked, size and weight rows, bulk prices",
           "status": "done",
           "test": "Pass"
         },
@@ -154,9 +159,9 @@
         {
           "step": "Photos and 3D view",
           "ideal": "Photos, and a 3D preview for printed items",
-          "site": "Photos yes; 3D field is live but no 3D file is uploaded to any product yet, so the tab never shows",
+          "site": "The 3D view tab is back on every product. With a 3D file it shows the model; without one it shows a sample preview and a note that the real model is coming soon. The product quick view no longer overflows (short text with an ellipsis, link to full details)",
           "status": "part",
-          "test": "Pass (tab hidden as designed)"
+          "test": "Pass"
         },
         {
           "step": "Description, features, specs",
@@ -231,7 +236,7 @@
         {
           "step": "Coupon",
           "ideal": "Coupon box with clear messages",
-          "site": "At checkout; bad code shows the store's message",
+          "site": "At checkout; the coupon box layout is fixed; a bad code shows the store's message",
           "status": "done",
           "test": "Pass (stand-in)"
         }
@@ -273,9 +278,9 @@
         {
           "step": "UPI, cards, netbanking",
           "ideal": "Online payment with Cashfree",
-          "site": "Built, but hidden on purpose until you have test keys",
-          "status": "hold",
-          "test": "Not run"
+          "site": "Switched back on at checkout next to cash on delivery (both are pickable at once; the total loads in the background with a clear message). It cannot take a real payment until the Cashfree keys are set in WordPress",
+          "status": "unverified",
+          "test": "Pass (shows and can be chosen); payment itself not run"
         },
         {
           "step": "Business GST details",
@@ -287,8 +292,8 @@
         {
           "step": "Made-to-order items",
           "ideal": "Pay online or an advance",
-          "site": "Cannot be bought at all while only cash on delivery is on",
-          "status": "hold",
+          "site": "Cash on delivery shows \"Not offered for made-to-order items. Pay online instead.\" and online payment is the way to buy them; this works only once the Cashfree keys are in",
+          "status": "unverified",
           "test": "Pass (message shown)"
         },
         {
@@ -343,7 +348,7 @@
         {
           "step": "GST invoice",
           "ideal": "Invoice PDF with the email",
-          "site": "None",
+          "site": "None. The backend team says its side is now live (VERIFY); the website part waits for their hand-off notes.",
           "status": "missing",
           "test": "-"
         },
@@ -385,7 +390,7 @@
         {
           "step": "Cancel or return from the order page",
           "ideal": "A request button on the order",
-          "site": "Order page now has \"Ask a question\" and \"Cancel or return\" links that open the contact form with the order number filled in; a one-tap request needs the backend",
+          "site": "Order page now has \"Ask a question\" and \"Cancel or return\" links that open the contact form with the order number filled in; a one-tap request needs the backend. The backend team says its side is now live (VERIFY); the website part waits for their hand-off notes.",
           "status": "part",
           "test": "Pass"
         },
@@ -476,7 +481,7 @@
         {
           "step": "Send the price and let the customer accept",
           "ideal": "Email with price and an accept-and-pay link",
-          "site": "Not built",
+          "site": "Not built. The backend team says its side is now live (VERIFY); the website part waits for their hand-off notes.",
           "status": "missing",
           "test": "-"
         },
@@ -652,7 +657,7 @@
     "you": [
       "Set these values in Vercel (Settings, Environment Variables): NEXT_PUBLIC_WHATSAPP, NEXT_PUBLIC_SUPPORT_EMAIL, NEXT_PUBLIC_GSTIN, NEXT_PUBLIC_FREE_SHIPPING_FROM, NEXT_PUBLIC_REPLY_HOURS, NEXT_PUBLIC_STUDIO_ADDRESS, and NEXT_PUBLIC_SITE_URL once the real domain is chosen. Each one switches a line on; nothing else needs editing.",
       "Confirm the numbers: cash on delivery fee and limit, working days to print and to deliver (they drive the delivery date).",
-      "Send the Cashfree test keys so online payment, advance payment and refunds to the original method can be built and tested.",
+      "Send the Cashfree test keys. Online payment is already switched on at checkout, so it cannot be tested or used until they are in; advance payment and refunds to the original method are built after that.",
       "Give the real policy text (shipping, returns, refunds, privacy, terms, grievance) and have a lawyer and your CA review it.",
       "Put every product into a category in WooCommerce; upload your own product photos instead of Amazon-hosted ones; upload a .glb or .stl on products that should have a 3D view.",
       "Place one cash on delivery order, set it In transit with a tracking ID, and send me screenshots of the emails you receive.",
@@ -665,17 +670,21 @@
       "Set wp-config values: AKRINITY_PRINT_DAYS, AKRINITY_DELIVERY_DAYS, AKRINITY_COD_FEE, AKRINITY_COD_LIMIT, AKRINITY_WHATSAPP, AKRINITY_GSTIN.",
       "Add a free-shipping method for orders above the amount the owner sets (so checkout matches the website message).",
       "Build the one-tap cancel and return request, the quote reply with an accept link, and a GST invoice (PDF) on the order; see the backend note.",
-      "Daily off-site backups, host firewall and malware scan; delete the test orders (#295, #300) and the test quote requests."
+      "Daily off-site backups, host firewall and malware scan; delete the test orders (#295, #300) and the test quote requests.",
+      "Send the four hand-off notes (BACKEND_HANDOFF_TO_FRONTEND, BACKEND_NOTE_PRODUCT_CONTENT, BACKEND_NOTE_REQUESTS, BACKEND_NOTE_INVOICE) into the repo (docs folder) or forward the files; push access to GitHub is still blocked."
     ],
     "frontend": [
-      "P1 Cashfree online payment and advance payment for custom jobs, once the keys arrive.",
+      "P1 Test Cashfree end to end (paid, failed, abandoned) and build the advance payment for custom jobs, once the keys arrive.",
       "P1 GST invoice (PDF) on the order page and in the email, once the backend makes it.",
       "P2 One-tap cancel and return request, and the quote reply flow with an accept-and-pay link and a quote status page.",
       "P2 Reorder button, wishlist and cart synced to the account.",
       "P2 Cart upsell row; recently viewed.",
-      "P2 Speed: the home page is 78 on a phone because of script work; split the heavy parts.",
       "P3 Abandoned-cart, back-in-stock and review-request emails; offers and referral.",
-      "P3 Analytics and cookie notice after you choose the tools."
+      "P3 Analytics and cookie notice after you choose the tools.",
+      "P2 Speed, next round: shrink the render-blocking CSS, cut about 27 KB of unused script, then re-measure the live site after the deploy.",
+      "Commit and deploy the working tree (speed work, checkout, compare, quick view, coupon, filters); it is not in the live site yet.",
+      "P1 Wire the backend features once the notes arrive: product page content and draft preview, quote accept page, one-tap cancel and return buttons, invoice download.",
+      "P3 Optional CSS clean-up: remove about 49 unused classes after a visual check of the product description pages."
     ]
   }
 }
