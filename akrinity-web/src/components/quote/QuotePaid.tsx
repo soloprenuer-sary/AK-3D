@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchQuote, type QuoteLink, type QuoteView } from '@/lib/auth-client';
-import { money, safePayUrl, stageOf } from './quote-shared';
+import { money, payHref, stageOf } from './quote-shared';
 
 const TRIES = 12;
 const WAIT_MS = 5000;
@@ -72,7 +72,7 @@ export function QuotePaid({ link }: { link: QuoteLink }) {
       <p role="alert">This quote was cancelled. Reply to the quote email if you want it again.</p>
     );
 
-  const pay = safePayUrl(q.pay_url);
+  const pay = payHref(link);
   const waiting = state.tries < TRIES;
   return (
     <div className="info-card auth-card">
@@ -84,11 +84,9 @@ export function QuotePaid({ link }: { link: QuoteLink }) {
           ? 'This can take a minute. Keep this page open.'
           : 'If you already paid, it can take a few minutes to show. We will email you a receipt. If the payment failed or you closed the page, you can pay again.'}
       </p>
-      {pay && (
-        <a className="btn btn-primary" href={pay}>
-          Pay {money(q.price)} on Cashfree
-        </a>
-      )}
+      <Link className="btn btn-primary" href={pay}>
+        Pay {money(q.price)} on Cashfree
+      </Link>
     </div>
   );
 }

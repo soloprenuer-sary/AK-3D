@@ -23,7 +23,7 @@ export default async function Page({
           Approve your <span className="hl">quote.</span>
         </h1>
       </div>
-      <section className="wrap" style={{ paddingBottom: 'var(--sec)', maxWidth: 680 }}>
+      <section className="wrap" style={{ paddingBottom: 'var(--sec)', maxWidth: 1040 }}>
         <QuoteAccept link={link} />
       </section>
     </main>

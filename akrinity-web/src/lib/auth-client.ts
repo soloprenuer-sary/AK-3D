@@ -53,6 +53,10 @@ interface AuthReply {
   order?: OrderDetail;
   quote?: QuoteView;
   pay_url?: string;
+  paid?: boolean;
+  payment_session_id?: string;
+  mode?: 'sandbox' | 'production';
+  quote_status?: string;
 }
 
 export interface QuoteLine {
@@ -407,4 +411,24 @@ export async function acceptQuote(
     error: explain(r, 'We could not approve the quote. Please try again.'),
     field: r.data.field,
   };
+}
+
+/** Asks the studio for a Cashfree payment session for the approved quote. */
+export async function startQuotePayment(
+  link: QuoteLink,
+): Promise<
+  | { paid: true }
+  | { sessionId: string; mode: 'sandbox' | 'production' }
+  | { error: string; state?: string }
+> {
+  const r = await call('quote-pay', { ...link });
+  if (!r.ok)
+    return {
+      error: explain(r, 'We could not open the payment page. Please try again.'),
+      state: r.data.quote_status,
+    };
+  if (r.data.paid) return { paid: true };
+  if (!r.data.payment_session_id)
+    return { error: 'We could not open the payment page. Please try again.' };
+  return { sessionId: r.data.payment_session_id, mode: r.data.mode ?? 'sandbox' };
 }

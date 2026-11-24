@@ -912,6 +912,52 @@ async function handleQuoteAccept(request: Request, env: Env): Promise<Response> 
   return json({ ok: true, pay_url: typeof q.pay_url === 'string' ? q.pay_url : '' });
 }
 
+/** Starts the Cashfree payment for an approved quote. The checkout then opens on this website. */
+async function handleQuotePay(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  const link = quoteLink(body);
+  if (!body || !link.ref || !link.exp || !link.token)
+    return json({ error: QUOTE_BAD_LINK, code: 'invalid' }, 400);
+  const limited = await limitIp(env, request, 'quote-pay', { max: 20, window: 3600 });
+  if (limited) return limited;
+  const r = await wpService(env, '/quote/pay', link);
+  if (r.status === 0)
+    return json({ error: 'We could not reach the studio. Please try again.' }, 503);
+  if (r.status === 410) return json({ error: QUOTE_EXPIRED, code: 'expired' }, 400);
+  if (r.status === 409)
+    return json(
+      {
+        error: 'This quote is not waiting for payment right now.',
+        code: 'not_payable',
+        quote_status: str(r.data.status, 30),
+      },
+      409,
+    );
+  if (r.status !== 200)
+    return json(
+      {
+        error: 'We could not open the payment page. Please try again in a minute.',
+        code: 'gateway',
+      },
+      502,
+    );
+  if (r.data.status === 'paid') return json({ ok: true, paid: true });
+  const session = str(r.data.payment_session_id, 500);
+  if (!session)
+    return json(
+      {
+        error: 'We could not open the payment page. Please try again in a minute.',
+        code: 'gateway',
+      },
+      502,
+    );
+  return json({
+    ok: true,
+    payment_session_id: session,
+    mode: r.data.mode === 'production' ? 'production' : 'sandbox',
+  });
+}
+
 async function handleForgot(request: Request, env: Env): Promise<Response> {
   const body = await readJson(request);
   const email = str(body?.email, 254).toLowerCase();
@@ -1238,6 +1284,7 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
       'business',
       'quote',
       'quote-accept',
+      'quote-pay',
       'contact',
       'newsletter',
       'review',
@@ -1254,6 +1301,7 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   if (action === 'business') return handleBusiness(request, env);
   if (action === 'quote') return handleQuote(request, env);
   if (action === 'quote-accept') return handleQuoteAccept(request, env);
+  if (action === 'quote-pay') return handleQuotePay(request, env);
   if (action === 'contact') return handleContact(request, env);
   if (action === 'newsletter') return handleNewsletter(request, env);
   if (action === 'review') return handleReviewPost(request, env);

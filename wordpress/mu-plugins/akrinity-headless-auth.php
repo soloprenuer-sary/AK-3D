@@ -1207,6 +1207,8 @@ add_action(
 function akr_status_box( $post ) {
 	wp_nonce_field( 'akr_status_save', 'akr_status_nonce' );
 	$cur = akr_request_status( $post->ID );
+	// The status this page was opened with: a save only changes the status when the dropdown differs from it (see the save handler).
+	echo '<input type="hidden" name="akr_status_seen" value="' . esc_attr( $cur ) . '" />';
 	echo '<p>' . akr_status_badge( $cur ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput -- built from escaped parts.
 	echo '<p><label for="akr_status"><strong>Change status</strong></label><br><select name="akr_status" id="akr_status" style="width:100%">';
 	foreach ( akr_statuses() as $key => $label ) {
@@ -1231,6 +1233,12 @@ add_action(
 		$note = isset( $_POST['akr_status_note'] ) ? sanitize_textarea_field( wp_unslash( $_POST['akr_status_note'] ) ) : '';
 		$all  = akr_statuses();
 		$old  = akr_request_status( $post_id );
+		$seen = isset( $_POST['akr_status_seen'] ) ? sanitize_key( wp_unslash( $_POST['akr_status_seen'] ) ) : '';
+		if ( '' !== $seen && $seen === $new && $new !== $old && isset( $all[ $old ], $all[ $seen ] ) ) {
+			// The page was opened before the status changed (the customer approved or paid meanwhile) and the dropdown was not touched: keep the newer status.
+			akr_request_log( $post_id, 'Status stays ' . $all[ $old ] . ': this page still showed ' . $all[ $seen ] . ', which was already out of date. Reload the page to see the latest.' );
+			$new = $old;
+		}
 		if ( isset( $all[ $new ] ) && $new !== $old ) {
 			update_post_meta( $post_id, 'akr_status', $new );
 			akr_request_log( $post_id, 'Status changed from ' . $all[ $old ] . ' to ' . $all[ $new ] . ( '' !== $note ? '. Note: ' . $note : '' ) );

@@ -231,7 +231,7 @@ Questions? Chat with us on WhatsApp: " . $wa : '' );
 			$d['blocks'] = $blocks;
 			break;
 		case 'approved':
-			$pay = $order instanceof WC_Order ? $order->get_checkout_payment_url() : '';
+			$pay = function_exists( 'akrq_pay_link' ) && '' !== akrq_pay_link( $id ) ? akrq_pay_link( $id ) : ( $order instanceof WC_Order ? $order->get_checkout_payment_url() : '' );
 			$subject = $ref . ' approved: pay ' . akrqt_money( $order instanceof WC_Order ? $order->get_total() : $total ) . ' to start printing';
 			$amt = akrqt_money( $order instanceof WC_Order ? $order->get_total() : $total );
 			$d += array( 'tag' => 'Awaiting payment', 'title' => 'Quote', 'hl' => 'approved.', 'intro' => 'Thank you' . ( '' !== $first ? ', ' . $first : '' ) . '. Your quote ' . $ref . ' is approved. Pay below and we start printing straight away.' );
@@ -612,7 +612,8 @@ function akrqt_order_paid( $order_id ): void {
 	if ( ! $rid || 'akr_request' !== get_post_type( $rid ) ) {
 		return;
 	}
-	if ( 'awaiting_payment' !== akr_request_status( $rid ) ) {
+	// Also when the status was set back to Quoted by an out-of-date edit screen: the money is in, so the quote is paid.
+	if ( ! in_array( akr_request_status( $rid ), array( 'awaiting_payment', 'quoted' ), true ) ) {
 		return;
 	}
 	akrqt_set_status( $rid, 'paid', array( 'source' => 'online payment' ) );
@@ -737,7 +738,7 @@ function akrqt_quote_extra( int $id ): array {
 		'subtotal' => number_format( $t['subtotal'], 2, '.', '' ),
 		'gst'      => number_format( $t['gst'], 2, '.', '' ),
 		'gst_pct'  => akrqt_gst_pct(),
-		'pay_url'  => ( $order && $order->needs_payment() ) ? $order->get_checkout_payment_url() : '',
+		'pay_url'  => ( $order && $order->needs_payment() ) ? ( function_exists( 'akrq_pay_link' ) && '' !== akrq_pay_link( $id ) ? akrq_pay_link( $id ) : $order->get_checkout_payment_url() ) : '',
 	);
 }
 

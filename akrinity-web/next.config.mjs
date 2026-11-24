@@ -12,21 +12,21 @@ try {
 
 /**
  * What the browser may load. Pictures come from WordPress and the Amazon picture host, the bot check
- * (Cloudflare Turnstile) and the Mumbai map are the only outside scripts and frames, and nothing may
+ * (Cloudflare Turnstile), the Mumbai map and the Cashfree payment checkout are the only outside scripts, frames and forms, and nothing may
  * frame this site. 'unsafe-inline' is there because Next.js writes small inline scripts and styles.
  */
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com`,
+  `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://sdk.cashfree.com`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${wpOrigin} https://m.media-amazon.com https://secure.gravatar.com`,
   "font-src 'self' data:",
-  `connect-src 'self' blob: data: ${wpOrigin} https://challenges.cloudflare.com`,
+  `connect-src 'self' blob: data: ${wpOrigin} https://challenges.cloudflare.com https://*.cashfree.com`,
   "worker-src 'self' blob:",
-  'frame-src https://challenges.cloudflare.com https://www.google.com',
+  'frame-src https://challenges.cloudflare.com https://www.google.com https://*.cashfree.com',
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://*.cashfree.com",
   "frame-ancestors 'none'",
   'upgrade-insecure-requests',
 ].join('; ');

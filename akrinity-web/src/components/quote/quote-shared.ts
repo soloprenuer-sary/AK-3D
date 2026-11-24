@@ -31,6 +31,17 @@ export function stageOf(q: QuoteView): QuoteStage {
   return 'open';
 }
 
+const query = (l: { ref: string; exp: string; token: string }) =>
+  new URLSearchParams({ ref: l.ref, exp: l.exp, token: l.token }).toString();
+
+/** The website's own payment page for this quote (the Cashfree checkout opens there). */
+export const payHref = (l: { ref: string; exp: string; token: string }): string =>
+  `/quote/pay?${query(l)}`;
+
+/** The page where the customer approves the quote. */
+export const acceptHref = (l: { ref: string; exp: string; token: string }): string =>
+  `/quote/accept?${query(l)}`;
+
 /** Only an https link goes to the payment page. */
 export const safePayUrl = (u: string | undefined): string => (u && /^https:\/\//i.test(u) ? u : '');
 
