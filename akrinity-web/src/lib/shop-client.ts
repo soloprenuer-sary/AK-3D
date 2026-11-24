@@ -55,3 +55,49 @@ export const placeOrder = (q: QuoteIn & { note?: string; terms: boolean }) =>
 
 export const lookupOrder = (q: { order: string; key?: string; contact?: string }) =>
   post<OrderLookup>('lookup', q);
+
+/** Ask the studio to cancel an order, or to take it back. The studio decides; nothing is refunded here. */
+export const requestOrder = (q: {
+  order: string;
+  key?: string;
+  contact?: string;
+  type: 'cancel' | 'return';
+  reason: string;
+  note?: string;
+  website?: string;
+}) => post<{ ok: true; reference: string }>('request', q);
+
+/** Downloads the GST invoice (PDF) of an order that has shipped. Returns an error message, or null when the file was saved. */
+export async function downloadInvoice(q: {
+  order: string;
+  key?: string;
+  contact?: string;
+}): Promise<string | null> {
+  let res: Response;
+  try {
+    res = await fetch('/api/shop/invoice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(q),
+      credentials: 'same-origin',
+      cache: 'no-store',
+    });
+  } catch {
+    return 'We could not reach the website. Check your internet connection and try again.';
+  }
+  if (!res.ok) {
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    return data.error ?? 'The invoice is not available right now. Please try again later.';
+  }
+  const blob = await res.blob();
+  const match = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '');
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = match?.[1] ?? 'Akrinity-invoice.pdf';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  return null;
+}

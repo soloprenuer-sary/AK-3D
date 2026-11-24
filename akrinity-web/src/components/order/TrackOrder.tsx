@@ -12,6 +12,7 @@ const PHONE = /^\+?\d{10,13}$/;
 /** Find an order with its number and the email or phone it was placed with. */
 export function TrackOrder() {
   const [order, setOrder] = useState<OrderLookup | null>(null);
+  const [contact, setContact] = useState('');
   return (
     <>
       <div className="info-card">
@@ -29,6 +30,7 @@ export function TrackOrder() {
             }
             const r = await lookupOrder({ order: v.order, contact });
             if (!r.ok) return r.error;
+            setContact(contact);
             setOrder(r.data);
             return null;
           }}
@@ -48,7 +50,7 @@ export function TrackOrder() {
           ]}
         />
       </div>
-      {order && <OrderCard order={order} />}
+      {order && <OrderCard order={order} access={{ contact }} />}
     </>
   );
 }

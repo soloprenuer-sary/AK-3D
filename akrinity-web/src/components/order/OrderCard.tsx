@@ -1,5 +1,6 @@
 import { Timeline, type TimelineStep } from '@/components/layout/Timeline';
 import type { OrderLookup } from '@/lib/shop-types';
+import { OrderActions, orderActions, type OrderAccess } from './OrderActions';
 
 const rupees = (s: string | number): string => {
   const n = Number(s);
@@ -64,7 +65,8 @@ export function orderSteps(o: OrderLookup): TimelineStep[] {
 }
 
 /** One order: where it is, what is in it, and what was charged. Used after paying and on the tracking page. */
-export function OrderCard({ order: o }: { order: OrderLookup }) {
+export function OrderCard({ order: o, access }: { order: OrderLookup; access?: OrderAccess }) {
+  const { canCancel, canReturn } = orderActions(o);
   return (
     <div className="info-card order-card">
       <h2>
@@ -102,17 +104,23 @@ export function OrderCard({ order: o }: { order: OrderLookup }) {
         </p>
       )}
 
+      {access && <OrderActions order={o} access={access} />}
+
       <p className="meta">
         Need help with this order?{' '}
         <a href={`/contact?topic=${encodeURIComponent('Order question')}&order=${o.number}`}>
           Ask a question
         </a>
-        {' · '}
-        <a
-          href={`/contact?topic=${encodeURIComponent('Cancel or return an order')}&order=${o.number}`}
-        >
-          Cancel or return
-        </a>
+        {!(access && (canCancel || canReturn)) && (
+          <>
+            {' · '}
+            <a
+              href={`/contact?topic=${encodeURIComponent('Cancel or return an order')}&order=${o.number}`}
+            >
+              Cancel or return
+            </a>
+          </>
+        )}
       </p>
 
       <ul className="sum-lines">

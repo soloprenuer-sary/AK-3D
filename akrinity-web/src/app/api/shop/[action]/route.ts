@@ -26,6 +26,8 @@ import type {
  *   POST /api/shop/place   the same, then place the order (cash on delivery, or Cashfree: the reply
  *                          carries the address to send the customer to for payment)
  *   POST /api/shop/lookup  one order by order key, or by order number plus the email or phone used
+ *   POST /api/shop/request ask to cancel an order, or to return it (the studio approves; nothing is refunded here)
+ *   POST /api/shop/invoice the GST invoice (PDF) of an order that has shipped
  *
  * The cart token lives in an httpOnly cookie. Environment (server only): WP_URL,
  * AKRINITY_SHARED_SECRET (for lookup), optional ALLOWED_ORIGINS, UPSTASH_REDIS_REST_URL and _TOKEN.
@@ -552,6 +554,128 @@ async function handleLookup(request: Request, env: ServerEnv): Promise<Response>
   }
 }
 
+const REQUEST_REASONS = [
+  'faulty',
+  'wrong_item',
+  'not_as_described',
+  'changed_mind',
+  'ordered_by_mistake',
+  'other',
+];
+
+const REQUEST_ERRORS: Record<string, string> = {
+  not_found: 'We could not find that order. Reload the page and try again.',
+  not_cancellable:
+    'This order has already been shipped, so it cannot be cancelled. You can ask for a return once it arrives.',
+  not_delivered_yet: 'A return can be requested once the order has shipped.',
+  return_window_closed: 'The 7-day return window for this order has passed. Please contact us.',
+  made_to_order:
+    'Made-to-order and personalised items can be returned only when they arrive faulty. Choose "It arrived faulty or damaged" or contact us.',
+  invalid: 'Please choose a reason and try again.',
+  busy: 'Too many requests right now. Please try again in an hour or contact us.',
+};
+
+/** Ask the studio to cancel or return an order. Nothing is cancelled or refunded here: the studio approves it. */
+async function handleRequest(request: Request, env: ServerEnv): Promise<Response> {
+  const body = await readJson(request);
+  if (!body) return json({ error: 'Something went wrong. Reload the page and try again.' }, 400);
+  if (str(body.website, 100)) return json({ ok: true }); // the hidden trap field: a bot filled it in
+  const order = str(body.order, 20).replace(/\D/g, '');
+  const key = str(body.key, 60);
+  const contact = str(body.contact, 254);
+  const type = str(body.type, 10);
+  const reason = str(body.reason, 40);
+  const note = str(body.note, 1000);
+  if (!order || (!key && !contact) || !['cancel', 'return'].includes(type)) {
+    return json({ error: 'Something went wrong. Reload the page and try again.' }, 400);
+  }
+  if (!REQUEST_REASONS.includes(reason)) return json({ error: REQUEST_ERRORS.invalid }, 400);
+  const limited = await limitIp(env, request, 'order-request', { max: 5, window: 3600 });
+  if (limited) return limited;
+  if (!env.AKRINITY_SHARED_SECRET) return json({ error: 'Requests are not set up.' }, 503);
+  try {
+    const res = await fetch(`${env.WP_URL}/wp-json/akrinity/v1/order-request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Akrinity-Key': env.AKRINITY_SHARED_SECRET },
+      body: JSON.stringify({ order, key, contact, type, reason, note }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(25000),
+    });
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (res.ok) return json({ ok: true, reference: String(data.reference ?? '') });
+    const code = String(data.code ?? '');
+    if (code === 'already_requested') {
+      return json(
+        {
+          error: `We already have a request for this order (${String(data.reference ?? 'reference sent by email')}). We will reply by email.`,
+          code,
+        },
+        409,
+      );
+    }
+    return json(
+      { error: REQUEST_ERRORS[code] ?? 'The request could not be sent. Please try again.', code },
+      res.status === 404 ? 404 : res.status === 409 ? 409 : 503,
+    );
+  } catch {
+    return json({ error: 'The request could not be sent. Please try again.' }, 503);
+  }
+}
+
+/** The GST invoice for an order, as a PDF download. */
+async function handleInvoice(request: Request, env: ServerEnv): Promise<Response> {
+  const body = await readJson(request);
+  if (!body) return json({ error: 'Something went wrong. Reload the page and try again.' }, 400);
+  const order = str(body.order, 20).replace(/\D/g, '');
+  const key = str(body.key, 60);
+  const contact = str(body.contact, 254);
+  if (!order || (!key && !contact)) {
+    return json({ error: 'Something went wrong. Reload the page and try again.' }, 400);
+  }
+  const limited = await limitIp(env, request, 'order-invoice', { max: 20, window: 900 });
+  if (limited) return limited;
+  if (!env.AKRINITY_SHARED_SECRET) return json({ error: 'Invoices are not set up.' }, 503);
+  try {
+    const qs = new URLSearchParams({ order });
+    if (key) qs.set('key', key);
+    else qs.set('contact', contact);
+    const res = await fetch(`${env.WP_URL}/wp-json/akrinity/v1/order-invoice?${qs}`, {
+      headers: { 'X-Akrinity-Key': env.AKRINITY_SHARED_SECRET },
+      cache: 'no-store',
+      signal: AbortSignal.timeout(40000),
+    });
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (res.status === 409 || data.code === 'not_yet') {
+      return json(
+        { error: 'Your invoice is ready once your order has shipped.', code: 'not_yet' },
+        409,
+      );
+    }
+    if (res.status === 404) {
+      return json({ error: 'We could not find that order.', code: 'not_found' }, 404);
+    }
+    if (!res.ok || typeof data.pdf !== 'string') {
+      return json(
+        { error: 'The invoice is not available right now. Please try again later.' },
+        503,
+      );
+    }
+    const bytes = Buffer.from(data.pdf, 'base64');
+    const name = String(data.filename ?? 'Akrinity-invoice.pdf').replace(/[^A-Za-z0-9._-]/g, '-');
+    return new Response(bytes, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${name}"`,
+        'Cache-Control': 'no-store',
+        'X-Robots-Tag': 'noindex',
+      },
+    });
+  } catch {
+    return json({ error: 'The invoice is not available right now. Please try again later.' }, 503);
+  }
+}
+
 type RouteContext = { params: Promise<{ action: string }> };
 
 export async function POST(request: Request, ctx: RouteContext): Promise<Response> {
@@ -570,6 +694,8 @@ export async function POST(request: Request, ctx: RouteContext): Promise<Respons
   if (action === 'quote') return handleQuote(request, env);
   if (action === 'place') return handlePlace(request, env);
   if (action === 'lookup') return handleLookup(request, env);
+  if (action === 'request') return handleRequest(request, env);
+  if (action === 'invoice') return handleInvoice(request, env);
   return json({ error: 'Not found.' }, 404);
 }
 

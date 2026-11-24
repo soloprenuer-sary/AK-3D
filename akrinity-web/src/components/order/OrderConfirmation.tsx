@@ -91,7 +91,7 @@ export function OrderConfirmation() {
         </p>
       </div>
       <section className="cart-page" style={{ paddingTop: 16 }}>
-        <OrderCard order={order} />
+        <OrderCard order={order} access={{ key }} />
         <div className="cart-side">
           <div className="info-card">
             <h2>Next steps</h2>

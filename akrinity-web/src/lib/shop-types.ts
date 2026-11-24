@@ -160,3 +160,13 @@ export const METHOD_LABEL: Record<string, string> = {
   cashfree: 'UPI, cards and netbanking',
   cod: 'Cash on delivery',
 };
+
+/** Why a customer cancels or returns an order. The code is what WordPress expects. */
+export const ORDER_REASONS: { code: string; label: string; forReturn?: boolean }[] = [
+  { code: 'ordered_by_mistake', label: 'I ordered by mistake' },
+  { code: 'changed_mind', label: 'I changed my mind' },
+  { code: 'faulty', label: 'It arrived faulty or damaged', forReturn: true },
+  { code: 'wrong_item', label: 'I received the wrong item', forReturn: true },
+  { code: 'not_as_described', label: 'It is not as described', forReturn: true },
+  { code: 'other', label: 'Another reason' },
+];
