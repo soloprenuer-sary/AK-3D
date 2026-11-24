@@ -8,7 +8,6 @@ import { ModelViewer } from '@/components/three/ModelViewer';
 import {
   COLOURS,
   MODE_LABEL,
-  SHOP_MATERIALS,
   productSlug,
   type ColourKey,
   type ColourMode,
@@ -29,8 +28,7 @@ import { addWorkingDays, site } from '@/lib/site-config';
 const DEV_MODEL_URL =
   process.env.NODE_ENV === 'development' ? process.env.NEXT_PUBLIC_DEV_MODEL_URL : undefined;
 
-const SIZES = ['Small', 'Medium', 'Large'] as const;
-type Size = (typeof SIZES)[number];
+type Size = string;
 
 const PERSONAL_MAX = 40;
 const PERSONAL_RULE = /^[A-Za-z0-9 ]*$/;
@@ -123,9 +121,16 @@ export function ProductDetail({
   const [material, setMaterial] = useState<Material>(product.material);
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
   const [mode, setMode] = useState<ColourMode>(product.modes[0]);
-  const sizeList = (product.sizes?.length ? product.sizes : [...SIZES]) as Size[];
-  const materialList = product.materials?.length ? product.materials : SHOP_MATERIALS;
-  const [size, setSize] = useState<Size>(sizeList.includes('Medium') ? 'Medium' : sizeList[0]);
+  // Options come from the WooCommerce variations of a variable product. A simple product has none.
+  const variation = product.variation;
+  const modeList = variation?.modes ?? [];
+  const colourList = variation?.colours ?? [];
+  const materialList = variation?.materials ?? [];
+  const sizeList = (variation?.sizes ?? []) as Size[];
+  const personalise = variation?.personalise ?? false;
+  const [size, setSize] = useState<Size>(
+    sizeList.includes('Medium') ? 'Medium' : (sizeList[0] ?? 'Medium'),
+  );
   const [personal, setPersonal] = useState('');
   const [personalError, setPersonalError] = useState('');
   const [qty, setQty] = useState(1);
@@ -150,9 +155,16 @@ export function ProductDetail({
       personalInput.current?.focus();
       return;
     }
-    const detail = [material, colour, size, personal.trim() ? `Name: ${personal.trim()}` : '']
-      .filter(Boolean)
-      .join(' · ');
+    // Only the options this product offers go into the cart line.
+    const chosen = variation
+      ? [
+          materialList.length ? material : '',
+          colourList.length ? colour : '',
+          sizeList.length ? size : '',
+          personalise && personal.trim() ? `Name: ${personal.trim()}` : '',
+        ]
+      : [];
+    const detail = chosen.filter(Boolean).join(' · ');
     cartApi.add({
       id: product.id,
       slug: productSlug(product),
@@ -317,6 +329,7 @@ export function ProductDetail({
               incl. GST
             </span>
           </div>
+          {product.description && <p className="desc short-desc">{product.description}</p>}
           {product.highlights?.length ? (
             <ul className="highlights">
               {product.highlights.slice(0, 2).map((h) => {
@@ -334,17 +347,13 @@ export function ProductDetail({
                 );
               })}
             </ul>
-          ) : (
-            <p className="desc">
-              {product.description ??
-                '[Two or three lines on what this is, who it is for and what makes it good.]'}
-            </p>
-          )}
+          ) : null}
 
+          {modeList.length > 0 && (
           <fieldset className="opt">
             <legend>Colour option</legend>
             <div className="pills" role="radiogroup" aria-label="Colour option">
-              {product.modes.map((m) => (
+              {modeList.map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -365,7 +374,9 @@ export function ProductDetail({
               </p>
             )}
           </fieldset>
+          )}
 
+          {materialList.length > 0 && (
           <fieldset className="opt">
             <legend>Material</legend>
             <div className="pills" role="group" aria-label="Material">
@@ -382,7 +393,9 @@ export function ProductDetail({
               ))}
             </div>
           </fieldset>
+          )}
 
+          {colourList.length > 0 && (
           <fieldset className="opt">
             <legend>
               Colour:{' '}
@@ -391,7 +404,7 @@ export function ProductDetail({
               </span>
             </legend>
             <div className="swatches" role="group" aria-label="Colour">
-              {product.colours.map((key) => (
+              {colourList.map((key) => (
                 <button
                   key={key}
                   type="button"
@@ -404,7 +417,9 @@ export function ProductDetail({
               ))}
             </div>
           </fieldset>
+          )}
 
+          {sizeList.length > 0 && (
           <fieldset className="opt">
             <legend>Size</legend>
             <div className="pills" role="group" aria-label="Size">
@@ -421,7 +436,9 @@ export function ProductDetail({
               ))}
             </div>
           </fieldset>
+          )}
 
+          {personalise && (
           <details className="opt opt-details" open={personal !== '' || personalError !== ''}>
             <summary>Add personalised text (optional)</summary>
             <label htmlFor="personal">
@@ -455,6 +472,7 @@ export function ProductDetail({
               {personalError}
             </p>
           </details>
+          )}
 
           <div className="buyrow">
             <div className="qty">

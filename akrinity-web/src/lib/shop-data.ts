@@ -184,6 +184,19 @@ export interface BulkTier {
   price: string;
 }
 
+/**
+ * The options a customer chooses on a variable product (WooCommerce variations). Set only when the
+ * product is variable; a simple product has no variation and shows no option fields.
+ */
+export interface ShopVariation {
+  modes: ColourMode[];
+  colours: ColourKey[];
+  materials: Material[];
+  sizes: string[];
+  /** A personalised-text attribute is used for the variations. */
+  personalise: boolean;
+}
+
 export interface ShopProduct {
   id: string;
   /** WooCommerce slug (the page address). Falls back to a slug made from the name. */
@@ -209,8 +222,10 @@ export interface ShopProduct {
   bulkTiers?: BulkTier[];
   /** Normal price shown struck through when the product is on sale. */
   regularPrice?: string;
-  /** Short description from WordPress. Sample products use a placeholder when unset. */
+  /** Short description from WordPress, plain text, at most 100 characters. */
   description?: string;
+  /** Options for a variable product. Undefined for a simple product. */
+  variation?: ShopVariation;
   /** Average star rating from WooCommerce's own reviews (0 to 5) and how many reviews. */
   rating?: number;
   reviewCount?: number;

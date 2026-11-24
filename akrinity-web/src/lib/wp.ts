@@ -12,9 +12,10 @@ import type {
   ProcessType,
   ShopCategory,
   ShopProduct,
+  ShopVariation,
 } from './shop-data';
 import type { Block, Guide } from './guides-data';
-import { buildSpecs, htmlToBlocks, listItems, parseProductContent } from './product-content';
+import { buildSpecs, htmlToBlocks, parseProductContent } from './product-content';
 
 const STORE_API = process.env.NEXT_PUBLIC_WC_STORE_API_URL ?? '';
 const GRAPHQL = process.env.NEXT_PUBLIC_WP_GRAPHQL_URL ?? '';
@@ -39,9 +40,17 @@ export interface StoreProduct {
   review_count?: number;
   is_in_stock: boolean;
   is_on_backorder?: boolean;
+  /** "simple", "variable", "grouped" or "external". Options show only for "variable". */
+  type?: string;
+  variations?: { id: number; attributes: { name: string; value: string }[] }[];
   images: { src: string; alt: string }[];
   categories: { id: number; name: string }[];
-  attributes?: { name: string; terms: { name: string }[] }[];
+  attributes?: {
+    name: string;
+    /** True when WooCommerce uses this attribute to make the product's variations. */
+    has_variations?: boolean;
+    terms: { name: string }[];
+  }[];
   /** Added by the Akrinity WordPress snippet: bulk price ranges from ACF fields. */
   extensions?: {
     akrinity?: {
@@ -96,6 +105,64 @@ function terms(p: StoreProduct, pattern: RegExp): string[] {
   return attr ? attr.terms.map((t) => decode(t.name)) : [];
 }
 
+/** Like terms(), but only for an attribute WooCommerce uses to build the product's variations. */
+function variationTerms(p: StoreProduct, pattern: RegExp): string[] {
+  const attr = (p.attributes ?? []).find((a) => pattern.test(a.name) && a.has_variations);
+  return attr ? attr.terms.map((t) => decode(t.name)) : [];
+}
+
+function hasVariationAttr(p: StoreProduct, pattern: RegExp): boolean {
+  return (p.attributes ?? []).some((a) => pattern.test(a.name) && a.has_variations);
+}
+
+const MATERIAL_ATTR = /^material$/i;
+const SIZE_ATTR = /^size/i;
+const COLOUR_ATTR = /^colou?rs?$/i;
+const MODE_ATTR = /colou?r (mode|option)/i;
+const PERSONALISE_ATTR = /personali[sz]/i;
+
+function parseMaterials(list: string[]): Material[] {
+  const found = list
+    .map((t) =>
+      SHOP_MATERIALS.find(
+        (m) =>
+          m.toLowerCase().replace(/\W/g, '') === t.toLowerCase().replace(/\W/g, '') ||
+          (t.toLowerCase() === 'pla' && m === 'PLA+'),
+      ),
+    )
+    .filter((m, i, all): m is Material => Boolean(m) && all.indexOf(m) === i);
+  return found.sort((a, b) => SHOP_MATERIALS.indexOf(a) - SHOP_MATERIALS.indexOf(b));
+}
+
+function parseSizes(list: string[]): string[] {
+  return list
+    .map((t) => SIZE_OPTIONS.find((x) => x.toLowerCase() === t.toLowerCase()))
+    .filter((x): x is string => Boolean(x))
+    .sort((a, b) => SIZE_OPTIONS.indexOf(a) - SIZE_OPTIONS.indexOf(b));
+}
+
+function parseColours(list: string[]): ColourKey[] {
+  return list.map((t) => t.toLowerCase()).filter((t): t is ColourKey => t in COLOURS);
+}
+
+function parseModes(list: string[]): ColourMode[] {
+  const modeOrder: ColourMode[] = ['single', 'multi', 'painted'];
+  return list
+    .map((t): ColourMode => (/multi/i.test(t) ? 'multi' : /paint/i.test(t) ? 'painted' : 'single'))
+    .sort((a, b) => modeOrder.indexOf(a) - modeOrder.indexOf(b));
+}
+
+/** Short description for the product page and cards: plain text, at most 100 characters. */
+const SHORT_MAX = 100;
+function shortText(html: string): string | undefined {
+  const text = stripTags(html).replace(/\*+/g, '').replace(/\s+/g, ' ').trim();
+  if (text.length <= SHORT_MAX) return text || undefined;
+  const cut = text.slice(0, SHORT_MAX - 1);
+  const space = cut.lastIndexOf(' ');
+  const base = space > 60 ? cut.slice(0, space) : cut;
+  return base.replace(/[\s,;:.–-]+$/, '') + '…';
+}
+
 /** Turns one WooCommerce product into the shape the pages use. Pure: also used in the browser. */
 export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORIES): ShopProduct {
   const names = p.categories.map((c) => decode(c.name));
@@ -117,31 +184,27 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
     (known ? inferSub(known, decode(p.name)) : undefined) ??
     category;
 
-  const materials = terms(p, /^material$/i)
-    .map((t) =>
-      SHOP_MATERIALS.find(
-        (m) =>
-          m.toLowerCase().replace(/\W/g, '') === t.toLowerCase().replace(/\W/g, '') ||
-          (t.toLowerCase() === 'pla' && m === 'PLA+'),
-      ),
-    )
-    .filter((m, i, all): m is Material => Boolean(m) && all.indexOf(m) === i);
-  const sizes = terms(p, /^size/i)
-    .map((t) => SIZE_OPTIONS.find((x) => x.toLowerCase() === t.toLowerCase()))
-    .filter((x): x is string => Boolean(x));
-  materials.sort((a, b) => SHOP_MATERIALS.indexOf(a) - SHOP_MATERIALS.indexOf(b));
-  sizes.sort((a, b) => SIZE_OPTIONS.indexOf(a) - SIZE_OPTIONS.indexOf(b));
+  const materials = parseMaterials(terms(p, MATERIAL_ATTR));
+  const sizes = parseSizes(terms(p, SIZE_ATTR));
   const processValue = terms(p, /process/i)[0];
   const process = (['FDM', 'Multi-filament FDM', 'Resin'] as ProcessType[]).find(
     (x) => x.toLowerCase() === (processValue ?? '').toLowerCase(),
   );
-  const colours = terms(p, /^colou?rs?$/i)
-    .map((t) => t.toLowerCase())
-    .filter((t): t is ColourKey => t in COLOURS);
-  const modeOrder: ColourMode[] = ['single', 'multi', 'painted'];
-  const modes = terms(p, /colou?r (mode|option)/i)
-    .map((t): ColourMode => (/multi/i.test(t) ? 'multi' : /paint/i.test(t) ? 'painted' : 'single'))
-    .sort((a, b) => modeOrder.indexOf(a) - modeOrder.indexOf(b));
+  const colours = parseColours(terms(p, COLOUR_ATTR));
+  const modes = parseModes(terms(p, MODE_ATTR));
+
+  // Options on the product page come only from a variable product whose attributes are used for
+  // its variations. A simple product shows none of them.
+  const variable = p.type === 'variable' && (p.variations?.length ?? 0) > 0;
+  const variation: ShopVariation | undefined = variable
+    ? {
+        modes: parseModes(variationTerms(p, MODE_ATTR)),
+        colours: parseColours(variationTerms(p, COLOUR_ATTR)),
+        materials: parseMaterials(variationTerms(p, MATERIAL_ATTR)),
+        sizes: parseSizes(variationTerms(p, SIZE_ATTR)),
+        personalise: hasVariationAttr(p, PERSONALISE_ATTR),
+      }
+    : undefined;
 
   const content = parseProductContent(p.extensions?.akrinity_content);
   const m3 = p.extensions?.akrinity_model;
@@ -189,18 +252,14 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
     regularPrice: onSale
       ? formatRupees(p.prices.regular_price as string, p.prices.currency_minor_unit)
       : undefined,
-    // Stray ** from text pasted out of Amazon listings are dropped.
-    description:
-      stripTags(p.short_description || p.description || '').replace(/\*+/g, '') || undefined,
+    // The WordPress short description, plain text, at most 100 characters (stray ** removed).
+    description: shortText(p.short_description || p.description || ''),
+    variation,
     rating: Number(p.average_rating) > 0 ? Number(p.average_rating) : undefined,
     reviewCount: p.review_count && p.review_count > 0 ? p.review_count : undefined,
-    // Key features from the content fields when they are filled in, otherwise the short description bullets.
+    // Key features from the product content fields only (the short description is shown as text).
     highlights:
-      content?.hasContent && content.features.length
-        ? content.features
-        : listItems(p.short_description ?? '').length >= 2
-          ? listItems(p.short_description ?? '')
-          : undefined,
+      content?.hasContent && content.features.length ? content.features : undefined,
     content,
     longDescription: htmlToBlocks(p.description ?? ''),
     specs: buildSpecs(p.attributes, p.formatted_weight, p.formatted_dimensions),
