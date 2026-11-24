@@ -561,14 +561,12 @@ export function ProductDetail({
         <div className="wrap">
           <div>
             <h2>Shipping</h2>
-            <p>[Dispatch time, courier, tracking, free shipping threshold.]</p>
+            <p> Dispatch within 7 days </p>
           </div>
           <div>
             <h2>Returns and warranty</h2>
             <p>
-              [Return window for ready-made items. Made-to-order and personalized items are not
-              returnable unless faulty.]
-            </p>
+              For Return Contact us within 2 working days </p>
           </div>
         </div>
       </section>
