@@ -849,6 +849,69 @@ async function handleQuote(request: Request, env: Env): Promise<Response> {
 
 const GENERIC_OK = { ok: true };
 
+const QUOTE_EXPIRED =
+  'This quote has expired. Reply to the quote email and we will send you a new one.';
+const QUOTE_BAD_LINK =
+  'This quote link has expired or is not valid. Reply to the quote email and we will send a new one.';
+
+/** The link from the quote email: reference, expiry and signed token. */
+function quoteLink(src: Record<string, unknown> | URLSearchParams | null) {
+  const get = (k: string): unknown => (src instanceof URLSearchParams ? src.get(k) : src?.[k]);
+  return { ref: str(get('ref'), 40), exp: str(get('exp'), 20), token: str(get('token'), 300) };
+}
+
+/** Reads a quote for the accept and payment-return pages. Needs the signed link from the email. */
+async function handleQuoteView(request: Request, env: Env): Promise<Response> {
+  const link = quoteLink(new URL(request.url).searchParams);
+  if (!link.ref || !link.exp || !link.token)
+    return json({ error: QUOTE_BAD_LINK, code: 'invalid' }, 400);
+  const limited = await limitIp(env, request, 'quote-view', { max: 120, window: 3600 });
+  if (limited) return limited;
+  const r = await wpFetch(wp(env, '/akrinity/v1/quote/view?' + new URLSearchParams(link)), {
+    method: 'GET',
+    headers: { 'X-Akrinity-Key': env.AKRINITY_SHARED_SECRET ?? '' },
+  });
+  if (r.status === 0)
+    return json({ error: 'We could not load your quote. Please try again.' }, 503);
+  if (r.status === 410) return json({ error: QUOTE_EXPIRED, code: 'expired' }, 400);
+  if (r.status !== 200) return json({ error: QUOTE_BAD_LINK, code: 'invalid' }, 400);
+  const q = r.data;
+  const quote = (q.quote && typeof q.quote === 'object' ? q.quote : q) as Record<string, unknown>;
+  return json({ quote });
+}
+
+/** The customer approves the quote and gives the delivery address. The reply carries the Cashfree link. */
+async function handleQuoteAccept(request: Request, env: Env): Promise<Response> {
+  const body = await readJson(request);
+  const link = quoteLink(body);
+  const a = (body?.address ?? {}) as Record<string, unknown>;
+  const address = {
+    line1: str(a.line1, 120),
+    line2: str(a.line2, 120),
+    city: str(a.city, 60),
+    state: str(a.state, 60),
+    pincode: str(a.pincode, 6),
+  };
+  if (!body || !link.ref || !link.exp || !link.token)
+    return json({ error: QUOTE_BAD_LINK, code: 'invalid' }, 400);
+  if (!address.line1 || !address.city || !address.state)
+    return json({ error: 'Enter your full delivery address.', code: 'address' }, 400);
+  if (!/^\d{6}$/.test(address.pincode))
+    return json({ error: 'Enter a 6-digit pincode.', code: 'address', field: 'pincode' }, 400);
+  const limited = await limitIp(env, request, 'quote-accept', { max: 10, window: 3600 });
+  if (limited) return limited;
+  const r = await wpService(env, '/quote/accept', { ...link, address });
+  if (r.status === 0)
+    return json({ error: 'We could not reach the studio. Please try again.' }, 503);
+  if (r.status === 410) return json({ error: QUOTE_EXPIRED, code: 'expired' }, 400);
+  if (r.status !== 200) return json({ error: QUOTE_BAD_LINK, code: 'invalid' }, 400);
+  const q = (r.data.quote && typeof r.data.quote === 'object' ? r.data.quote : r.data) as Record<
+    string,
+    unknown
+  >;
+  return json({ ok: true, pay_url: typeof q.pay_url === 'string' ? q.pay_url : '' });
+}
+
 async function handleForgot(request: Request, env: Env): Promise<Response> {
   const body = await readJson(request);
   const email = str(body?.email, 254).toLowerCase();
@@ -1144,6 +1207,11 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
     if (action === 'orders') return handleOrders(request, env);
     if (action === 'order') return handleOrder(request, env);
     if (action === 'reviews') return handleReviewsGet(request, env);
+    if (action === 'quote-view') {
+      if (!env.AKRINITY_SHARED_SECRET)
+        return json({ error: 'Quotes are not configured.', code: 'unconfigured' }, 503);
+      return handleQuoteView(request, env);
+    }
     return json({ error: 'Method not allowed.' }, 405, { Allow: 'POST' });
   }
 
@@ -1169,6 +1237,7 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
       'verify-resend',
       'business',
       'quote',
+      'quote-accept',
       'contact',
       'newsletter',
       'review',
@@ -1184,6 +1253,7 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   if (action === 'password') return handlePassword(request, env);
   if (action === 'business') return handleBusiness(request, env);
   if (action === 'quote') return handleQuote(request, env);
+  if (action === 'quote-accept') return handleQuoteAccept(request, env);
   if (action === 'contact') return handleContact(request, env);
   if (action === 'newsletter') return handleNewsletter(request, env);
   if (action === 'review') return handleReviewPost(request, env);

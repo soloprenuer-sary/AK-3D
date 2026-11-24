@@ -51,6 +51,41 @@ interface AuthReply {
   state?: string;
   orders?: OrderSummary[];
   order?: OrderDetail;
+  quote?: QuoteView;
+  pay_url?: string;
+}
+
+export interface QuoteLine {
+  label: string;
+  reason: string;
+  amount: number | string;
+}
+
+/** A quote as the storefront reads it. Field names follow the backend hand-off (VERIFY on the live site). */
+export interface QuoteView {
+  ref?: string;
+  lines?: QuoteLine[];
+  subtotal?: number | string;
+  gst?: number | string;
+  price?: number | string;
+  lead?: string;
+  message?: string;
+  status?: string;
+  pay_url?: string;
+}
+
+export interface QuoteLink {
+  ref: string;
+  exp: string;
+  token: string;
+}
+
+export interface QuoteAddress {
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  pincode: string;
 }
 
 interface CallResult {
@@ -346,4 +381,30 @@ export async function resendConfirmation(email: string): Promise<string | null> 
     await call('verify-resend', { email }),
     'We could not send that. Please try again.',
   );
+}
+
+// ---------- quote: approve and pay ----------
+
+/** Reads the quote behind the link in the email. */
+export async function fetchQuote(
+  link: QuoteLink,
+): Promise<{ quote: QuoteView } | { error: string }> {
+  const r = await call('quote-view', undefined, '?' + new URLSearchParams({ ...link }));
+  if (r.ok && r.data.quote) return { quote: r.data.quote };
+  return {
+    error: explain(r, 'This quote link is not valid. Reply to the quote email for a new one.'),
+  };
+}
+
+/** Approves the quote with the delivery address. Returns the Cashfree link to pay on. */
+export async function acceptQuote(
+  link: QuoteLink,
+  address: QuoteAddress,
+): Promise<{ payUrl: string } | { error: string; field?: string }> {
+  const r = await call('quote-accept', { ...link, address });
+  if (r.ok) return { payUrl: r.data.pay_url ?? '' };
+  return {
+    error: explain(r, 'We could not approve the quote. Please try again.'),
+    field: r.data.field,
+  };
 }
