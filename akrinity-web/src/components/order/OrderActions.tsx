@@ -32,7 +32,8 @@ export function OrderActions({ order, access }: { order: OrderLookup; access: Or
   const [invoiceError, setInvoiceError] = useState('');
   const [sentRef, setSentRef] = useState<string | null>(null);
 
-  if (!canInvoice && !canCancel && !canReturn) return null;
+  const pending = order.request?.open ? order.request : null;
+  if (!canInvoice && !canCancel && !canReturn && !pending) return null;
 
   const type: 'cancel' | 'return' = canCancel ? 'cancel' : 'return';
   const codes = type === 'cancel' ? CANCEL_REASONS : RETURN_REASONS;
@@ -61,7 +62,7 @@ export function OrderActions({ order, access }: { order: OrderLookup; access: Or
             {invoiceBusy ? 'Preparing…' : 'Download GST invoice (PDF)'}
           </button>
         )}
-        {(canCancel || canReturn) && sentRef === null && (
+        {(canCancel || canReturn) && sentRef === null && !pending && (
           <button
             type="button"
             className="btn"
@@ -79,14 +80,20 @@ export function OrderActions({ order, access }: { order: OrderLookup; access: Or
         </p>
       )}
 
-      {sentRef !== null && (
+      {pending && sentRef === null && (
         <p className="ok" role="status">
-          Request sent{sentRef ? ` (${sentRef})` : ''}. We have emailed you a copy and will reply
-          soon. Nothing is cancelled or refunded until we confirm.
+          {pending.label}. We will email you when it changes.
         </p>
       )}
 
-      {open && sentRef === null && (
+      {sentRef !== null && (
+        <p className="ok" role="status">
+          Request sent for order #{order.number}. We have emailed you a copy and will reply soon.
+          Nothing is cancelled or refunded until we confirm.
+        </p>
+      )}
+
+      {open && sentRef === null && !pending && (
         <div id={`order-request-${order.id}`} className="info-card">
           <h3>
             {type === 'cancel' ? 'Cancel order' : 'Return'} #{order.number}

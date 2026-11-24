@@ -113,6 +113,14 @@ export interface OrderLookup {
   tracking: { courier: string; awb: string; url: string; eta?: string; shipped_at?: number };
   email: string;
   pay_url?: string;
+  /** The customer's cancel or return request on this order, or null. While open is true, show the label instead of the form. */
+  request?: {
+    type: 'cancel' | 'return';
+    state: 'requested' | 'approved' | 'received' | 'closed';
+    label: string;
+    open: boolean;
+    at?: number;
+  } | null;
 }
 
 /** Indian states and union territories with the codes WooCommerce uses. */
