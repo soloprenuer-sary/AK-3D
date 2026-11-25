@@ -27,13 +27,10 @@ export function slimProduct(p: ShopProduct, keep: { specs?: boolean } = {}): Sho
   const c: ShopProduct = { ...p };
   delete c.longDescription;
   delete c.content;
-  delete c.highlights;
   delete c.model;
   delete c.crossSellIds;
   delete c.upsellIds;
   if (!keep.specs) delete c.specs;
-  if (c.description && c.description.length > 260)
-    c.description = c.description.slice(0, 257) + '…';
   return c;
 }
 

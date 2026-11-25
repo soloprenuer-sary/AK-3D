@@ -152,15 +152,9 @@ function parseModes(list: string[]): ColourMode[] {
     .sort((a, b) => modeOrder.indexOf(a) - modeOrder.indexOf(b));
 }
 
-/** Short description for the product page and cards: plain text, at most 100 characters. */
-const SHORT_MAX = 100;
+/** Short description for the product page and cards: plain text, with stray ** removed. */
 function shortText(html: string): string | undefined {
-  const text = stripTags(html).replace(/\*+/g, '').replace(/\s+/g, ' ').trim();
-  if (text.length <= SHORT_MAX) return text || undefined;
-  const cut = text.slice(0, SHORT_MAX - 1);
-  const space = cut.lastIndexOf(' ');
-  const base = space > 60 ? cut.slice(0, space) : cut;
-  return base.replace(/[\s,;:.–-]+$/, '') + '…';
+  return stripTags(html).replace(/\*+/g, '').replace(/\s+/g, ' ').trim() || undefined;
 }
 
 /** Turns one WooCommerce product into the shape the pages use. Pure: also used in the browser. */
@@ -252,14 +246,11 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
     regularPrice: onSale
       ? formatRupees(p.prices.regular_price as string, p.prices.currency_minor_unit)
       : undefined,
-    // The WordPress short description, plain text, at most 100 characters (stray ** removed).
+    // The WordPress short description as plain text.
     description: shortText(p.short_description || p.description || ''),
     variation,
     rating: Number(p.average_rating) > 0 ? Number(p.average_rating) : undefined,
     reviewCount: p.review_count && p.review_count > 0 ? p.review_count : undefined,
-    // Key features from the product content fields only (the short description is shown as text).
-    highlights:
-      content?.hasContent && content.features.length ? content.features : undefined,
     content,
     longDescription: htmlToBlocks(p.description ?? ''),
     specs: buildSpecs(p.attributes, p.formatted_weight, p.formatted_dimensions),

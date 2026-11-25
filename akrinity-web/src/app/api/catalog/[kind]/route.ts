@@ -52,7 +52,7 @@ function slim(p: Raw): Raw {
     id: p.id,
     name: p.name,
     slug: p.slug,
-    short_description: short.length > 600 ? short.slice(0, 600) : short,
+    short_description: short,
     on_sale: p.on_sale,
     prices: p.prices,
     average_rating: p.average_rating,

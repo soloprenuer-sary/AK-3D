@@ -222,15 +222,13 @@ export interface ShopProduct {
   bulkTiers?: BulkTier[];
   /** Normal price shown struck through when the product is on sale. */
   regularPrice?: string;
-  /** Short description from WordPress, plain text, at most 100 characters. */
+  /** Short description from WordPress, as plain text. */
   description?: string;
   /** Options for a variable product. Undefined for a simple product. */
   variation?: ShopVariation;
   /** Average star rating from WooCommerce's own reviews (0 to 5) and how many reviews. */
   rating?: number;
   reviewCount?: number;
-  /** Bullet points from the short description, when it is a list. */
-  highlights?: string[];
   /** The long description as headings, paragraphs, lists and pictures. */
   longDescription?: DescBlock[];
   /** The product page content fields from WordPress (features, A+ pictures, specs table). */

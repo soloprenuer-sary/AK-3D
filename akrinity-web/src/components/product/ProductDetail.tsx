@@ -4,7 +4,7 @@ import { useLiveProducts } from '@/lib/live-catalogue';
 import { Pic } from '@/components/ui/Pic';
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { ModelViewer } from '@/components/three/ModelViewer';
+import { PhotoCarousel } from './PhotoCarousel';
 import {
   COLOURS,
   MODE_LABEL,
@@ -15,18 +15,10 @@ import {
   type ShopProduct,
 } from '@/lib/shop-data';
 import { ProductReviews } from './ProductReviews';
-import { splitLabel } from '@/lib/product-content';
 import { ProductMore } from './ProductMore';
 import { CompareButton, WishButton } from '@/components/shop/ProductActions';
 import { useCart } from '@/lib/cart-store';
 import { addWorkingDays, site } from '@/lib/site-config';
-
-/**
- * Local test model, set in .env.local and only used by the development server. It is never part
- * of a production build, because the test model's licence is not cleared for public use.
- */
-const DEV_MODEL_URL =
-  process.env.NODE_ENV === 'development' ? process.env.NEXT_PUBLIC_DEV_MODEL_URL : undefined;
 
 type Size = string;
 
@@ -116,8 +108,6 @@ export function ProductDetail({
       window.removeEventListener('resize', place);
     };
   }, []);
-  const [view, setView] = useState<'photo' | '3d'>('photo');
-  const model = product.model ?? (DEV_MODEL_URL ? { url: DEV_MODEL_URL, type: '3mf' } : undefined);
   const [material, setMaterial] = useState<Material>(product.material);
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
   const [mode, setMode] = useState<ColourMode>(product.modes[0]);
@@ -214,97 +204,15 @@ export function ProductDetail({
 
       <section className="pdp wrap" aria-labelledby="product-name">
         <div className="gallery">
-          <div className="tabs" role="tablist" aria-label="Product views">
-            <button
-              type="button"
-              id="tab-photo"
-              role="tab"
-              className="tab"
-              aria-selected={view === 'photo'}
-              aria-controls="pv-photo"
-              tabIndex={view === 'photo' ? 0 : -1}
-              onClick={() => setView('photo')}
-            >
-              Photos
-            </button>
-            <button
-              type="button"
-              id="tab-3d"
-              role="tab"
-              className="tab"
-              aria-selected={view === '3d'}
-              aria-controls="pv-3d"
-              tabIndex={view === '3d' ? 0 : -1}
-              onClick={() => setView('3d')}
-            >
-              3D view
-            </button>
-          </div>
-
-          <div
-            id="pv-photo"
-            role="tabpanel"
-            aria-labelledby="tab-photo"
-            className="gal-stack"
-            hidden={view !== 'photo'}
-          >
-            {photos.length ? (
-              <>
-                <figure className="gal-hero">
-                  <Pic
-                    src={photos[0]}
-                    alt={`${product.name}, photo 1 of ${photos.length}`}
-                    sizes="(max-width: 960px) 100vw, 640px"
-                    widths={[384, 640, 828, 1080]}
-                    priority
-                  />
-                </figure>
-                {photos.length > 1 && (
-                  <div className="gal-grid">
-                    {photos.slice(1).map((src, i) => (
-                      <figure className="gal-tile" key={src + i}>
-                        <Pic
-                          src={src}
-                          alt={`${product.name}, photo ${i + 2} of ${photos.length}`}
-                          sizes="(max-width: 960px) 50vw, 320px"
-                          widths={[256, 384, 640]}
-                        />
-                      </figure>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <div className="gal-hero gal-empty" style={artStyle} aria-hidden="true">
-                  <div className="pc-obj" />
-                </div>
-                <div className="gal-grid" aria-hidden="true">
-                  {[0, 1, 2, 3].map((i) => (
-                    <div className="gal-tile gal-empty" style={artStyle} key={i}>
-                      <div className="pc-obj" />
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          <div
-            id="pv-3d"
-            role="tabpanel"
-            aria-labelledby="tab-3d"
-            className="main-3d"
-            hidden={view !== '3d'}
-          >
-            {view === '3d' && <ModelViewer product={product} model={model} />}
-            {view === '3d' && !model && (
-              <p className="meta" style={{ margin: '10px 4px 0' }}>
-                Sample 3D preview in this product&apos;s colour. The exact 3D model of this product
-                is coming soon.
-              </p>
-            )}
-          </div>
+          {photos.length ? (
+            <PhotoCarousel photos={photos} name={product.name} />
+          ) : (
+            <div className="gal-stack">
+              <div className="gal-hero gal-empty" style={artStyle} aria-hidden="true">
+                <div className="pc-obj" />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="buy" ref={buyRef}>
@@ -330,148 +238,130 @@ export function ProductDetail({
             </span>
           </div>
           {product.description && <p className="desc short-desc">{product.description}</p>}
-          {product.highlights?.length ? (
-            <ul className="highlights">
-              {product.highlights.slice(0, 2).map((h) => {
-                const s = splitLabel(h);
-                return (
-                  <li key={h}>
-                    {s ? (
-                      <>
-                        <b>{s.label}.</b> {s.rest}
-                      </>
-                    ) : (
-                      h
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          ) : null}
 
           {modeList.length > 0 && (
-          <fieldset className="opt">
-            <legend>Colour option</legend>
-            <div className="pills" role="radiogroup" aria-label="Colour option">
-              {modeList.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  role="radio"
-                  className="pill"
-                  aria-checked={mode === m}
-                  onClick={() => setMode(m)}
-                >
-                  {MODE_LABEL[m]}
-                </button>
-              ))}
-            </div>
-            {mode !== 'single' && (
-              <p className="muted" style={{ fontSize: 14 }}>
-                {mode === 'multi'
-                  ? 'Multi-colour prints take longer and may cost more. The extra cost and lead time are confirmed before payment.'
-                  : 'Painted items are made to order. Painting is quoted separately, and we will tell you the cost first.'}
-              </p>
-            )}
-          </fieldset>
+            <fieldset className="opt">
+              <legend>Colour option</legend>
+              <div className="pills" role="radiogroup" aria-label="Colour option">
+                {modeList.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    role="radio"
+                    className="pill"
+                    aria-checked={mode === m}
+                    onClick={() => setMode(m)}
+                  >
+                    {MODE_LABEL[m]}
+                  </button>
+                ))}
+              </div>
+              {mode !== 'single' && (
+                <p className="muted" style={{ fontSize: 14 }}>
+                  {mode === 'multi'
+                    ? 'Multi-colour prints take longer and may cost more. The extra cost and lead time are confirmed before payment.'
+                    : 'Painted items are made to order. Painting is quoted separately, and we will tell you the cost first.'}
+                </p>
+              )}
+            </fieldset>
           )}
 
           {materialList.length > 0 && (
-          <fieldset className="opt">
-            <legend>Material</legend>
-            <div className="pills" role="group" aria-label="Material">
-              {materialList.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  className="pill"
-                  aria-pressed={material === m}
-                  onClick={() => setMaterial(m)}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-          </fieldset>
+            <fieldset className="opt">
+              <legend>Material</legend>
+              <div className="pills" role="group" aria-label="Material">
+                {materialList.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    className="pill"
+                    aria-pressed={material === m}
+                    onClick={() => setMaterial(m)}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
           )}
 
           {colourList.length > 0 && (
-          <fieldset className="opt">
-            <legend>
-              Colour:{' '}
-              <span style={{ fontWeight: 500, letterSpacing: 0, textTransform: 'none' }}>
-                {colour}
-              </span>
-            </legend>
-            <div className="swatches" role="group" aria-label="Colour">
-              {colourList.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  className="sw"
-                  aria-label={key}
-                  aria-pressed={colour === key}
-                  style={{ background: COLOURS[key] }}
-                  onClick={() => setColour(key)}
-                />
-              ))}
-            </div>
-          </fieldset>
+            <fieldset className="opt">
+              <legend>
+                Colour:{' '}
+                <span style={{ fontWeight: 500, letterSpacing: 0, textTransform: 'none' }}>
+                  {colour}
+                </span>
+              </legend>
+              <div className="swatches" role="group" aria-label="Colour">
+                {colourList.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className="sw"
+                    aria-label={key}
+                    aria-pressed={colour === key}
+                    style={{ background: COLOURS[key] }}
+                    onClick={() => setColour(key)}
+                  />
+                ))}
+              </div>
+            </fieldset>
           )}
 
           {sizeList.length > 0 && (
-          <fieldset className="opt">
-            <legend>Size</legend>
-            <div className="pills" role="group" aria-label="Size">
-              {sizeList.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  className="pill"
-                  aria-pressed={size === s}
-                  onClick={() => setSize(s)}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </fieldset>
+            <fieldset className="opt">
+              <legend>Size</legend>
+              <div className="pills" role="group" aria-label="Size">
+                {sizeList.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="pill"
+                    aria-pressed={size === s}
+                    onClick={() => setSize(s)}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
           )}
 
           {personalise && (
-          <details className="opt opt-details" open={personal !== '' || personalError !== ''}>
-            <summary>Add personalised text (optional)</summary>
-            <label htmlFor="personal">
-              Personalization{' '}
-              <span
-                className="muted"
-                style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 500, fontSize: 14 }}
-              >
-                (optional)
-              </span>
-            </label>
-            <input
-              ref={personalInput}
-              id="personal"
-              className="text"
-              type="text"
-              maxLength={PERSONAL_MAX}
-              placeholder="Name or short text"
-              value={personal}
-              onChange={onPersonalChange}
-              aria-invalid={personalError !== ''}
-              aria-describedby="personal-hint personal-error"
-            />
-            <div className="hint" id="personal-hint">
-              <span>
-                {personal.length}/{PERSONAL_MAX} characters
-              </span>
-              <span>Letters, numbers and spaces</span>
-            </div>
-            <p className="err" id="personal-error" role="alert" hidden={personalError === ''}>
-              {personalError}
-            </p>
-          </details>
+            <details className="opt opt-details" open={personal !== '' || personalError !== ''}>
+              <summary>Add personalised text (optional)</summary>
+              <label htmlFor="personal">
+                Personalization{' '}
+                <span
+                  className="muted"
+                  style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 500, fontSize: 14 }}
+                >
+                  (optional)
+                </span>
+              </label>
+              <input
+                ref={personalInput}
+                id="personal"
+                className="text"
+                type="text"
+                maxLength={PERSONAL_MAX}
+                placeholder="Name or short text"
+                value={personal}
+                onChange={onPersonalChange}
+                aria-invalid={personalError !== ''}
+                aria-describedby="personal-hint personal-error"
+              />
+              <div className="hint" id="personal-hint">
+                <span>
+                  {personal.length}/{PERSONAL_MAX} characters
+                </span>
+                <span>Letters, numbers and spaces</span>
+              </div>
+              <p className="err" id="personal-error" role="alert" hidden={personalError === ''}>
+                {personalError}
+              </p>
+            </details>
           )}
 
           <div className="buyrow">
@@ -583,8 +473,7 @@ export function ProductDetail({
           </div>
           <div>
             <h2>Returns and warranty</h2>
-            <p>
-              For Return Contact us within 2 working days </p>
+            <p>For Return Contact us within 2 working days </p>
           </div>
         </div>
       </section>
