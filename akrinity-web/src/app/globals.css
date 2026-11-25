@@ -1551,3 +1551,12 @@ dialog:has(.qv-body){overflow:hidden}
   .cb-row{grid-template-columns:minmax(0,1fr)}
 }
 .load-sentinel{height:1px}
+
+/* Category pages: subcategory tiles as a swipeable slider on phones */
+@media (max-width:760px){
+  .cb-tiles{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;gap:12px;padding-bottom:6px}
+  .cb-tiles::-webkit-scrollbar{display:none}
+  .cb-tiles>.cb-tile{flex:0 0 62%;scroll-snap-align:start}
+}
+/* Category filter bar: keep its hidden dropdowns from widening the page on phones */
+@media (max-width:760px){.cb-bar{overflow-x:clip}}

@@ -38,8 +38,6 @@ export function CategoryHero({
   fromPrice?: string;
 }) {
   const tagline = copy?.tagline ?? theme.tagline;
-  const facts = copy?.facts?.length ? copy.facts : theme.facts;
-  const cta = { ...theme.cta, ...stripEmpty(copy?.cta) };
   const meta = [
     count > 0 ? `${count} ${count === 1 ? 'product' : 'products'}` : 'New pieces coming soon',
     fromPrice ? `From ${fromPrice}` : '',
@@ -70,21 +68,6 @@ export function CategoryHero({
           </h1>
           {tagline && <p className="cat-tagline">{tagline}</p>}
           <p className="cat-desc">{category.description}</p>
-          {facts.length > 0 && (
-            <ul className="cat-facts" aria-label="At a glance">
-              {facts.map((f) => (
-                <li key={f}>{f}</li>
-              ))}
-            </ul>
-          )}
-          <div className="cat-actions">
-            <a className="btn cat-btn" href={count > 0 ? '#products' : '/shop'}>
-              {count > 0 ? 'Shop this category' : 'Browse the whole shop'}
-            </a>
-            <Link className="btn cat-btn-ghost" href={cta.href}>
-              {cta.label}
-            </Link>
-          </div>
         </div>
         <div className="cat-hero-art">
           {copy?.heroImage ? (
