@@ -78,7 +78,7 @@ const BUILT_IN: BuiltIn[] = [
   },
   {
     name: 'Figurines & miniatures',
-    description: 'Human figurines, busts, tabletop miniatures and scale models.',
+    description: 'Idols, characters, custom miniatures and hobby display pieces.',
     subs: ['Busts', 'Miniatures', 'Display models'],
     tone: 'var(--ink)',
   },

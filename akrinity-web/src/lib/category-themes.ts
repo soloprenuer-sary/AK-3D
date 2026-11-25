@@ -15,12 +15,25 @@ export type CategoryArtKey =
   | 'gift'
   | 'hobby'
   | 'parts'
-  | 'sports';
+  | 'sports'
+  | 'hotwheels'
+  | 'jewellery'
+  | 'anime'
+  | 'keychains';
 
 export type CategoryLayout = 'split-right' | 'split-left' | 'center' | 'spotlight' | 'poster';
 
 export type CategoryPattern =
-  'layers' | 'dots' | 'eggs' | 'rings' | 'rays' | 'waves' | 'confetti' | 'hex' | 'blueprint';
+  | 'layers'
+  | 'dots'
+  | 'eggs'
+  | 'rings'
+  | 'rays'
+  | 'waves'
+  | 'confetti'
+  | 'hex'
+  | 'blueprint'
+  | 'checker';
 
 export interface CategoryTheme {
   art: CategoryArtKey;
@@ -138,7 +151,11 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     fg: '#F3F1EA',
     accent: '#D8FF3A',
     tagline: 'Small pieces, fine detail.',
-    facts: ['Busts, miniatures, models', 'Resin for the finest detail', 'Original designs only'],
+    facts: [
+      'Idols, characters, miniatures',
+      'Resin for the finest detail',
+      'Original designs only',
+    ],
     tips: [
       {
         title: 'Original designs only',
@@ -341,7 +358,158 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
       href: '/quote',
     },
   },
+  'hot-wheels-diecast': {
+    art: 'hotwheels',
+    layout: 'split-right',
+    pattern: 'checker',
+    bg: '#FF6A1F',
+    fg: '#0B0B0C',
+    accent: '#FFFFFF',
+    tagline: 'Give every car its own spot.',
+    facts: ['Wall racks', 'Tabletop displays', 'For 1:64 die-cast cars'],
+    tips: [
+      {
+        title: 'Check the scale',
+        text: 'Most of these displays are sized for 1:64 die-cast cars. Check the product page before you order for a larger model.',
+      },
+      {
+        title: 'Wall or tabletop',
+        text: 'Fix wall racks with screws that suit your wall type. Tabletop stands need no fixing.',
+      },
+      {
+        title: 'Count your cars',
+        text: 'Each display says how many cars it holds. Leave a little room for the next ones.',
+      },
+    ],
+    cta: {
+      title: 'A display for a bigger collection?',
+      text: 'Tell us how many cars you have and the space for them. We quote a display to fit.',
+      label: 'Request a quote',
+      href: '/quote',
+    },
+  },
+  'sports-holders': {
+    art: 'sports',
+    layout: 'spotlight',
+    pattern: 'blueprint',
+    bg: '#E4E1D7',
+    fg: '#0B0B0C',
+    accent: '#D8FF3A',
+    tagline: 'A proper place for every racket and ball.',
+    facts: ['Racket holders', 'Wall mounts', 'Printed to fit your gear'],
+    tips: [
+      {
+        title: 'Measure your gear first',
+        text: 'Check the width of the handle or the head before you pick a holder.',
+      },
+      {
+        title: 'PETG for everyday knocks',
+        text: 'Holders that carry weight or get bumped do best in PETG. PLA+ suits light items.',
+      },
+      {
+        title: 'Fix wall mounts properly',
+        text: 'Use screws that suit your wall type. A printed holder is for sports gear, not for climbing or safety use.',
+      },
+    ],
+    cta: {
+      title: 'Odd-shaped gear, or a rack for a club?',
+      text: 'Send measurements in millimetres and we quote a holder made to fit.',
+      label: 'Request a quote',
+      href: '/quote',
+    },
+  },
+  jewellery: {
+    art: 'jewellery',
+    layout: 'split-left',
+    pattern: 'rays',
+    bg: '#F3F1EA',
+    fg: '#0B0B0C',
+    accent: '#D8FF3A',
+    tagline: 'Everything in sight, nothing in a tangle.',
+    facts: ['Stands and boxes', 'Trays', 'Made layer by layer'],
+    tips: [
+      {
+        title: 'Measure your pieces',
+        text: 'Check the length of your longest necklace and the width of your bangles before you pick a stand.',
+      },
+      {
+        title: 'Keep it out of heat',
+        text: 'Printed plastic can soften in a hot car or in strong sun.',
+      },
+      { title: 'Cleaning', text: 'Wipe with a soft damp cloth and dry it. Do not soak.' },
+    ],
+    cta: {
+      title: 'Want a stand sized for your collection?',
+      text: 'Send a sketch or an idea. We model it, check it prints well, and quote it.',
+      label: 'See the design service',
+      href: '/design-service',
+    },
+  },
+  'anime-gaming-cosplay': {
+    art: 'anime',
+    layout: 'spotlight',
+    pattern: 'hex',
+    bg: '#7A52EC',
+    fg: '#FFFFFF',
+    accent: '#D8FF3A',
+    tagline: 'For your shelf, your desk and the next convention.',
+    facts: ['Helmets and props', 'Figures', 'Bookmarks'],
+    tips: [
+      {
+        title: 'Display and costume only',
+        text: 'Swords and props are for display and costumes. We do not make weapons or weapon parts.',
+      },
+      {
+        title: 'Helmet and mask sizes',
+        text: 'Measure around your head and check the size on the product page before you order.',
+      },
+      {
+        title: 'Painted on request',
+        text: 'A few pieces can be painted. Painted items are made to order and quoted separately.',
+      },
+    ],
+    cta: {
+      title: 'A custom prop or helmet?',
+      text: 'Send measurements and a reference. We quote the print.',
+      label: 'Request a quote',
+      href: '/quote',
+    },
+  },
+  'keychains-gifts': {
+    art: 'keychains',
+    layout: 'split-right',
+    pattern: 'confetti',
+    bg: '#D8FF3A',
+    fg: '#0B0B0C',
+    accent: '#FFFFFF',
+    tagline: 'Small things with your name on them.',
+    facts: ['Keychains', 'Name plates', 'Made to order'],
+    tips: [
+      {
+        title: 'Your text, up to 40 characters',
+        text: 'Letters, numbers and spaces. Check the spelling: personalised items are printed exactly as typed.',
+      },
+      {
+        title: 'Made to order',
+        text: 'Personalised items are not returnable unless faulty, and cash on delivery is not offered for them.',
+      },
+      {
+        title: 'Allow time for printing',
+        text: 'Each piece is printed for you after you order. The product page shows the lead time.',
+      },
+    ],
+    cta: {
+      title: 'Ordering gifts for a team or a wedding?',
+      text: 'Larger counts have their own prices and one GST invoice.',
+      label: 'Request a bulk quote',
+      href: '/business',
+    },
+  },
 };
+
+// Categories renamed in WordPress keep the look they had.
+CATEGORY_THEMES['decor'] = CATEGORY_THEMES['home-decor'];
+CATEGORY_THEMES['desk'] = CATEGORY_THEMES['desk-gadgets'];
 
 /** Order the colour looks are handed out to categories that have no theme of their own. */
 const LOOKS = [

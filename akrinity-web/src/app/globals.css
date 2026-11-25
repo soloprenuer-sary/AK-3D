@@ -634,6 +634,7 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .cat-hero[data-pattern=waves]::before{background:repeating-linear-gradient(165deg,rgba(122,82,236,.32) 0 3px,transparent 3px 24px)}
 .cat-hero[data-pattern=confetti]::before{background:radial-gradient(circle at 20% 28%,var(--orange) 0 5px,transparent 6px),radial-gradient(circle at 72% 62%,var(--violet) 0 5px,transparent 6px),radial-gradient(circle at 44% 86%,var(--accent) 0 6px,transparent 7px),radial-gradient(circle at 88% 18%,var(--orange) 0 4px,transparent 5px);background-size:190px 170px}
 .cat-hero[data-pattern=hex]::before{background:linear-gradient(30deg,rgba(255,255,255,.16) 12%,transparent 12.5%,transparent 87%,rgba(255,255,255,.16) 87.5%),linear-gradient(150deg,rgba(255,255,255,.16) 12%,transparent 12.5%,transparent 87%,rgba(255,255,255,.16) 87.5%),linear-gradient(30deg,rgba(255,255,255,.16) 12%,transparent 12.5%,transparent 87%,rgba(255,255,255,.16) 87.5%),linear-gradient(150deg,rgba(255,255,255,.16) 12%,transparent 12.5%,transparent 87%,rgba(255,255,255,.16) 87.5%);background-size:48px 84px;background-position:0 0,0 0,24px 42px,24px 42px}
+.cat-hero[data-pattern=checker]::before{background:conic-gradient(rgba(11,11,12,.09) 25%,transparent 0 50%,rgba(11,11,12,.09) 0 75%,transparent 0) 0 0/44px 44px}
 .cat-hero[data-pattern=blueprint]::before{background:linear-gradient(rgba(11,11,12,.13) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,rgba(11,11,12,.13) 1px,transparent 1px) 0 0/28px 28px}
 /* under the products */
 .cat-tips{padding-block:var(--sec) 24px}

@@ -509,12 +509,234 @@ function Sports() {
       <rect x={140} y={204} width={20} height={64} rx={8} fill={C.ink} />
       {/* ball in a ring */}
       <circle cx={262} cy={228} r={36} fill={C.lime} {...line} />
-      <path d="M232 206 C250 222 250 238 232 252 M292 206 C274 222 274 238 292 252" fill="none" {...line} />
+      <path
+        d="M232 206 C250 222 250 238 232 252 M292 206 C274 222 274 238 292 252"
+        fill="none"
+        {...line}
+      />
       <ellipse cx={262} cy={262} rx={44} ry={9} fill={C.white} {...line} />
       {/* bottle */}
       <rect x={322} y={150} width={32} height={116} rx={12} fill={C.violet2} {...line} />
       <rect x={330} y={130} width={16} height={24} rx={4} fill={C.white} {...line} />
       <rect x={322} y={196} width={32} height={26} fill={C.white} {...thin} />
+    </g>
+  );
+}
+
+/** A small die-cast car, side view. (x, y) is the left end at road level; s scales it (1 = 100 wide). */
+function Car({ x, y, s, color }: { x: number; y: number; s: number; color: string }) {
+  const edge = { ...line, strokeWidth: 3 / s };
+  return (
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      <path
+        d="M0 -16 H100 V-30 Q100 -38 92 -40 L72 -44 L60 -62 H32 L20 -44 L6 -40 Q0 -36 0 -28 Z"
+        fill={color}
+        {...edge}
+      />
+      <path d="M36 -57 H57 L67 -44 H28 Z" fill={C.paper} {...edge} />
+      {[25, 75].map((cx) => (
+        <g key={cx}>
+          <circle cx={cx} cy={-13} r={13} fill={C.ink} />
+          <circle cx={cx} cy={-13} r={5} fill={C.paper} />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** Honeycomb wall rack with cars, and one car out on the track. */
+function HotWheels() {
+  const hex = (cx: number, cy: number, r: number) => {
+    const w = r * 0.866;
+    return [
+      [cx, cy - r],
+      [cx + w, cy - r / 2],
+      [cx + w, cy + r / 2],
+      [cx, cy + r],
+      [cx - w, cy + r / 2],
+      [cx - w, cy - r / 2],
+    ]
+      .map((p) => p.join(','))
+      .join(' ');
+  };
+  const cells = [
+    { cx: 171, cy: 160, color: C.violet },
+    { cx: 269, cy: 160, color: C.lime },
+    { cx: 220, cy: 75, color: C.ink },
+  ];
+  return (
+    <g>
+      {cells.map((c) => (
+        <g key={`${c.cx}-${c.cy}`}>
+          <polygon points={hex(c.cx, c.cy, 57)} fill={C.paper} {...line} />
+          <circle cx={c.cx} cy={c.cy - 38} r={5} fill={C.orange} {...thin} />
+          <Car x={c.cx - 30} y={c.cy + 22} s={0.6} color={c.color} />
+        </g>
+      ))}
+      <rect x={26} y={312} width={388} height={42} rx={14} fill={C.ink} />
+      <path d="M48 333 H392" stroke={C.lime} strokeWidth={4} strokeDasharray="22 18" />
+      <Car x={150} y={316} s={1.55} color={C.violet} />
+      {[250, 272, 294].map((y, i) => (
+        <path
+          key={y}
+          d={`M${60 + i * 12} ${y} H${128 + i * 4}`}
+          stroke={C.white}
+          strokeWidth={6}
+          strokeLinecap="round"
+        />
+      ))}
+    </g>
+  );
+}
+
+/** A jewellery tree with a necklace, and an open box with a ring beside it. */
+function Jewellery() {
+  const beads = [
+    [88, 118],
+    [112, 146],
+    [186, 146],
+    [210, 118],
+  ];
+  return (
+    <g>
+      <Ground />
+      <ellipse cx={149} cy={318} rx={78} ry={15} fill={C.violet} {...line} />
+      <rect x={141} y={58} width={16} height={258} rx={6} fill={C.violet} {...line} />
+      <circle cx={149} cy={48} r={15} fill={C.lime} {...line} />
+      <rect x={66} y={84} width={166} height={15} rx={7} fill={C.lime} {...line} />
+      <path d="M72 92 Q149 232 226 92" fill="none" {...line} />
+      {beads.map(([x, y]) => (
+        <circle key={x} cx={x} cy={y} r={8} fill={C.orange} {...thin} />
+      ))}
+      <path d="M149 152 L170 174 L149 206 L128 174 Z" fill={C.violet2} {...line} />
+      <rect x={96} y={232} width={106} height={13} rx={6} fill={C.orange} {...line} />
+      {[112, 186].map((x) => (
+        <g key={x}>
+          <path d={`M${x} 245 V266`} {...thin} />
+          <circle cx={x} cy={277} r={11} fill={C.lime} {...thin} />
+        </g>
+      ))}
+      {/* box with its lid lifted */}
+      <rect x={252} y={232} width={142} height={92} rx={14} fill={C.violet} {...line} />
+      <rect x={262} y={236} width={122} height={20} rx={6} fill={C.ink} />
+      <g transform="rotate(-12 252 236)">
+        <rect x={248} y={196} width={150} height={40} rx={13} fill={C.lime} {...line} />
+        <path d="M264 216 H382" stroke={C.violet} strokeWidth={5} strokeLinecap="round" />
+      </g>
+      <rect x={252} y={254} width={142} height={70} rx={14} fill={C.violet} {...line} />
+      <rect x={310} y={274} width={26} height={26} rx={7} fill={C.white} {...line} />
+      {/* ring */}
+      <circle cx={356} cy={112} r={31} fill="none" stroke={C.ink} strokeWidth={12} />
+      <circle cx={356} cy={112} r={31} fill="none" stroke={C.orange} strokeWidth={6} />
+      <path d="M356 54 L377 73 L356 94 L335 73 Z" fill={C.white} {...line} />
+    </g>
+  );
+}
+
+/** An original helmet, a toy sword behind it and a few pixel blocks. */
+function Anime() {
+  return (
+    <g>
+      <Ground />
+      <g transform="rotate(38 220 190)">
+        <path d="M205 250 V52 L220 22 L235 52 V250 Z" fill={C.paper} {...line} />
+        <path d="M220 56 V244" {...thin} />
+        <rect x={176} y={250} width={88} height={20} rx={8} fill={C.lime} {...line} />
+        <rect x={208} y={270} width={24} height={62} rx={9} fill={C.ink} />
+        <circle cx={220} cy={340} r={13} fill={C.lime} {...line} />
+      </g>
+      <path
+        d="M118 214 Q118 92 208 92 Q298 92 298 214 V286 Q298 318 266 318 H150 Q118 318 118 286 Z"
+        fill={C.orange}
+        {...line}
+      />
+      <path d="M146 176 Q208 154 270 176 L262 226 Q208 240 154 226 Z" fill={C.ink} />
+      <path d="M160 188 L198 196 L193 214 L162 206 Z" fill={C.lime} {...thin} />
+      <path d="M256 188 L218 196 L223 214 L254 206 Z" fill={C.lime} {...thin} />
+      <path
+        d="M170 254 H246 V286 Q246 298 234 298 H182 Q170 298 170 286 Z"
+        fill={C.paper}
+        {...line}
+      />
+      <path d="M189 262 V292 M208 262 V292 M227 262 V292" {...thin} />
+      <path d="M208 92 V144" {...line} strokeWidth={6} />
+      <rect x={194} y={82} width={28} height={13} rx={5} fill={C.violet} {...line} />
+      {[
+        [340, 244, C.lime],
+        [364, 220, C.paper],
+        [364, 268, C.paper],
+        [388, 244, C.lime],
+        [62, 106, C.lime],
+        [86, 82, C.paper],
+      ].map(([x, y, fill]) => (
+        <rect
+          key={`${x}-${y}`}
+          x={x as number}
+          y={y as number}
+          width={24}
+          height={24}
+          fill={fill as string}
+          {...thin}
+        />
+      ))}
+    </g>
+  );
+}
+
+/** Three keychains hanging from a rail: a cat charm, a game controller and a name tag. */
+function Keychains() {
+  const ring = (x: number, chain: number) => (
+    <g>
+      <circle cx={x} cy={66} r={21} fill="none" stroke={C.ink} strokeWidth={5} />
+      {Array.from({ length: chain }, (_, i) => (
+        <ellipse
+          key={i}
+          cx={x}
+          cy={98 + i * 24}
+          rx={6}
+          ry={13}
+          fill="none"
+          stroke={C.ink}
+          strokeWidth={4}
+        />
+      ))}
+    </g>
+  );
+  return (
+    <g>
+      <Ground />
+      <rect x={34} y={30} width={372} height={18} rx={9} fill={C.ink} />
+      {ring(98, 3)}
+      {ring(220, 5)}
+      {ring(342, 2)}
+      {/* cat charm */}
+      <path d="M58 196 L46 146 L90 170 Z" fill={C.white} {...line} />
+      <path d="M138 196 L150 146 L106 170 Z" fill={C.white} {...line} />
+      <circle cx={98} cy={216} r={54} fill={C.white} {...line} />
+      <ellipse cx={80} cy={218} rx={6} ry={10} fill={C.ink} />
+      <ellipse cx={116} cy={218} rx={6} ry={10} fill={C.ink} />
+      <circle cx={66} cy={236} r={7} fill={C.orange} opacity={0.75} />
+      <circle cx={130} cy={236} r={7} fill={C.orange} opacity={0.75} />
+      <path d="M91 235 Q98 242 105 235" fill="none" {...thin} />
+      {/* controller charm */}
+      <rect x={152} y={222} width={136} height={86} rx={38} fill={C.violet} {...line} />
+      <path
+        d="M180 265 H214 M197 248 V282"
+        stroke={C.white}
+        strokeWidth={9}
+        strokeLinecap="round"
+      />
+      <circle cx={250} cy={250} r={9} fill={C.orange} {...thin} />
+      <circle cx={232} cy={268} r={9} fill={C.lime} {...thin} />
+      <circle cx={268} cy={268} r={9} fill={C.paper} {...thin} />
+      <circle cx={250} cy={286} r={9} fill={C.ink} />
+      {/* name tag */}
+      <g transform="rotate(6 342 176)">
+        <rect x={290} y={134} width={106} height={74} rx={16} fill={C.orange} {...line} />
+        <circle cx={342} cy={148} r={6} fill={C.paper} {...thin} />
+        <rect x={308} y={166} width={70} height={9} rx={4} fill={C.white} />
+        <rect x={318} y={184} width={50} height={9} rx={4} fill={C.white} />
+      </g>
     </g>
   );
 }
@@ -530,6 +752,10 @@ const ART: Record<CategoryArtKey, () => React.JSX.Element> = {
   hobby: Hobby,
   parts: Parts,
   sports: Sports,
+  hotwheels: HotWheels,
+  jewellery: Jewellery,
+  anime: Anime,
+  keychains: Keychains,
 };
 
 export function CategoryArt({ kind }: { kind: CategoryArtKey }) {
