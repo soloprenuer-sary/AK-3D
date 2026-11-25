@@ -18,7 +18,7 @@ const NAV = [
 ];
 
 export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
-  const { lines, count, subtotal, remove, clear, modeLabel } = useCart();
+  const { lines, count, subtotal, remove, setQty, clear, modeLabel } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -76,7 +76,16 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
             href="/wishlist"
             aria-label={`Wishlist, ${wish.count} ${wish.count === 1 ? 'item' : 'items'}`}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B0B0C" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#0B0B0C"
+              strokeWidth="2"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />
             </svg>
             {wish.count > 0 && <span className="wish-n">{wish.count}</span>}
@@ -136,12 +145,19 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
         }}
       >
         <div className="cart-body">
-          <div className="side-top">
-            <h2 id="cart-title" className="d" style={{ fontSize: 40 }}>
-              Your <span className="hl">cart</span>
-            </h2>
+          <div className="cdlg-head">
+            <div>
+              <h2 id="cart-title" className="d cdlg-title">
+                Your <span className="hl">cart</span>
+              </h2>
+              {count > 0 && (
+                <p className="cdlg-count">
+                  {count} {count === 1 ? 'item' : 'items'}
+                </p>
+              )}
+            </div>
             <button
-              className="qv-close"
+              className="cdlg-close"
               type="button"
               aria-label="Close cart"
               onClick={() => cartDialog.current?.close()}
@@ -149,57 +165,86 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
               ×
             </button>
           </div>
+
           {lines.length === 0 ? (
-            <p className="muted" style={{ marginTop: 16 }}>
-              Your cart is empty. Add a product from the shop to see it here.
-            </p>
+            <div className="cdlg-empty">
+              <p>Your cart is empty.</p>
+              <Link className="btn" href="/shop" onClick={() => cartDialog.current?.close()}>
+                Browse the shop
+              </Link>
+            </div>
           ) : (
-            <ul className="cart-lines">
-              {lines.map((l) => (
-                <li key={l.key} className="cart-line">
-                  <CartThumb line={l} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <b>{l.name}</b>
-                    <div className="meta">
-                      {modeLabel(l.mode)} · qty {l.qty}
-                      {l.price ? ` · ${l.price}` : ''}
+            <>
+              <ul className="cdlg-items">
+                {lines.map((l) => (
+                  <li key={l.key} className="cdlg-item">
+                    <CartThumb line={l} />
+                    <div className="cdlg-info">
+                      <div className="cdlg-name">
+                        <b>{l.name}</b>
+                        <button
+                          type="button"
+                          className="cdlg-remove"
+                          onClick={() => remove(l.key)}
+                          aria-label={`Remove ${l.name}`}
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="cdlg-chips">
+                        <span>{modeLabel(l.mode)}</span>
+                        {l.detail && <span>{l.detail}</span>}
+                      </div>
+                      <div className="cdlg-row">
+                        <div className="cdlg-qty" role="group" aria-label={`Quantity of ${l.name}`}>
+                          <button
+                            type="button"
+                            aria-label="Decrease quantity"
+                            onClick={() => setQty(l.key, Math.max(1, l.qty - 1))}
+                          >
+                            −
+                          </button>
+                          <span aria-live="polite">{l.qty}</span>
+                          <button
+                            type="button"
+                            aria-label="Increase quantity"
+                            onClick={() => setQty(l.key, Math.min(100, l.qty + 1))}
+                          >
+                            +
+                          </button>
+                        </div>
+                        {l.price && <span className="cdlg-price">{l.price}</span>}
+                      </div>
                     </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="link-btn"
-                    onClick={() => remove(l.key)}
-                    aria-label={`Remove ${l.name}`}
-                  >
-                    Remove
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          {lines.length > 0 && (
-            <p className="meta" style={{ marginTop: 16 }}>
-              Subtotal: <b>{subtotal === null ? '₹[price]' : formatRupees(subtotal)}</b> · shipping
-              is shown at checkout.
-            </p>
-          )}
-          <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
-            <button className="btn" type="button" disabled={lines.length === 0} onClick={clear}>
-              Clear cart
-            </button>
-            <Link className="btn" href="/cart" onClick={() => cartDialog.current?.close()}>
-              View cart
-            </Link>
-            {lines.length > 0 && (
+                  </li>
+                ))}
+              </ul>
+
+              <div className="cdlg-sum">
+                <div>
+                  <span>Subtotal</span>
+                  <b>{subtotal === null ? '₹[price]' : formatRupees(subtotal)}</b>
+                </div>
+                <p>Shipping and tax are shown at checkout.</p>
+              </div>
+
               <Link
-                className="btn btn-primary"
+                className="btn btn-primary btn-wide cdlg-checkout"
                 href="/checkout"
                 onClick={() => cartDialog.current?.close()}
               >
                 Checkout
               </Link>
-            )}
-          </div>
+              <div className="cdlg-secondary">
+                <Link className="btn" href="/cart" onClick={() => cartDialog.current?.close()}>
+                  View cart
+                </Link>
+                <button className="cdlg-clear" type="button" onClick={clear}>
+                  Clear cart
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </dialog>
     </header>

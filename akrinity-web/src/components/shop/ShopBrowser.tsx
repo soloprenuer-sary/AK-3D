@@ -3,6 +3,7 @@
 import { useLiveProducts } from '@/lib/live-catalogue';
 import { useCategoryTree } from '@/components/layout/CategoryTree';
 import { useEffect, useRef, useState } from 'react';
+import { useLoadMore } from '@/lib/use-load-more';
 import Link from 'next/link';
 import {
   MODE_LABEL,
@@ -151,6 +152,9 @@ export function ShopBrowser({
     });
   if (mode !== 'all') activeChips.push({ label: MODE_LABEL[mode], remove: () => setMode('all') });
   materials.forEach((m) => activeChips.push({ label: m, remove: () => toggleMaterial(m) }));
+
+  const listKey = list.map((p) => p.id).join('|');
+  const { count: shownCount, hasMore, sentinel } = useLoadMore(list.length, listKey);
 
   return (
     <>
@@ -338,7 +342,7 @@ export function ShopBrowser({
           </div>
 
           <div className="grid-shop">
-            {list.map((p) => (
+            {list.slice(0, shownCount).map((p) => (
               <ProductCard
                 key={p.id}
                 product={p}
@@ -350,6 +354,9 @@ export function ShopBrowser({
                 }
               />
             ))}
+            {hasMore && (
+              <div ref={sentinel} className="load-sentinel" style={{ gridColumn: '1 / -1' }} />
+            )}
           </div>
 
           {list.length === 0 && (

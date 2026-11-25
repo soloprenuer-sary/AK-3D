@@ -17,6 +17,7 @@ import {
 } from '@/lib/shop-data';
 import { useCart } from '@/lib/cart-store';
 import { ProductCard } from '@/components/shop/ProductCard';
+import { useLoadMore } from '@/lib/use-load-more';
 import { QuickView } from '@/components/shop/QuickView';
 
 type Availability = 'all' | 'stock' | 'mto';
@@ -291,6 +292,9 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
   const heading =
     sub === 'All' ? category.name : sub === MORE ? `More ${category.name.toLowerCase()}` : sub;
 
+  const flatKey = flat.map((p) => p.id).join('|');
+  const { count: shownCount, hasMore, sentinel } = useLoadMore(flat.length, flatKey);
+
   return (
     <div className="cb" id="products">
       <div ref={top} className="cb-anchor" aria-hidden="true" />
@@ -488,7 +492,14 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
                 aria-live="polite"
                 aria-label={`${flat.length} products`}
               >
-                {flat.map(card)}
+                {flat.slice(0, shownCount).map(card)}
+                {hasMore && (
+                  <div
+                    ref={sentinel}
+                    className="load-sentinel"
+                    style={{ gridColumn: '1 / -1' }}
+                  />
+                )}
               </div>
             ) : (
               <div className="empty show" role="status">
