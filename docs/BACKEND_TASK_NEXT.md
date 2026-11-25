@@ -2,6 +2,12 @@
 
 For the backend team. The storefront side of these is done and tested; each item below needs WordPress, WooCommerce or the host. Tick them off in order. Full details of the first round are in `BACKEND_TASK_CHECKOUT.md` and `SECURITY_AND_SPEED_CHECK.md`.
 
+## Status on 25 Nov 2026 (backend)
+
+Done and live on admin.akrinity.in: section 1 uploads and the In transit email; section 2 values set as temporary (WhatsApp, GSTIN, name, address, HSN); section 6 items 1 to 3 and the review and delayed-order emails of item 4 (see decisions 20 to 22 and 46 in `PROJECT_CONTEXT.md`); section 7 Cashfree sandbox keys entered and success, failed and abandoned orders tested. The quote Accept button is on (`AKRINITY_QUOTE_ACCEPT_PAGE`).
+
+Still open: section 3 (Shiprocket or courier rates, a Free shipping method, partner tracking links); section 4 and section 5 clean-up and security steps wait for the owner's go-live word (nothing is removed before); abandoned-cart and back-in-stock emails (item 4); a Cashfree refund test (section 7); real values for the temporary details in section 2.
+
 ## 1. Upload and confirm (today)
 
 Upload to `wp-content/mu-plugins/` (replace the old files):

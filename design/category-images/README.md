@@ -1,6 +1,6 @@
 # Sub-category pictures
 
-30 flat illustrations in the brand colours, one per sub-category, 1200 x 900 px.
+59 flat illustrations in the brand colours, one per sub-category, 1200 x 900 px (30 from 18 Nov 2026, 29 added for the new category tree, decision 49 in `docs/PROJECT_CONTEXT.md`). Pictures of categories that were since removed are kept for later.
 
 - `png/` is what you upload. WordPress accepts PNG and JPG (it blocks SVG by default).
 - `svg/` are the editable sources.
