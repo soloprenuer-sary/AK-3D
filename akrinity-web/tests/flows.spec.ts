@@ -73,7 +73,8 @@ test.describe('Browse and find', () => {
 
   test('shop filters and sorting change the list', async ({ page }) => {
     await page.goto('/shop');
-    const cards = page.locator('a[href^="/product/"]');
+    // Count the cards, not the links: a product with options has a second "Choose options" link.
+    const cards = page.locator('.grid-shop article');
     await expect(cards.first()).toBeVisible({ timeout: 20_000 });
     const before = await cards.count();
     if (isPhone(page)) {

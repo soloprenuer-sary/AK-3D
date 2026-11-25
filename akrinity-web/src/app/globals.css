@@ -362,7 +362,6 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 /* header: mobile menu, cart panel, search */
 .menu-btn{display:none}
 .mobile-menu{display:flex;flex-direction:column;border-top:1.5px solid var(--ink);background:var(--paper)}
-.mobile-menu a{padding:16px var(--gutter);border-bottom:1px solid #DCD8CE;font-weight:600;font-size:17px;text-decoration:none}
 @media (max-width:1000px){.menu-btn{display:grid}}
 .cart-dialog{border:1.5px solid var(--ink);border-radius:24px;padding:0;width:min(440px,calc(100% - 32px));background:var(--paper);color:var(--ink);box-shadow:8px 8px 0 var(--ink)}
 .cart-dialog::backdrop{background:rgba(11,11,12,.55)}
@@ -697,16 +696,6 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .mm-tile-img b{font:400 64px/1 var(--display);opacity:.35}
 .mm-tile-name{padding:8px 10px 6px;text-align:center;font-weight:600;font-size:14px}
 .mm-tile-btn{padding:7px 10px;background:var(--ink);color:var(--paper);text-align:center;font-size:13px;font-weight:600}
-.mm-acc{border-bottom:1px solid #DCD8CE}
-.mm-acc>summary{list-style:none;cursor:pointer;padding:16px var(--gutter);font-weight:600;font-size:17px;display:flex;justify-content:space-between;align-items:center}
-.mm-acc>summary::-webkit-details-marker{display:none}
-.mm-acc>summary::after{content:'+';font-size:22px;line-height:1}
-.mm-acc[open]>summary::after{content:'–'}
-.mm-acc>a{padding-left:calc(var(--gutter) + 14px)!important;font-weight:500!important;font-size:16px!important;background:var(--white)}
-.mm-acc .mm-all{font-weight:700!important}
-.mm-acc--sub{border-bottom:0;background:var(--white)}
-.mm-acc--sub>summary{padding-left:calc(var(--gutter) + 14px);font-size:16px;font-weight:600;background:var(--white);border-top:1px solid #DCD8CE}
-.mm-acc--sub>a{padding-left:calc(var(--gutter) + 32px)!important;font-size:15px!important}
 @media (max-width:1000px){.mega,.catbar{display:none}}
 
 /* ===== Category page, version 2 ===== */
@@ -798,7 +787,6 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .cat-info-h{font-size:clamp(28px,3.2vw,40px)}
 .cb-body{padding-bottom:24px}
 @media (max-width:640px){.cb-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.mm-acc>a{display:block}
 .sub-title h1{font-size:clamp(38px,6vw,72px);line-height:1}
 
 /* ===== Mega menu, option A: popular pictures + full list ===== */
@@ -813,12 +801,6 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .mm-grp .mm-h{display:flex;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1.5px solid var(--ink);font-weight:700;font-size:15px}
 .mm-grp .mm-h i{width:8px;height:8px;border-radius:50%;background:var(--orange);flex:none}
 .mm-tile-img{aspect-ratio:16/10}
-.mm-pop-m{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:10px var(--gutter);background:var(--white)}
-.mm-pop-i{display:flex!important;flex-direction:column;gap:6px;padding:0!important;border:1.5px solid var(--ink)!important;border-radius:14px;overflow:hidden;text-decoration:none;background:var(--white)}
-.mm-pop-i span:last-child{padding:0 10px 10px;font-size:14px;font-weight:600}
-.mm-pop-img{display:grid;place-items:center;aspect-ratio:16/10;overflow:hidden}
-.mm-pop-img img{width:100%;height:100%;object-fit:cover}
-.mm-pop-img b{font:400 40px/1 var(--display);opacity:.35}
 /* keep the header on one line */
 
 
@@ -1560,3 +1542,73 @@ dialog:has(.qv-body){overflow:hidden}
 }
 /* Category filter bar: keep its hidden dropdowns from widening the page on phones */
 @media (max-width:760px){.cb-bar{overflow-x:clip}}
+
+/* ===== Phone fixes, owner list of 25 Nov 2026 ===== */
+/* Pages open at the top: the breadcrumb is not scrolled under the sticky header */
+.crumbs{scroll-margin-top:260px}
+
+/* The open phone menu sits above the fixed add-to-cart bar */
+header.site:has(.mobile-menu){z-index:45}
+
+/* Home sliders: view-all beside the heading, arrows under the cards on phones */
+.car-grid{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"title arrows cta" "track track track";align-items:end;column-gap:10px;row-gap:36px}
+.car-title{grid-area:title}
+.car-arrows{grid-area:arrows}
+.car-cta{grid-area:cta}
+.car-grid .car-track{grid-area:track;min-width:0}
+@media (max-width:700px){
+  .car-grid{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"title cta" "track track" "arrows arrows";row-gap:16px;align-items:center}
+  .car-grid .car-title{font-size:clamp(34px,10.5vw,52px)}
+  .car-arrows{justify-content:center}
+}
+
+/* Product page: photo previews and colour options with names */
+.pc-stage{position:relative}
+.pc-thumbs{display:flex;gap:8px;overflow-x:auto;padding:10px 2px 3px;scrollbar-width:none}
+.pc-thumbs::-webkit-scrollbar{display:none}
+.pc-thumb{flex:0 0 64px;height:64px;padding:3px;border-radius:14px;border:1.5px solid var(--ink);background:var(--white);overflow:hidden;cursor:pointer;opacity:.65}
+.pc-thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.pc-thumb[aria-current="true"]{opacity:1;box-shadow:inset 0 0 0 2px var(--ink)}
+.sw-pill{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px 0 8px;border-radius:999px;border:1.5px solid var(--ink);background:var(--white);font-weight:600;font-size:14px;text-transform:capitalize;cursor:pointer}
+.sw-pill[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.sw-dot{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ink);flex:none}
+.sw-pill[aria-pressed="true"] .sw-dot{border-color:var(--paper)}
+
+/* Shop and category lists on phones: two columns, compact cards with Add to cart */
+.pc-cartbtn{display:none}
+@media (max-width:640px){
+  .grid-shop{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .pc{padding:6px;border-radius:18px;gap:8px;min-width:0}
+  .pc:hover,.pc:focus-within{box-shadow:none;transform:none}
+  .pc-media{border-radius:13px}
+  .pc-media .tag{left:6px;top:6px;min-height:22px;padding:0 8px;font-size:9px}
+  .pc-media .pc-heart{top:5px;right:5px;width:32px;height:32px}
+  .pc-media .pc-heart svg{width:15px;height:15px}
+  .pc-media .pc-add{display:none}
+  .pc-art img{padding:4px}
+  .pc-info{flex-direction:column;align-items:flex-start;gap:3px;padding:0 4px;flex:1}
+  .pc-info .pc-name{font-size:13px;line-height:1.3;-webkit-line-clamp:2;padding-block:1px}
+  .pc-info .pc-meta{display:none!important}
+  .pc-info .pc-rate{font-size:12px}
+  .pc-info .pc-price{font-size:19px;margin-top:auto}
+  .pc-cartbtn{display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;border-radius:999px;border:1.5px solid var(--ink);background:var(--accent);color:var(--ink);font-weight:700;font-size:13px;text-decoration:none;cursor:pointer}
+  .pc-cartbtn.done{background:var(--ink);color:var(--accent)}
+  .pc-foot{padding:0 4px 2px;margin-top:-2px;font-size:12px}
+}
+.gal-wrap[hidden]{display:none}
+@media (max-width:939px){.pdp{gap:20px}}
+
+/* ===== Phone menu: links on top, category colour blocks under them ===== */
+.mm2-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 var(--gutter) 18px}
+.mm2-label{margin:0;padding:16px 0 8px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mm2-links,.mm2-blocks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mm2-blocks{gap:10px}
+.mm2-pill{display:flex;align-items:center;min-height:46px;padding:0 16px;border-radius:999px;border:1.5px solid var(--ink);background:var(--white);font-weight:600;font-size:14px;line-height:1.2;text-decoration:none}
+.mm2-pill.main{background:var(--ink);color:var(--paper)}
+.mm2-block{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:100%;min-height:92px;padding:12px;border-radius:20px;border:1.5px solid var(--ink);font:400 21px/1.05 var(--display);text-transform:uppercase;text-decoration:none;color:var(--ink);background:var(--white)}
+.mm2-block.tone-accent{background:var(--accent)}
+.mm2-block.tone-violet{background:var(--violet);color:var(--white)}
+.mm2-block.tone-orange{background:var(--orange)}
+.mm2-block.tone-ink{background:var(--ink);color:var(--paper)}
+.mm2-dock{flex:none;padding:12px var(--gutter) calc(14px + env(safe-area-inset-bottom,0px));border-top:1.5px solid var(--ink);background:var(--paper)}
+@media (min-width:640px){.mm2-links,.mm2-blocks{grid-template-columns:repeat(3,minmax(0,1fr))}}

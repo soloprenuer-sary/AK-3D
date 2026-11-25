@@ -187,88 +187,87 @@ export function MegaNav({ menu }: { menu: MenuCategory[] }) {
   );
 }
 
-/** Phone menu: each category opens its popular pictures and its groups. */
+/** Phone menu links, the most used first. */
+const QUICK_LINKS = [
+  { href: '/shop', label: 'Shop all' },
+  { href: '/quote', label: 'Custom printing' },
+  { href: '/cart', label: 'Cart' },
+  { href: '/account', label: 'Account' },
+  { href: '/wishlist', label: 'Wishlist' },
+  { href: '/compare', label: 'Compare' },
+  { href: '/guides', label: 'Knowledge hub' },
+  { href: '/search', label: 'Search' },
+  { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact' },
+];
+
+/** Category block colours in order, from the brand palette. */
+const BLOCK_TONES = ['accent', 'violet', 'orange', 'ink', 'white', 'accent'];
+
+/**
+ * Phone menu: the links on top, the categories as colour blocks under them, and "Get a quote" fixed at
+ * the bottom. It fills the screen below the header and the page behind it does not scroll.
+ */
 export function MobileMenu({ menu, onClose }: { menu: MenuCategory[]; onClose: () => void }) {
+  const ref = useRef<HTMLElement>(null);
   const go = () => onClose();
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const wide = window.matchMedia('(min-width: 1001px)');
+    const fit = () => {
+      el.style.height = `calc(100dvh - ${Math.max(0, el.getBoundingClientRect().top)}px)`;
+    };
+    const onWide = (e: MediaQueryListEvent) => {
+      if (e.matches) onClose();
+    };
+    const before = document.body.style.overflow;
+    if (!wide.matches) document.body.style.overflow = 'hidden';
+    fit();
+    window.addEventListener('resize', fit);
+    wide.addEventListener('change', onWide);
+    return () => {
+      document.body.style.overflow = before;
+      window.removeEventListener('resize', fit);
+      wide.removeEventListener('change', onWide);
+    };
+  }, [onClose]);
+
   return (
-    <nav id="mobile-menu" className="mobile-menu" aria-label="Mobile">
-      {menu.map((c) => (
-        <details className="mm-acc" key={c.slug}>
-          <summary>{c.name}</summary>
-          <Link className="mm-all" href={`/shop/${c.slug}`} onClick={go}>
-            View all {c.name}
-          </Link>
-          {c.popular.length > 0 && (
-            <div className="mm-pop-m">
-              {c.popular.map((s) => (
-                <Link
-                  key={s.slug}
-                  className="mm-pop-i"
-                  href={`/shop/${c.slug}/${s.slug}`}
-                  onClick={go}
-                >
-                  <span className="mm-pop-img" style={{ background: c.tone }}>
-                    {s.image ? (
-                      <Pic src={s.image} alt="" sizes="160px" widths={[256]} />
-                    ) : (
-                      <b aria-hidden="true">{s.name.charAt(0)}</b>
-                    )}
-                  </span>
-                  <span>{s.name}</span>
-                </Link>
-              ))}
-            </div>
-          )}
-          {c.groups.map((g) =>
-            g.title ? (
-              <details className="mm-acc mm-acc--sub" key={g.title}>
-                <summary>{g.title}</summary>
-                {g.items.map((it) => (
-                  <Link key={it.slug} href={`/shop/${c.slug}/${it.slug}`} onClick={go}>
-                    {it.name}
-                  </Link>
-                ))}
-              </details>
-            ) : (
-              g.items.map((it) => (
-                <Link key={it.slug} href={`/shop/${c.slug}/${it.slug}`} onClick={go}>
-                  {it.name}
-                </Link>
-              ))
-            ),
-          )}
-        </details>
-      ))}
-      <Link href="/shop" onClick={go}>
-        Shop all
-      </Link>
-      <Link href="/guides" onClick={go}>
-        Knowledge hub
-      </Link>
-      <Link href="/quote" onClick={go}>
-        Custom printing
-      </Link>
-      <Link href="/about" onClick={go}>
-        About
-      </Link>
-      <Link href="/contact" onClick={go}>
-        Contact
-      </Link>
-      <Link href="/wishlist" onClick={go}>
-        Wishlist
-      </Link>
-      <Link href="/compare" onClick={go}>
-        Compare
-      </Link>
-      <Link href="/search" onClick={go}>
-        Search
-      </Link>
-      <Link href="/cart" onClick={go}>
-        Cart
-      </Link>
-      <Link href="/account" onClick={go}>
-        Account
-      </Link>
+    <nav id="mobile-menu" className="mobile-menu" aria-label="Mobile" ref={ref}>
+      <div className="mm2-scroll">
+        <p className="mm2-label">Quick links</p>
+        <ul className="mm2-links">
+          {QUICK_LINKS.map((l, i) => (
+            <li key={l.href}>
+              <Link className={i === 0 ? 'mm2-pill main' : 'mm2-pill'} href={l.href} onClick={go}>
+                {l.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <p className="mm2-label">Shop by category</p>
+        <ul className="mm2-blocks">
+          {menu.map((c, i) => (
+            <li key={c.slug}>
+              <Link
+                className={`mm2-block tone-${BLOCK_TONES[i % BLOCK_TONES.length]}`}
+                href={`/shop/${c.slug}`}
+                onClick={go}
+              >
+                <span>{c.name}</span>
+                <span aria-hidden="true">→</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="mm2-dock">
+        <Link className="btn btn-primary btn-wide" href="/quote" onClick={go}>
+          Get a quote
+        </Link>
+      </div>
     </nav>
   );
 }

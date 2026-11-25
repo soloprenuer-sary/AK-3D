@@ -1,23 +1,24 @@
-# Website flow report (24 Nov 2026 (updated after the whole-site clean-up))
+# Website flow report (25 Nov 2026 (updated after the quote approve-and-pay work))
 
 What a shop like Akrinity needs, step by step, what the site does today, and what the tests found. 64 steps in 12 flows.
 
-**Score:** Done 30 · Built, not confirmed 7 · Partly done 15 · On hold 0 · Not done 12
+**Score:** Done 31 · Built, not confirmed 12 · Partly done 16 · On hold 0 · Not done 5
 
 ## Tests run
 
 | Test | Result | Where |
 |---|---|---|
+| Quote, approve and pay (live) | QR-350: quote sent, wrong pincode blocked, approved with address (Awaiting payment, order made), Cashfree test checkout opened from the website, test wallet payment SUCCESS, back on the website "Payment received", quote and order Paid. QR-330: request with a 3D file, then every status to Completed with an email logged for each. Not run: failed or cancelled payment, live Cashfree | Live website and server, test records |
 | Whole-trip browser test + single-flow tests (all 78 checks) | Latest run on the clean-up build: 72 passed, 6 skipped (2 place-order steps off by default, 2 device-specific, 2 policy-text checks parked until the lawyer text exists), 0 failed. Type check and lint are clean. One earlier run showed a forgot-password failure caused by my own repeated runs hitting the rate limit; it passed on a fresh server | Local build (not yet deployed; the changes are not committed) |
 | Same tests before the fixes, on the live site | 36 passed, 6 failed (3 real gaps: no price sort, no delivery estimate, placeholder text), desktop and phone | Live site, before the fixes |
 | Settings check (values set and not set) | With values set: free-shipping bar and message, WhatsApp button, footer GSTIN, contact lines, studio address all appear. With nothing set: those lines are left out instead of showing [placeholder] | Local build, both ways |
 | Search engines and sharing | robots.txt, sitemap.xml (87 pages), web manifest, canonical links, share tags and a share picture, product data (price, stock, rating) on every product: all present on the new build. Live after the next deploy | Local build |
 | Page speed on a phone (Lighthouse) | Local production build, phone: home 96, shop 97 to 98, category 92, product 92, FAQ 97, cart 97, checkout 97; total blocking time 30 to 120 ms. Before the speed work: home 82 to 92 here, 78 on the live site. Left: render-blocking CSS (about 20 KB gzipped) and about 27 KB of unused script. The live site has not been re-measured; do that after the deploy | Local production build (live site measured before: home 78, shop 83, product 87) |
 | Accessibility and code clean-up | Footer and category-list headings skipped a level (h3 straight after h1): now h2, same look. Accessibility is 100 on home, shop, category, product, cart, checkout and FAQ (was 98 on shop, cart, checkout and category). Removed unused code: lib/env.ts, bestSellers, SHOP_CATEGORIES, subSlug. Not touched: about 49 CSS classes that look unused (some style WordPress A+ content), needs a visual check first | Local production build |
-| Store set-up probe | Cash on delivery on, Cashfree hidden by choice, flat-rate delivery (₹60 plus GST), CGST and SGST for Maharashtra, IGST for Delhi, in-transit fields, reviews, contact and 3D-model routes all answer | Live store |
+| Store set-up probe | Cash on delivery on, Cashfree hidden at that time (it is on now), flat-rate delivery (₹60 plus GST), CGST and SGST for Maharashtra, IGST for Delhi, in-transit fields, reviews, contact and 3D-model routes all answer | Live store |
 | Security re-check | Fixed: public username list in the REST API, author redirect, login error text, plugin list. Still open: WPGraphQL still lists the admin username, readme.html still public | Live store |
 | Emails | Order and account emails (12) plus the five request emails (quote, bulk, contact, newsletter, review) render without errors in the lime design; the send-once rule for the in-transit email passes 15 checks. NOT tested: a real email in a real inbox | Test harness |
-| Not tested on purpose | Creating a customer account, sending a quote with a file, sending a contact message, subscribing, posting a review and placing another order: each would create real records on the live store. These were tested earlier on a stand-in store | - |
+| Not tested on purpose | Creating a customer account, sending a contact message, subscribing, posting a review and placing another order: each would create real records on the live store. These were tested earlier on a stand-in store | - |
 
 ## 1. Find us
 
@@ -25,7 +26,7 @@ _A stranger finds Akrinity on Google, Instagram or WhatsApp and lands on a page 
 
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
-| Fast, mobile-friendly pages | Opens in under 3 seconds on a phone | Phone score is 92 to 98 on every page measured (live site was 78 to 94 before; confirm after the deploy) | Done | Pass (local build) |
+| Fast, mobile-friendly pages | Opens in under 3 seconds on a phone | Phone score is 92 to 98 on every page measured (live site was 78 to 94 before; the live site has not been re-measured) | Done | Pass (local build) |
 | Search engines can read the site | sitemap.xml, robots.txt, canonical links | sitemap.xml (87 pages), robots.txt and canonical links added | Done | Pass (live after deploy) |
 | Link previews on WhatsApp and Instagram | Share picture, title and price when a link is pasted | Share tags and a branded share picture added | Done | Pass (live after deploy) |
 | Rich results on Google | Product structured data: price, stock, rating | Product data (price, stock, rating) added to every product page, plus Organisation data | Done | Pass (live after deploy) |
@@ -67,7 +68,7 @@ _Review and change the order without friction._
 |---|---|---|---|---|
 | Add, change quantity, remove | Works, with a drawer and a cart page | Yes | Done | Pass |
 | Cart is kept | Survives a reload; follows the customer to another device | Survives a reload; stays on this device only | Partly done | Pass (reload) |
-| Upsell in the cart | Products that go with the cart | None in the cart (product page has suggested rows) | Not done | - |
+| Upsell in the cart | Products that go with the cart | A "Goes well with your order" row is in the cart; not yet checked by eye with a live cart | Built, not confirmed | Cart tests pass |
 | Coupon | Coupon box with clear messages | At checkout; the coupon box layout is fixed; a bad code shows the store's message | Done | Pass (stand-in) |
 
 ## 5. Checkout and payment
@@ -80,9 +81,9 @@ _Pay with the least effort and the right tax._
 | GST by state | CGST and SGST in Maharashtra, IGST elsewhere | Live on the store: Maharashtra splits, Delhi shows IGST | Done | Pass |
 | Delivery charge | Real courier rates by weight and pincode | Flat rate ₹60 plus GST for every pincode (Shiprocket rates not connected) | Partly done | Pass |
 | Cash on delivery | Fee and limit, hidden for made-to-order | Live; fee ₹50 and limit ₹3,000 are placeholders for you to confirm | Done | Pass (orders #295, #300 were placed) |
-| UPI, cards, netbanking | Online payment with Cashfree | Switched back on at checkout next to cash on delivery (both are pickable at once; the total loads in the background with a clear message). It cannot take a real payment until the Cashfree keys are set in WordPress | Built, not confirmed | Pass (shows and can be chosen); payment itself not run |
+| UPI, cards, netbanking | Online payment with Cashfree | Cashfree test keys now work (a quote payment went through in test mode). An online payment from the shop checkout has not been run, and live keys are not set | Built, not confirmed | Shop checkout payment not run |
 | Business GST details | GSTIN on the order | Saved on the order; bad GSTIN refused | Done | Pass |
-| Made-to-order items | Pay online or an advance | Cash on delivery shows "Not offered for made-to-order items. Pay online instead." and online payment is the way to buy them; this works only once the Cashfree keys are in | Built, not confirmed | Pass (message shown) |
+| Made-to-order items | Pay online or an advance | Cash on delivery shows "Not offered for made-to-order items. Pay online instead." Online payment is in Cashfree test mode; no made-to-order payment has been run | Built, not confirmed | Pass (message shown) |
 | Advance payment for custom jobs | Pay part now, rest before dispatch | Not built | Not done | - |
 
 ## 6. After the order
@@ -96,8 +97,8 @@ _The customer always knows where the order is._
 | Track an order | By number plus email or phone | Works; wrong details give a clear message | Done | Pass |
 | In transit with tracking ID | You pick the partner and type the ID; the customer gets one email | Built and live on the store (status, box, once-per-ID email); the email itself not yet seen in a real inbox | Built, not confirmed | Stand-in only (15 checks) |
 | Expected delivery date | Real date from the courier | Typed by you, or shipped date plus 5 working days (placeholder number) | Partly done | Pass (stand-in) |
-| GST invoice | Invoice PDF with the email | None. The backend team says its side is now live (VERIFY); the website part waits for their hand-off notes. | Not done | - |
-| Delivered and review request | Delivered email, then "how was it?" | Delivered email designed; the review request email does not exist yet | Partly done | - |
+| GST invoice | Invoice PDF with the email | A "Download GST invoice (PDF)" button is on the order page; the invoice is made by the server (business details are still temporary). Not tried by me on the live page | Built, not confirmed | Not run on the live page |
+| Delivered and review request | Delivered email, then "how was it?" | Delivered email designed; the server sends a review request 7 days after Completed (default) and a notice when an order is late. Neither has been seen in an inbox | Built, not confirmed | Not run |
 
 ## 7. Cancel, return, refund and help
 
@@ -108,8 +109,8 @@ _Problems get solved without a phone call._
 | Contact form | Saved in WordPress and emailed | Works (validation tested live; sending tested earlier) | Done | Pass |
 | Real contact details | WhatsApp number and support email on the page | WhatsApp, email, reply time and studio address now come from settings; each line stays hidden until you set it | Partly done | Pass (set and not set) |
 | Policies | Shipping, returns, refunds, privacy, terms reviewed by a lawyer | Policy pages still hold placeholders and sample text until the owner and the lawyer give the real text | Partly done | Parked (waiting for text) |
-| Cancel or return from the order page | A request button on the order | Order page now has "Ask a question" and "Cancel or return" links that open the contact form with the order number filled in; a one-tap request needs the backend. The backend team says its side is now live (VERIFY); the website part waits for their hand-off notes. | Partly done | Pass |
-| Refund email | Branded refund email | Designed and coded | Built, not confirmed | Render only |
+| Cancel or return from the order page | A request button on the order | A cancel or return form is on the order page. The request is kept on the order itself (no separate record), you approve it there, and the order page shows its state | Built, not confirmed | Server run on test orders; website form not run by me |
+| Refund email | Branded refund email | Cancelled, return and refund emails share one design with a "Continue shopping" button; an order cancelled by hand sends it too | Built, not confirmed | Server run on test orders; inbox not checked |
 | Quick chat | WhatsApp button on every page | WhatsApp button on every page, shown once you set the number | Partly done | Pass (set and not set) |
 
 ## 8. Account
@@ -120,9 +121,9 @@ _Returning customers reorder in a tap._
 |---|---|---|---|---|
 | Sign up, sign in, forgot password | Safe and simple | Works; forgot password gives the same answer whether or not the email exists | Done | Pass (live sign-up not tested) |
 | Order history and saved addresses | Yes | Yes | Done | Pass (signed-out prompt) |
-| Reorder, invoice download | Buy again, download invoice | Neither exists | Not done | - |
+| Reorder, invoice download | Buy again, download invoice | Invoice download is on the order page; there is no reorder button | Partly done | Not run on the live page |
 | Welcome email | After sign-up | Designed, but switched off for sign-ups made on the storefront | Partly done | - |
-| Email check on sign-up | Confirm the address | Not built | Not done | - |
+| Email check on sign-up | Confirm the address | A confirmation link is emailed after sign-up, with a "send again" banner in the account. Live; not tried with a real inbox | Built, not confirmed | Account tests pass |
 
 ## 9. Custom print: quote, approve, pay, print
 
@@ -131,10 +132,10 @@ _A customer with a 3D file gets a price and a finished part._
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
 | Quote form with file upload | Upload up to 300 MB, get a reference | Works (QR number, file saved privately) | Done | Validation pass live; upload tested earlier |
-| Your side: view, status, download, delete file | Request screen with statuses | Works in WordPress (Quote requests) | Done | Earlier test |
-| Quote received email | Branded email with a summary | Quote request email now in the lime design (customer and studio copies) | Built, not confirmed | Render only |
-| Send the price and let the customer accept | Email with price and an accept-and-pay link | Not built. The backend team says its side is now live (VERIFY); the website part waits for their hand-off notes. | Not done | - |
-| Pay the advance, follow progress | Pay online; status page for the job | Not built (needs Cashfree and a status page) | Not done | - |
+| Your side: view, status, download, delete file | Request screen with statuses | Works in WordPress (Quote requests). Fixed: a request screen left open no longer overwrites a newer status (this is why quotes stayed on Quoted) | Done | Pass (stale save tried on QR-330) |
+| Quote received email | Branded email with a summary | Branded email with a summary; logged as sent in the live runs. Inbox not checked by me | Built, not confirmed | Sent (history log) |
+| Send the price and let the customer accept | Email with price and an accept-and-pay link | Live: the quote email has an Accept button. The approve page shows the price reasons, GST and total and takes the delivery address with pincode and state checks. The WhatsApp button stays hidden until the real number is set. "Ask for a revised quote" is on hold | Done | Pass (live runs QR-330 and QR-350) |
+| Pay the advance, follow progress | Pay online; status page for the job | Full payment opens from the website (Cashfree, test mode); success marks the quote and order Paid and returns to a "Payment received" page. Every status has its own email. No advance payment and no job status page | Partly done | Pass: ₹472 test payment (QR-350). Failed and cancelled payments not run |
 
 ## 10. Business and bulk buyers
 
@@ -152,7 +153,7 @@ _Turn one order into the next._
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
 | Newsletter | Sign-up with a welcome email | Works; welcome email now in the lime design | Done | Earlier test |
-| Abandoned cart, back in stock, review request | Automatic reminder emails | None | Not done | - |
+| Abandoned cart, back in stock, review request | Automatic reminder emails | Review request and late-order emails come from the server. Abandoned cart and back in stock are not built | Partly done | Not run |
 | Offers and referral | Coupon campaigns, share-and-earn | Coupons work; no campaigns | Not done | - |
 
 ## 12. Your daily work in WordPress
@@ -184,37 +185,35 @@ _An order arrives, gets printed, shipped and closed without mistakes._
 | Quote request received (customer) | Designed, coded (customer and studio copies) | Needs the updated account snippet 2.6.0 and the emails plugin |
 | Contact, newsletter welcome, bulk request, review waiting | Designed, coded | Same snippet 2.6.0; plain text is the fallback if the emails plugin is missing |
 | Review request, abandoned cart, back in stock, order delayed, GST invoice | Not started |  |
+| Quote steps (customer): in review, quote, payment, paid, printing, ready, shipped, complete | Sent in live test runs (history log) | Inbox delivery not checked by me |
 
 ## Still to do
 
 ### You (the owner)
-- [ ] Set these values in Vercel (Settings, Environment Variables): NEXT_PUBLIC_WHATSAPP, NEXT_PUBLIC_SUPPORT_EMAIL, NEXT_PUBLIC_GSTIN, NEXT_PUBLIC_FREE_SHIPPING_FROM, NEXT_PUBLIC_REPLY_HOURS, NEXT_PUBLIC_STUDIO_ADDRESS, and NEXT_PUBLIC_SITE_URL once the real domain is chosen. Each one switches a line on; nothing else needs editing.
-- [ ] Confirm the numbers: cash on delivery fee and limit, working days to print and to deliver (they drive the delivery date).
-- [ ] Send the Cashfree test keys. Online payment is already switched on at checkout, so it cannot be tested or used until they are in; advance payment and refunds to the original method are built after that.
+- [ ] Give the real WhatsApp number; the "Chat on WhatsApp" button in the quote email appears once it replaces the placeholder.
+- [ ] Check the test inbox for the quote emails of QR-330 and QR-350, including the invoice on the Shipped one.
+- [ ] Decide when to take real payments: Cashfree is in test mode; live keys go into WooCommerce, Payments, Cashfree.
+- [ ] Say when to delete the test records: orders #295, #300, #331, #351; QR-138, QR-139, QR-328, QR-329, QR-330, QR-350; CM-325, CM-327.
+- [ ] Set these values in Vercel (Settings, Environment Variables): NEXT_PUBLIC_WHATSAPP, NEXT_PUBLIC_SUPPORT_EMAIL, NEXT_PUBLIC_GSTIN, NEXT_PUBLIC_FREE_SHIPPING_FROM, NEXT_PUBLIC_REPLY_HOURS, NEXT_PUBLIC_STUDIO_ADDRESS, and NEXT_PUBLIC_SITE_URL once the real domain is chosen.
+- [ ] Confirm the numbers: cash on delivery fee and limit, working days to print and to deliver. Give the real business name, GSTIN and address (invoices use temporary ones).
 - [ ] Give the real policy text (shipping, returns, refunds, privacy, terms, grievance) and have a lawyer and your CA review it.
-- [ ] Put every product into a category in WooCommerce; upload your own product photos instead of Amazon-hosted ones; upload a .glb or .stl on products that should have a 3D view.
-- [ ] Place one cash on delivery order, set it In transit with a tracking ID, and send me screenshots of the emails you receive.
-- [ ] Choose analytics tools (Google Analytics, Search Console, Merchant Center, Meta pixel) so I can add them with a cookie notice.
+- [ ] Put every product into a category; use your own product photos; add a .glb or .stl on products that should have a 3D view.
+- [ ] Choose analytics tools (Google Analytics, Search Console, Merchant Center, Meta pixel) so they can be added with a cookie notice.
 
 ### Backend team
-- [ ] Upload the updated files: akrinity-headless-auth.php 2.6.0, akrinity-shop.php 1.1.0, akrinity-emails.php and the akrinity-emails folder. Confirm WP Mail SMTP sends.
-- [ ] Connect Shiprocket for live rates and tracking, or enter courier rates by weight; check each delivery partner link in the tracking box.
+- [ ] Replace the temporary values in wp-config (WhatsApp, GSTIN, legal name, address) when you send them.
+- [ ] Connect Shiprocket for live rates and tracking, or enter courier rates by weight; check each delivery partner link.
+- [ ] Add a free-shipping method above the amount you set, so checkout matches the website message.
 - [ ] Deactivate WPGraphQL and unused plugins, delete readme.html, turn on 2FA for every admin, remove the claude-agent account before launch.
-- [ ] Set wp-config values: AKRINITY_PRINT_DAYS, AKRINITY_DELIVERY_DAYS, AKRINITY_COD_FEE, AKRINITY_COD_LIMIT, AKRINITY_WHATSAPP, AKRINITY_GSTIN.
-- [ ] Add a free-shipping method for orders above the amount the owner sets (so checkout matches the website message).
-- [ ] Build the one-tap cancel and return request, the quote reply with an accept link, and a GST invoice (PDF) on the order; see the backend note.
-- [ ] Daily off-site backups, host firewall and malware scan; delete the test orders (#295, #300) and the test quote requests.
-- [ ] Send the four hand-off notes (BACKEND_HANDOFF_TO_FRONTEND, BACKEND_NOTE_PRODUCT_CONTENT, BACKEND_NOTE_REQUESTS, BACKEND_NOTE_INVOICE) into the repo (docs folder) or forward the files; push access to GitHub is still blocked.
+- [ ] Daily off-site backups, host firewall and malware scan.
+- [ ] At launch: decide whether to switch off WooCommerce "Coming soon" (today only the pay pages are open to visitors).
+- [ ] Merge the backend notes and the sub-category picture proposals from branch claude/project-structure-context-c0b50c.
 
 ### Frontend (Claude)
-- [ ] P1 Test Cashfree end to end (paid, failed, abandoned) and build the advance payment for custom jobs, once the keys arrive.
-- [ ] P1 GST invoice (PDF) on the order page and in the email, once the backend makes it.
-- [ ] P2 One-tap cancel and return request, and the quote reply flow with an accept-and-pay link and a quote status page.
-- [ ] P2 Reorder button, wishlist and cart synced to the account.
-- [ ] P2 Cart upsell row; recently viewed.
-- [ ] P3 Abandoned-cart, back-in-stock and review-request emails; offers and referral.
+- [ ] P1 Test a failed and a cancelled Cashfree payment, and an online payment from the shop checkout.
+- [ ] P1 Try on the live website: cancel or return from the order page, invoice download, sign-up email confirmation.
+- [ ] P2 Reorder button; wishlist and cart synced to the account; recently viewed.
+- [ ] P2 Abandoned-cart and back-in-stock emails (the cart must be sent to the server first).
+- [ ] P3 "Ask for a revised quote" message box (on hold); advance payment only if you want it; offers and referral once you give the rules.
 - [ ] P3 Analytics and cookie notice after you choose the tools.
-- [ ] P2 Speed, next round: shrink the render-blocking CSS, cut about 27 KB of unused script, then re-measure the live site after the deploy.
-- [ ] Commit and deploy the working tree (speed work, checkout, compare, quick view, coupon, filters); it is not in the live site yet.
-- [ ] P1 Wire the backend features once the notes arrive: product page content and draft preview, quote accept page, one-tap cancel and return buttons, invoice download.
-- [ ] P3 Optional CSS clean-up: remove about 49 unused classes after a visual check of the product description pages.
+- [ ] P3 Measure live speed again; then trim the render-blocking CSS, unused script and about 49 unused CSS classes.

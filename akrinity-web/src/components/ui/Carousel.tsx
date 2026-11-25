@@ -59,11 +59,11 @@ export function Carousel({
   return (
     <section className="sec" aria-labelledby={`${id}-h`} style={{ paddingTop: 24 }}>
       <div className="wrap">
-        <div className="sec-head">
-          <h2 className="d" id={`${id}-h`}>
+        <div className="car-grid">
+          <h2 className="d car-title" id={`${id}-h`}>
             {title}
           </h2>
-          <div className="car-ctrl">
+          <div className="car-ctrl car-arrows">
             <button
               type="button"
               className="car-arrow"
@@ -106,13 +106,13 @@ export function Carousel({
                 <path d="M9 5l7 7-7 7" />
               </svg>
             </button>
-            <Link className="btn btn-sm" href={ctaHref}>
-              {ctaLabel}
-            </Link>
           </div>
-        </div>
-        <div className="car-track" ref={track} role="group" aria-label={label} tabIndex={0}>
-          {children}
+          <Link className="btn btn-sm car-cta" href={ctaHref}>
+            {ctaLabel}
+          </Link>
+          <div className="car-track" ref={track} role="group" aria-label={label} tabIndex={0}>
+            {children}
+          </div>
         </div>
       </div>
     </section>

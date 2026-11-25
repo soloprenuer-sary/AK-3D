@@ -136,6 +136,21 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
           {product.price ?? '₹[price]'}
         </span>
       </div>
+      {/* Phones: one clear button under each card. Products with options open the product page to choose. */}
+      {product.variation ? (
+        <Link className="pc-cartbtn" href={`/product/${productSlug(product)}`}>
+          Choose options
+        </Link>
+      ) : (
+        <button
+          type="button"
+          className={justAdded ? 'pc-cartbtn done' : 'pc-cartbtn'}
+          aria-label={`Add ${product.name} to cart`}
+          onClick={() => onAdd(product)}
+        >
+          {justAdded ? 'Added ✓' : 'Add to cart'}
+        </button>
+      )}
       <div className="pc-foot">
         <CompareButton id={product.id} name={product.name} />
       </div>

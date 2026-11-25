@@ -58,7 +58,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const tree = await getCategoryTree();
   const menu = buildMenu(tree);
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body>
         <script
           type="application/ld+json"
