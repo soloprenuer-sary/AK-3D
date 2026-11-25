@@ -1503,7 +1503,8 @@ dialog:has(.qv-body){overflow:hidden}
 /* Product page: quantity and Add to cart stay at the bottom of a phone screen, clear of the header */
 .buyrow-slot{display:block}
 @media (max-width:939px){
-  .buyrow-slot{height:var(--buybar-h,80px)}
+  .buyrow-slot{height:0}
+  .pdp{padding-bottom:0}
   .buyrow{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:10px var(--gutter) calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1.5px solid var(--ink);gap:10px;flex-wrap:nowrap;align-items:center}
   .buyrow .btn{flex:1 1 auto;min-width:0}
   .buyrow .status{position:absolute;left:var(--gutter);right:var(--gutter);top:-28px;margin:0;font-size:13px;background:var(--paper)}
