@@ -214,15 +214,18 @@ export function ProductDetail({
 
       <section className="pdp wrap" aria-labelledby="product-name">
         <div className="gallery">
-          {photos.length ? (
-            <PhotoCarousel photos={photos} name={product.name} />
-          ) : (
-            <div className="gal-stack">
-              <div className="gal-hero gal-empty" style={artStyle} aria-hidden="true">
-                <div className="pc-obj" />
+          <div className="gal-wrap">
+            {photos.length ? (
+              <PhotoCarousel photos={photos} name={product.name} />
+            ) : (
+              <div className="gal-stack">
+                <div className="gal-hero gal-empty" style={artStyle} aria-hidden="true">
+                  <div className="pc-obj" />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+            <WishButton id={product.id} name={product.name} className="pdp-heart-float" />
+          </div>
         </div>
 
         <div className="buy" ref={buyRef}>
@@ -379,31 +382,32 @@ export function ProductDetail({
             </details>
           )}
 
-          <div className="buyrow">
-            <div className="qty">
-              <button
-                type="button"
-                aria-label="Decrease quantity"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-              >
-                −
+          <div className="buyrow-slot">
+            <div className="buyrow">
+              <div className="qty">
+                <button
+                  type="button"
+                  aria-label="Decrease quantity"
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                >
+                  −
+                </button>
+                <span aria-live="polite">{qty}</span>
+                <button
+                  type="button"
+                  aria-label="Increase quantity"
+                  onClick={() => setQty((q) => Math.min(100, q + 1))}
+                >
+                  +
+                </button>
+              </div>
+              <button type="button" className="btn btn-primary" onClick={addToCart}>
+                Add to cart
               </button>
-              <span aria-live="polite">{qty}</span>
-              <button
-                type="button"
-                aria-label="Increase quantity"
-                onClick={() => setQty((q) => Math.min(100, q + 1))}
-              >
-                +
-              </button>
+              <p className="status" role="status" aria-live="polite">
+                {status}
+              </p>
             </div>
-            <button type="button" className="btn btn-primary" onClick={addToCart}>
-              Add to cart
-            </button>
-            <WishButton id={product.id} name={product.name} className="pc-round pdp-heart" />
-            <p className="status" role="status" aria-live="polite">
-              {status}
-            </p>
           </div>
 
           <div className="sub-links">

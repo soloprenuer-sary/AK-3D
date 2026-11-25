@@ -10,7 +10,11 @@ export function CheckoutTray() {
   const path = usePathname();
   if (count === 0 || path === '/checkout' || path === '/cart') return null;
   return (
-    <div className="checkout-tray" role="region" aria-label="Checkout">
+    <div
+      className={path.startsWith('/product/') ? 'checkout-tray is-product' : 'checkout-tray'}
+      role="region"
+      aria-label="Checkout"
+    >
       <span>
         <b>{count}</b> {count === 1 ? 'item' : 'items'}
         {subtotal !== null && <> · {formatRupees(subtotal)}</>}

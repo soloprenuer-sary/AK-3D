@@ -539,8 +539,6 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
   /* knowledge hub on the home page scrolls sideways instead of stacking three tall cards */
   .hub-scroll{display:flex;overflow-x:auto;gap:14px;scroll-snap-type:x mandatory;scroll-padding-inline:var(--gutter);margin-inline:calc(var(--gutter)*-1);padding:0 var(--gutter) 6px!important;-webkit-overflow-scrolling:touch}
   .hub-scroll>.post-card{flex:0 0 82%;scroll-snap-align:start}
-  /* add-to-cart stays reachable while reading the product options */
-  .buyrow{position:sticky;bottom:0;z-index:20;background:var(--paper);margin-inline:calc(var(--gutter)*-1);padding:10px var(--gutter) calc(10px + env(safe-area-inset-bottom,0px));border-top:1.5px solid var(--ink);gap:10px}
   .buyrow .btn{flex:1 1 150px}
   .qty button{width:46px;height:52px}
 }
@@ -1495,3 +1493,19 @@ dialog:has(.qv-body){overflow:hidden}
 /* Short description: 140 characters on phones, the full text elsewhere */
 .short-desc-phone{display:none}
 @media (max-width:640px){.short-desc-phone{display:block}.short-desc-full{display:none}}
+
+/* Product page: wishlist button on the top-left of the photo */
+.gal-wrap{position:relative;min-width:0;display:flex;flex-direction:column}
+.pdp-heart-float{position:absolute!important;top:14px!important;left:14px!important;right:auto!important;z-index:5;width:48px!important;height:48px!important;opacity:1!important;transform:none!important}
+.pdp-heart-float{border-radius:50%;border:1.5px solid var(--ink);background:var(--white);display:grid;place-items:center;cursor:pointer}
+.pdp-heart-float:hover,.pdp-heart-float[aria-pressed="true"]{background:var(--accent)}
+
+/* Product page: quantity and Add to cart stay at the bottom of a phone screen, clear of the header */
+.buyrow-slot{display:block}
+@media (max-width:939px){
+  .buyrow-slot{height:var(--buybar-h,80px)}
+  .buyrow{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;padding:10px var(--gutter) calc(10px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1.5px solid var(--ink);gap:10px;flex-wrap:nowrap;align-items:center}
+  .buyrow .btn{flex:1 1 auto;min-width:0}
+  .buyrow .status{position:absolute;left:var(--gutter);right:var(--gutter);top:-28px;margin:0;font-size:13px;background:var(--paper)}
+  .checkout-tray.is-product{display:none}
+}
