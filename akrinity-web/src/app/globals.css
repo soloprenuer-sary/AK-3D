@@ -1456,20 +1456,17 @@ dialog:has(.qv-body){overflow:hidden}
 @media (max-width:640px){.qa-card{padding:20px 16px;border-radius:24px}.qa-form .grid2{grid-template-columns:minmax(0,1fr)}}
 
 /* ===== Product photo carousel ===== */
-.pc-carousel{display:flex;flex-direction:column;gap:12px;min-width:0}
-.pc-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;gap:0;border-radius:28px;outline-offset:4px}
+.pc-carousel{position:relative;min-width:0}
+.pc-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:28px;outline-offset:4px}
 .pc-track::-webkit-scrollbar{display:none}
 .pc-track:focus-visible{outline:2px solid var(--violet)}
 .pc-slide{flex:0 0 100%;scroll-snap-align:start;margin:0;position:relative;aspect-ratio:1/1;border:1.5px solid var(--ink);border-radius:28px;overflow:hidden;background:var(--white);display:grid;place-items:center}
 .pc-slide img{width:100%;height:100%;object-fit:contain;padding:14px;display:block}
-.pc-controls{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.pc-arrow{min-width:44px;min-height:44px;border-radius:999px;border:1.5px solid var(--ink);background:var(--white);font-size:18px;font-weight:600;cursor:pointer}
+.pc-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:44px;height:44px;border-radius:999px;border:1.5px solid var(--ink);background:var(--white);font-size:18px;font-weight:600;cursor:pointer;display:grid;place-items:center;padding:0}
+.pc-prev{left:12px}
+.pc-next{right:12px}
 .pc-arrow:disabled{opacity:.35;cursor:default}
 .pc-arrow:not(:disabled):hover{background:var(--accent)}
-.pc-dots{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;flex:1}
-.pc-dot{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--ink);background:var(--white);padding:0;cursor:pointer}
-.pc-dot[aria-current="true"]{background:var(--ink)}
-.pc-count{font-size:14px;font-weight:600;color:var(--muted);min-width:48px;text-align:right}
 @media (prefers-reduced-motion:reduce){.pc-track{scroll-behavior:auto}}
 
 /* ===== Phone header and breadcrumb: one row each ===== */

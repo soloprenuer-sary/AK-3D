@@ -54,41 +54,26 @@ export function PhotoCarousel({ photos, name }: { photos: string[]; name: string
       </div>
 
       {photos.length > 1 && (
-        <div className="pc-controls">
+        <>
           <button
             type="button"
-            className="pc-arrow"
+            className="pc-arrow pc-prev"
             aria-label="Previous photo"
             onClick={() => goTo(index - 1)}
             disabled={index === 0}
           >
             ←
           </button>
-          <div className="pc-dots">
-            {photos.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                className="pc-dot"
-                aria-label={`Show photo ${i + 1}`}
-                aria-current={i === index}
-                onClick={() => goTo(i)}
-              />
-            ))}
-          </div>
-          <span className="pc-count" aria-live="polite">
-            {index + 1} / {photos.length}
-          </span>
           <button
             type="button"
-            className="pc-arrow"
+            className="pc-arrow pc-next"
             aria-label="Next photo"
             onClick={() => goTo(index + 1)}
             disabled={index === last}
           >
             →
           </button>
-        </div>
+        </>
       )}
     </div>
   );
