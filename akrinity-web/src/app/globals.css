@@ -47,7 +47,7 @@ h2.d{font-size:clamp(48px,7.2vw,80px);line-height:1}
 header.site{background:var(--paper);border-bottom:1.5px solid var(--ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
 header.site .bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px 32px;padding-block:16px}
 .logo{display:flex;align-items:center;gap:8px;font:400 34px/1 var(--display);letter-spacing:.02em;text-decoration:none;text-transform:uppercase}
-.logo i{width:12px;height:12px;border-radius:50%;background:var(--accent);border:1.5px solid var(--ink);display:inline-block}
+.logo img{display:block;height:72px;width:auto}
 nav.main{display:flex;flex-wrap:wrap;gap:4px 28px;font-weight:600;font-size:15px}
 nav.main a{text-decoration:none;padding:12px 0;transition:color .2s var(--ease)}
 nav.main a:hover{color:var(--violet)}
@@ -1221,7 +1221,7 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 /* ===== Product page, buy panel kept short so it can stay in place (like the reference shop) ===== */
 @media (min-width:940px){.pdp{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:32px}}
 .buy{gap:14px}
-.buy h1{font-size:clamp(30px,3vw,40px);line-height:1.02;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.buy h1{font-size:clamp(30px,3vw,40px);line-height:1.02;overflow-wrap:anywhere}
 .buy h1.h1-long{font-size:clamp(20px,1.9vw,24px);line-height:1.25}
 .buy .opt{gap:6px}
 .buy .opt legend{margin-bottom:6px}
@@ -1251,7 +1251,6 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .more-details>.opt{margin-bottom:10px}
 .more-details>.bulk{margin-bottom:0}
 .buy{gap:10px}
-.buy h1{-webkit-line-clamp:2}
 .buy .price{margin-block:-2px}
 
 /* ===== Description: alternating rows (A+ content) and picture strip above long text ===== */
@@ -1474,3 +1473,25 @@ dialog:has(.qv-body){overflow:hidden}
 .pc-dot[aria-current="true"]{background:var(--ink)}
 .pc-count{font-size:14px;font-weight:600;color:var(--muted);min-width:48px;text-align:right}
 @media (prefers-reduced-motion:reduce){.pc-track{scroll-behavior:auto}}
+
+/* ===== Phone header and breadcrumb: one row each ===== */
+@media (max-width:640px){
+  header.site .bar{flex-wrap:nowrap;gap:10px;padding-block:12px}
+  .logo img{height:56px}
+  .hdr-actions{gap:8px;flex-shrink:0}
+  .circle{width:40px;height:40px;font-size:13px}
+  .crumbs{flex-wrap:nowrap;white-space:nowrap;overflow:hidden;align-items:center;gap:6px;padding-top:16px;font-size:13px}
+  .crumbs>*{flex:0 0 auto}
+  .crumbs a{min-height:32px}
+  .crumbs span[aria-current]{flex:1 1 auto;min-width:0;max-width:none}
+}
+@media (max-width:360px){
+  header.site .bar{gap:8px}
+  .logo img{height:48px}
+  .hdr-actions{gap:6px}
+  .circle{width:36px;height:36px}
+}
+
+/* Short description: 140 characters on phones, the full text elsewhere */
+.short-desc-phone{display:none}
+@media (max-width:640px){.short-desc-phone{display:block}.short-desc-full{display:none}}

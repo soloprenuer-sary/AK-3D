@@ -22,6 +22,16 @@ import { addWorkingDays, site } from '@/lib/site-config';
 
 type Size = string;
 
+/** On phones the short description is cut to 140 characters at a word, ending with "…". */
+const PHONE_DESC_MAX = 140;
+function clipPhone(text: string): string {
+  if (text.length <= PHONE_DESC_MAX) return text;
+  const cut = text.slice(0, PHONE_DESC_MAX - 1);
+  const space = cut.lastIndexOf(' ');
+  const base = space > 80 ? cut.slice(0, space) : cut;
+  return base.replace(/[\s,;:.–-]+$/, '') + '…';
+}
+
 const PERSONAL_MAX = 40;
 const PERSONAL_RULE = /^[A-Za-z0-9 ]*$/;
 const PERSONAL_MESSAGE = 'Use letters, numbers and spaces only.';
@@ -237,7 +247,12 @@ export function ProductDetail({
               incl. GST
             </span>
           </div>
-          {product.description && <p className="desc short-desc">{product.description}</p>}
+          {product.description && (
+            <>
+              <p className="desc short-desc short-desc-phone">{clipPhone(product.description)}</p>
+              <p className="desc short-desc short-desc-full">{product.description}</p>
+            </>
+          )}
 
           {modeList.length > 0 && (
             <fieldset className="opt">

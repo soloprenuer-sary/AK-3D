@@ -36,8 +36,8 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
     <header className="site">
       <div className="wrap bar">
         <Link className="logo" href="/" aria-label="Akrinity home">
-          Akrinity
-          <i aria-hidden="true" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/akrinity-logo.svg" alt="" width={551} height={450} />
         </Link>
 
         <nav className="main" aria-label="Main">
