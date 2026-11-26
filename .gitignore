@@ -30,3 +30,6 @@ Thumbs.db
 
 # Product exports and imports (not for the repo)
 imports/
+
+# packages made for handing over
+deliverables/

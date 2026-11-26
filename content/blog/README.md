@@ -1,11 +1,12 @@
-# Knowledge hub articles (drafts, not published)
+# Knowledge hub articles (not uploaded yet)
 
-Eleven articles, ready for review. Nothing here is live yet. The site still reads articles from WordPress (decision 24); where these are stored is the owner's open decision (see `docs/PROJECT_CONTEXT.md`, decision 57).
+Eleven articles, ready to upload. Nothing here is live yet. Articles live in WordPress (owner decision 2026-11-27, see `docs/PROJECT_CONTEXT.md`, decision 57). How to upload them: `docs/BACKEND_TASK_BLOG.md`.
 
 ## Files
 
 - `posts.json`: slug, title, summary, category, cover picture and its alt text.
 - `<slug>.html`: the article text, written in the plain HTML the WordPress editor accepts (headings, lists, tables, quote boxes, figures).
+- `import-articles.php`: uploads the pictures and creates or updates the posts (WP-CLI).
 - `images/`: the pictures to upload (PNG, 1600 x 900). Editable sources and the drawing script are in `design/blog-images/`.
 - `preview.mjs`: shows these drafts on the real site without publishing: `node content/blog/preview.mjs`, then open http://localhost:3200/guides.
 
