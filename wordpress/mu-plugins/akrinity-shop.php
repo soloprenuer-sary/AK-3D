@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Akrinity shop
- * Description: What the headless storefront needs from WooCommerce for checkout, orders and the 3D preview. Works with akrinity-headless-auth.php (version 2.5.0 or newer). Version 1.1.0.
+ * Description: What the headless storefront needs from WooCommerce for checkout, orders and the 3D preview. Works with akrinity-headless-auth.php (version 2.5.0 or newer). Version 1.2.0.
  *
  * Install: copy this file to wp-content/mu-plugins/ next to the other Akrinity files. It uses the same
  * AKRINITY_FRONTEND_URL and AKRINITY_SHARED_SECRET constants. Optional constants for wp-config.php:
@@ -495,6 +495,9 @@ add_action(
 				$t        = akr_order_tracking( $order );
 				$partners = akr_delivery_partners();
 				$picked   = (string) $order->get_meta( '_akr_partner' );
+				if ( '' === $picked && function_exists( 'akr_product_courier' ) ) {
+					$picked = akr_product_courier( $order )['partner'];
+				}
 				if ( '' === $picked && '' !== $t['courier'] ) {
 					$picked = isset( $partners[ $t['courier'] ] ) ? $t['courier'] : 'Other';
 				}
@@ -573,6 +576,12 @@ add_action(
 		}
 		$awb = trim( sanitize_text_field( wp_unslash( $_POST['akr_awb'] ?? '' ) ) );
 		$url = esc_url_raw( wp_unslash( $_POST['akr_tracking_url'] ?? '' ) );
+		if ( '' === $url && '' !== $awb && '' !== $partner && function_exists( 'akr_product_courier' ) ) {
+			$tpl = akr_product_courier( $order )['template'];
+			if ( '' !== $tpl && $partner === akr_product_courier( $order )['partner'] ) {
+				$url = esc_url_raw( str_replace( '{id}', rawurlencode( $awb ), $tpl ) );
+			}
+		}
 		if ( '' === $url && '' !== $awb && '' !== $partner && ! empty( $partners[ $partner ] ) ) {
 			$url = esc_url_raw( str_replace( '{id}', rawurlencode( $awb ), $partners[ $partner ] ) );
 		}

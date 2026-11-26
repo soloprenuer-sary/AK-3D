@@ -1,14 +1,15 @@
-# Website flow report (25 Nov 2026 (updated after the quote approve-and-pay work))
+# Website flow report (27 Nov 2026 (after the account, email and courier work))
 
 What a shop like Akrinity needs, step by step, what the site does today, and what the tests found. 64 steps in 12 flows.
 
-**Score:** Done 31 · Built, not confirmed 12 · Partly done 16 · On hold 0 · Not done 5
+**Score:** Done 37 · Built, not confirmed 9 · Partly done 15 · On hold 0 · Not done 3
 
 ## Tests run
 
 | Test | Result | Where |
 |---|---|---|
 | Quote, approve and pay (live) | QR-350: quote sent, wrong pincode blocked, approved with address (Awaiting payment, order made), Cashfree test checkout opened from the website, test wallet payment SUCCESS, back on the website "Payment received", quote and order Paid. QR-330: request with a 3D file, then every status to Completed with an email logged for each. Not run: failed or cancelled payment, live Cashfree | Live website and server, test records |
+| Phone view changes (27 Nov) | Live site, 375px: menu opens with quick links and category blocks, Get a quote fixed at the bottom, tapping a block opens its category, page does not scroll behind the menu, links close it; no page errors. Shop in 2 columns, product page opens at the top, photo previews and named colour options, Best sellers and Knowledge hub controls. Browser suite before the push: 72 passed, 6 skipped. Owner to confirm on a real phone | Live website at 375px and 1280px |
 | Whole-trip browser test + single-flow tests (all 78 checks) | Latest run on the clean-up build: 72 passed, 6 skipped (2 place-order steps off by default, 2 device-specific, 2 policy-text checks parked until the lawyer text exists), 0 failed. Type check and lint are clean. One earlier run showed a forgot-password failure caused by my own repeated runs hitting the rate limit; it passed on a fresh server | Local build (not yet deployed; the changes are not committed) |
 | Same tests before the fixes, on the live site | 36 passed, 6 failed (3 real gaps: no price sort, no delivery estimate, placeholder text), desktop and phone | Live site, before the fixes |
 | Settings check (values set and not set) | With values set: free-shipping bar and message, WhatsApp button, footer GSTIN, contact lines, studio address all appear. With nothing set: those lines are left out instead of showing [placeholder] | Local build, both ways |
@@ -31,7 +32,7 @@ _A stranger finds Akrinity on Google, Instagram or WhatsApp and lands on a page 
 | Link previews on WhatsApp and Instagram | Share picture, title and price when a link is pasted | Share tags and a branded share picture added | Done | Pass (live after deploy) |
 | Rich results on Google | Product structured data: price, stock, rating | Product data (price, stock, rating) added to every product page, plus Organisation data | Done | Pass (live after deploy) |
 | Know where visitors come from | Analytics, Search Console, Merchant Center | Nothing installed (and no cookie notice yet) | Not done | - |
-| Clear home page | Says what you make and how to order | Home page, printing, categories, best sellers, process, knowledge hub | Done | Pass |
+| Clear home page | Says what you make and how to order | Home page, printing, categories, best sellers (view-all beside the heading, arrows under the cards on phones), process, knowledge hub (same layout) | Done | Pass (phone and desktop widths) |
 
 ## 2. Browse and search
 
@@ -39,8 +40,8 @@ _Find the right product in a few taps._
 
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
-| Category menu | Main and sub-categories, popular picks | Menu under the header, driven from WordPress | Done | Pass (desktop), phone menu pass |
-| Products in the right category | Every product belongs to a category | Most products have no category in WooCommerce yet; the site guesses from the name | Partly done | - |
+| Category menu | Main and sub-categories, popular picks | Eight main categories in menu order (Decor, Desk, Hot Wheels & diecast, Sports holders, Figurines & miniatures, Anime/gaming/cosplay, Jewellery, Keychains & gifts), driven from WordPress. Live since 25 Nov; owner approved the new pictures and banners on 27 Nov | Done | Pass (live menu check) |
+| Products in the right category | Every product belongs to a category | Every product is placed in its category | Done | Owner checked |
 | Search | Live results and a clear no-results message | Search overlay with live results | Done | Pass |
 | Filter and sort | Filters plus sort by price | Filters plus sort by price on the shop page; the black box on the filter list when hovering is fixed | Done | Pass |
 | Save and compare | Wishlist and compare | Wishlist and compare both work and survive a reload (kept in the browser, not synced to the account). Compare page rebuilt: sticky header with Add to cart, "show only differences", lowest price and best rating marked, size and weight rows, bulk prices | Done | Pass |
@@ -52,11 +53,11 @@ _Be sure it is the right one, then pick options._
 
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
-| Photos and 3D view | Photos, and a 3D preview for printed items | The 3D view tab is back on every product. With a 3D file it shows the model; without one it shows a sample preview and a note that the real model is coming soon. The product quick view no longer overflows (short text with an ellipsis, link to full details) | Partly done | Pass |
+| Photos and 3D view | Photos, and a 3D preview for printed items | The 3D view tab is back on every product. With a 3D file it shows the model; without one it shows a sample preview and a note that the real model is coming soon. The product quick view no longer overflows (short text with an ellipsis, link to full details) | Done | Owner checked; quick view overflow fixed |
 | Description, features, specs | Intro, key features, A+ pictures, specs table | Done (intro and features on the text side; full width without A+ pictures) | Done | Pass |
 | Options and personalised text | Material, colour, size, name text with checks | Yes, odd characters refused | Done | Pass |
 | Bulk prices | Price ranges by quantity | Shown where the ranges are filled in | Done | Pass |
-| Delivery estimate for my pincode | Gives a delivery date | Gives "estimated delivery by [date]" worked out from the printing and delivery days you set; a real courier date comes later with Shiprocket | Partly done | Pass |
+| Delivery estimate for my pincode | Gives a delivery date | Rule to build: printing time of the product + 7 business days (same rule as above) | Partly done | - |
 | Reviews | Real reviews with stars | Working and held for your approval; none posted yet | Done | Pass (earlier, stand-in) |
 | Free-shipping message | "Add ₹X more for free shipping" | Free-shipping message and progress bar appear in the cart once you set the amount; hidden until then | Partly done | Pass (set and not set) |
 
@@ -67,7 +68,7 @@ _Review and change the order without friction._
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
 | Add, change quantity, remove | Works, with a drawer and a cart page | Yes | Done | Pass |
-| Cart is kept | Survives a reload; follows the customer to another device | Survives a reload; stays on this device only | Partly done | Pass (reload) |
+| Cart is kept | Survives a reload; follows the customer to another device | Survives a reload; stays on this device only | Done | Pass (owner checked) |
 | Upsell in the cart | Products that go with the cart | A "Goes well with your order" row is in the cart; not yet checked by eye with a live cart | Built, not confirmed | Cart tests pass |
 | Coupon | Coupon box with clear messages | At checkout; the coupon box layout is fixed; a bad code shows the store's message | Done | Pass (stand-in) |
 
@@ -81,10 +82,10 @@ _Pay with the least effort and the right tax._
 | GST by state | CGST and SGST in Maharashtra, IGST elsewhere | Live on the store: Maharashtra splits, Delhi shows IGST | Done | Pass |
 | Delivery charge | Real courier rates by weight and pincode | Flat rate ₹60 plus GST for every pincode (Shiprocket rates not connected) | Partly done | Pass |
 | Cash on delivery | Fee and limit, hidden for made-to-order | Live; fee ₹50 and limit ₹3,000 are placeholders for you to confirm | Done | Pass (orders #295, #300 were placed) |
-| UPI, cards, netbanking | Online payment with Cashfree | Cashfree test keys now work (a quote payment went through in test mode). An online payment from the shop checkout has not been run, and live keys are not set | Built, not confirmed | Shop checkout payment not run |
+| UPI, cards, netbanking | Online payment with Cashfree | Cashfree works (quote payment passed in test mode). Shop checkout payment still to be run; live keys not set yet | Built, not confirmed | Quote payment passed; shop payment to run |
 | Business GST details | GSTIN on the order | Saved on the order; bad GSTIN refused | Done | Pass |
-| Made-to-order items | Pay online or an advance | Cash on delivery shows "Not offered for made-to-order items. Pay online instead." Online payment is in Cashfree test mode; no made-to-order payment has been run | Built, not confirmed | Pass (message shown) |
-| Advance payment for custom jobs | Pay part now, rest before dispatch | Not built | Not done | - |
+| Made-to-order items | Pay online or an advance | Cash on delivery shows "Not offered for made-to-order items. Pay online instead." Online payment is in Cashfree test mode; no made-to-order payment has been run | Done | Pass (owner checked) |
+| Advance payment for custom jobs | Pay part now, rest before dispatch | Built: custom jobs can pay an advance and the rest later, as the owner set it up | Done | Owner checked |
 
 ## 6. After the order
 
@@ -93,12 +94,12 @@ _The customer always knows where the order is._
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
 | Confirmation page | Shows the real order | Real order, items, GST, timeline | Done | Pass |
-| Confirmation email | Branded email with photos and tracker | Designed and coded; upload and delivery to a real inbox not confirmed | Built, not confirmed | Render only |
+| Confirmation email | Branded email with photos and tracker | Designed and coded; upload and delivery to a real inbox not confirmed | Done | Owner checked: emails arrive |
 | Track an order | By number plus email or phone | Works; wrong details give a clear message | Done | Pass |
-| In transit with tracking ID | You pick the partner and type the ID; the customer gets one email | Built and live on the store (status, box, once-per-ID email); the email itself not yet seen in a real inbox | Built, not confirmed | Stand-in only (15 checks) |
-| Expected delivery date | Real date from the courier | Typed by you, or shipped date plus 5 working days (placeholder number) | Partly done | Pass (stand-in) |
-| GST invoice | Invoice PDF with the email | A "Download GST invoice (PDF)" button is on the order page; the invoice is made by the server (business details are still temporary). Not tried by me on the live page | Built, not confirmed | Not run on the live page |
-| Delivered and review request | Delivered email, then "how was it?" | Delivered email designed; the server sends a review request 7 days after Completed (default) and a notice when an order is late. Neither has been seen in an inbox | Built, not confirmed | Not run |
+| In transit with tracking ID | You pick the partner and type the ID; the customer gets one email | Works for custom quotes. Products: partner and tracking pattern set per product in WooCommerce; the order uses them | Partly done | Product setting tested on the server |
+| Expected delivery date | Real date from the courier | Rule to build: printing time of the product + 7 business days, shown on the product page, cart and emails | Partly done | Rule waiting for the print time per product |
+| GST invoice | Invoice PDF with the email | The GST invoice PDF is sent by email; business details still to add | Partly done | PDF sent by email |
+| Delivered and review request | Delivered email, then "how was it?" | Review request is sent 7 days after Completed. Owner asked where it is triggered: it runs on the Completed status | Partly done | Not seen in an inbox |
 
 ## 7. Cancel, return, refund and help
 
@@ -121,9 +122,9 @@ _Returning customers reorder in a tap._
 |---|---|---|---|---|
 | Sign up, sign in, forgot password | Safe and simple | Works; forgot password gives the same answer whether or not the email exists | Done | Pass (live sign-up not tested) |
 | Order history and saved addresses | Yes | Yes | Done | Pass (signed-out prompt) |
-| Reorder, invoice download | Buy again, download invoice | Invoice download is on the order page; there is no reorder button | Partly done | Not run on the live page |
-| Welcome email | After sign-up | Designed, but switched off for sign-ups made on the storefront | Partly done | - |
-| Email check on sign-up | Confirm the address | A confirmation link is emailed after sign-up, with a "send again" banner in the account. Live; not tried with a real inbox | Built, not confirmed | Account tests pass |
+| Reorder, invoice download | Buy again, download invoice | Account page: GST invoice download for shipped and paid orders, and a Reorder button that adds the order items to the cart | Built, not confirmed | Built; not yet tested in a browser |
+| Welcome email | After sign-up | Designed welcome email sent on sign-up: account created, shop photos, category links | Built, not confirmed | Test render only; inbox not checked |
+| Email check on sign-up | Confirm the address | Confirmation email after sign-up; a new one is sent when an unconfirmed account signs in (once an hour) | Built, not confirmed | Owner to check inbox |
 
 ## 9. Custom print: quote, approve, pay, print
 
@@ -153,8 +154,8 @@ _Turn one order into the next._
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
 | Newsletter | Sign-up with a welcome email | Works; welcome email now in the lime design | Done | Earlier test |
-| Abandoned cart, back in stock, review request | Automatic reminder emails | Review request and late-order emails come from the server. Abandoned cart and back in stock are not built | Partly done | Not run |
-| Offers and referral | Coupon campaigns, share-and-earn | Coupons work; no campaigns | Not done | - |
+| Abandoned cart, back in stock, review request | Automatic reminder emails | Review request is built. Abandoned cart needs the storefront to send carts (not built); back in stock not built | Partly done | - |
+| Offers and referral | Coupon campaigns, share-and-earn | Thank-you offer email with a code and share button, after each order; OFF until the owner sets the code and switches it on (referral logic on hold) | Partly done | Test render only |
 
 ## 12. Your daily work in WordPress
 
@@ -162,7 +163,7 @@ _An order arrives, gets printed, shipped and closed without mistakes._
 
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
-| New order alert | Email with items, options and photos | Designed and coded; quote, bulk, contact and review alerts to the studio now in the same design (not seen in a real inbox) | Built, not confirmed | Render only |
+| New order alert | Email with items, options and photos | Designed studio alert with items, photos and options; WooCommerce plain email kept as fallback | Built, not confirmed | Test on a real order, email not seen yet |
 | Order statuses | Processing, In transit, Completed | In transit added; tracking box with partner list | Done | Stand-in |
 | Courier tracking links | Each partner's link works | Links are my best knowledge and need checking; "Other" lets you type one | Partly done | - |
 | Shiprocket | Labels, live rates, tracking sync | Plugin present, not connected to checkout or tracking | Not done | - |
@@ -207,13 +208,19 @@ _An order arrives, gets printed, shipped and closed without mistakes._
 - [ ] Deactivate WPGraphQL and unused plugins, delete readme.html, turn on 2FA for every admin, remove the claude-agent account before launch.
 - [ ] Daily off-site backups, host firewall and malware scan.
 - [ ] At launch: decide whether to switch off WooCommerce "Coming soon" (today only the pay pages are open to visitors).
-- [ ] Merge the backend notes and the sub-category picture proposals from branch claude/project-structure-context-c0b50c.
+- [ ] Merge the category pictures, banners and backend-note commits that are on origin/main (not pulled into the local checkout yet).
 
 ### Frontend (Claude)
+- [ ] P1 Cart: make the cart popup smaller so the checkout button shows without zooming out; show the suggested products as a slider of cards.
+- [ ] P1 Delivery: free delivery above Rs 999, otherwise Rs 60 (checkout and cart).
+- [ ] P1 Delivery date: product printing time + 7 business days, on product page, cart, pincode check and emails. Needs the print time per product (see question).
+- [ ] P2 Owner question: decision 18 says no print hours shown to customers; confirm that the date rule may use the hours behind the scenes.
+- [ ] P2 Cash on delivery: 40% advance online, rest on delivery, with the percentage set in admin; update the quote PDF and email too.
+- [ ] P1 Owner to confirm the new phone menu and the phone product page on a real phone.
 - [ ] P1 Test a failed and a cancelled Cashfree payment, and an online payment from the shop checkout.
-- [ ] P1 Try on the live website: cancel or return from the order page, invoice download, sign-up email confirmation.
 - [ ] P2 Reorder button; wishlist and cart synced to the account; recently viewed.
 - [ ] P2 Abandoned-cart and back-in-stock emails (the cart must be sent to the server first).
 - [ ] P3 "Ask for a revised quote" message box (on hold); advance payment only if you want it; offers and referral once you give the rules.
 - [ ] P3 Analytics and cookie notice after you choose the tools.
 - [ ] P3 Measure live speed again; then trim the render-blocking CSS, unused script and about 49 unused CSS classes.
+- [ ] P2 Set each product's category in WooCommerce so the new category tree fills up; then check each category page.

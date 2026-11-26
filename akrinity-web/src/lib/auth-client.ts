@@ -32,6 +32,8 @@ export interface OrderDetail extends OrderSummary {
     quantity: number;
     total: string;
     meta: { label: string; value: string }[];
+    product_id?: number;
+    slug?: string;
   }[];
   subtotal: string;
   shipping_total: string;

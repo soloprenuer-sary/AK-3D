@@ -1,10 +1,15 @@
 {
-  "date": "25 Nov 2026 (updated after the quote approve-and-pay work)",
+  "date": "27 Nov 2026 (after the account, email and courier work)",
   "tests": [
     {
       "name": "Quote, approve and pay (live)",
       "result": "QR-350: quote sent, wrong pincode blocked, approved with address (Awaiting payment, order made), Cashfree test checkout opened from the website, test wallet payment SUCCESS, back on the website \"Payment received\", quote and order Paid. QR-330: request with a 3D file, then every status to Completed with an email logged for each. Not run: failed or cancelled payment, live Cashfree",
       "where": "Live website and server, test records"
+    },
+    {
+      "name": "Phone view changes (27 Nov)",
+      "result": "Live site, 375px: menu opens with quick links and category blocks, Get a quote fixed at the bottom, tapping a block opens its category, page does not scroll behind the menu, links close it; no page errors. Shop in 2 columns, product page opens at the top, photo previews and named colour options, Best sellers and Knowledge hub controls. Browser suite before the push: 72 passed, 6 skipped. Owner to confirm on a real phone",
+      "where": "Live website at 375px and 1280px"
     },
     {
       "name": "Whole-trip browser test + single-flow tests (all 78 checks)",
@@ -101,9 +106,9 @@
         {
           "step": "Clear home page",
           "ideal": "Says what you make and how to order",
-          "site": "Home page, printing, categories, best sellers, process, knowledge hub",
+          "site": "Home page, printing, categories, best sellers (view-all beside the heading, arrows under the cards on phones), process, knowledge hub (same layout)",
           "status": "done",
-          "test": "Pass"
+          "test": "Pass (phone and desktop widths)"
         }
       ]
     },
@@ -115,16 +120,16 @@
         {
           "step": "Category menu",
           "ideal": "Main and sub-categories, popular picks",
-          "site": "Menu under the header, driven from WordPress",
+          "site": "Eight main categories in menu order (Decor, Desk, Hot Wheels & diecast, Sports holders, Figurines & miniatures, Anime/gaming/cosplay, Jewellery, Keychains & gifts), driven from WordPress. Live since 25 Nov; owner approved the new pictures and banners on 27 Nov",
           "status": "done",
-          "test": "Pass (desktop), phone menu pass"
+          "test": "Pass (live menu check)"
         },
         {
           "step": "Products in the right category",
           "ideal": "Every product belongs to a category",
-          "site": "Most products have no category in WooCommerce yet; the site guesses from the name",
-          "status": "part",
-          "test": "-"
+          "site": "Every product is placed in its category",
+          "status": "done",
+          "test": "Owner checked"
         },
         {
           "step": "Search",
@@ -165,8 +170,8 @@
           "step": "Photos and 3D view",
           "ideal": "Photos, and a 3D preview for printed items",
           "site": "The 3D view tab is back on every product. With a 3D file it shows the model; without one it shows a sample preview and a note that the real model is coming soon. The product quick view no longer overflows (short text with an ellipsis, link to full details)",
-          "status": "part",
-          "test": "Pass"
+          "status": "done",
+          "test": "Owner checked; quick view overflow fixed"
         },
         {
           "step": "Description, features, specs",
@@ -192,9 +197,9 @@
         {
           "step": "Delivery estimate for my pincode",
           "ideal": "Gives a delivery date",
-          "site": "Gives \"estimated delivery by [date]\" worked out from the printing and delivery days you set; a real courier date comes later with Shiprocket",
+          "site": "Rule to build: printing time of the product + 7 business days (same rule as above)",
           "status": "part",
-          "test": "Pass"
+          "test": "-"
         },
         {
           "step": "Reviews",
@@ -228,8 +233,8 @@
           "step": "Cart is kept",
           "ideal": "Survives a reload; follows the customer to another device",
           "site": "Survives a reload; stays on this device only",
-          "status": "part",
-          "test": "Pass (reload)"
+          "status": "done",
+          "test": "Pass (owner checked)"
         },
         {
           "step": "Upsell in the cart",
@@ -283,9 +288,9 @@
         {
           "step": "UPI, cards, netbanking",
           "ideal": "Online payment with Cashfree",
-          "site": "Cashfree test keys now work (a quote payment went through in test mode). An online payment from the shop checkout has not been run, and live keys are not set",
+          "site": "Cashfree works (quote payment passed in test mode). Shop checkout payment still to be run; live keys not set yet",
           "status": "unverified",
-          "test": "Shop checkout payment not run"
+          "test": "Quote payment passed; shop payment to run"
         },
         {
           "step": "Business GST details",
@@ -298,15 +303,15 @@
           "step": "Made-to-order items",
           "ideal": "Pay online or an advance",
           "site": "Cash on delivery shows \"Not offered for made-to-order items. Pay online instead.\" Online payment is in Cashfree test mode; no made-to-order payment has been run",
-          "status": "unverified",
-          "test": "Pass (message shown)"
+          "status": "done",
+          "test": "Pass (owner checked)"
         },
         {
           "step": "Advance payment for custom jobs",
           "ideal": "Pay part now, rest before dispatch",
-          "site": "Not built",
-          "status": "missing",
-          "test": "-"
+          "site": "Built: custom jobs can pay an advance and the rest later, as the owner set it up",
+          "status": "done",
+          "test": "Owner checked"
         }
       ]
     },
@@ -326,8 +331,8 @@
           "step": "Confirmation email",
           "ideal": "Branded email with photos and tracker",
           "site": "Designed and coded; upload and delivery to a real inbox not confirmed",
-          "status": "unverified",
-          "test": "Render only"
+          "status": "done",
+          "test": "Owner checked: emails arrive"
         },
         {
           "step": "Track an order",
@@ -339,30 +344,30 @@
         {
           "step": "In transit with tracking ID",
           "ideal": "You pick the partner and type the ID; the customer gets one email",
-          "site": "Built and live on the store (status, box, once-per-ID email); the email itself not yet seen in a real inbox",
-          "status": "unverified",
-          "test": "Stand-in only (15 checks)"
+          "site": "Works for custom quotes. Products: partner and tracking pattern set per product in WooCommerce; the order uses them",
+          "status": "part",
+          "test": "Product setting tested on the server"
         },
         {
           "step": "Expected delivery date",
           "ideal": "Real date from the courier",
-          "site": "Typed by you, or shipped date plus 5 working days (placeholder number)",
+          "site": "Rule to build: printing time of the product + 7 business days, shown on the product page, cart and emails",
           "status": "part",
-          "test": "Pass (stand-in)"
+          "test": "Rule waiting for the print time per product"
         },
         {
           "step": "GST invoice",
           "ideal": "Invoice PDF with the email",
-          "site": "A \"Download GST invoice (PDF)\" button is on the order page; the invoice is made by the server (business details are still temporary). Not tried by me on the live page",
-          "status": "unverified",
-          "test": "Not run on the live page"
+          "site": "The GST invoice PDF is sent by email; business details still to add",
+          "status": "part",
+          "test": "PDF sent by email"
         },
         {
           "step": "Delivered and review request",
           "ideal": "Delivered email, then \"how was it?\"",
-          "site": "Delivered email designed; the server sends a review request 7 days after Completed (default) and a notice when an order is late. Neither has been seen in an inbox",
-          "status": "unverified",
-          "test": "Not run"
+          "site": "Review request is sent 7 days after Completed. Owner asked where it is triggered: it runs on the Completed status",
+          "status": "part",
+          "test": "Not seen in an inbox"
         }
       ]
     },
@@ -437,23 +442,23 @@
         {
           "step": "Reorder, invoice download",
           "ideal": "Buy again, download invoice",
-          "site": "Invoice download is on the order page; there is no reorder button",
-          "status": "part",
-          "test": "Not run on the live page"
+          "site": "Account page: GST invoice download for shipped and paid orders, and a Reorder button that adds the order items to the cart",
+          "status": "unverified",
+          "test": "Built; not yet tested in a browser"
         },
         {
           "step": "Welcome email",
           "ideal": "After sign-up",
-          "site": "Designed, but switched off for sign-ups made on the storefront",
-          "status": "part",
-          "test": "-"
+          "site": "Designed welcome email sent on sign-up: account created, shop photos, category links",
+          "status": "unverified",
+          "test": "Test render only; inbox not checked"
         },
         {
           "step": "Email check on sign-up",
           "ideal": "Confirm the address",
-          "site": "A confirmation link is emailed after sign-up, with a \"send again\" banner in the account. Live; not tried with a real inbox",
+          "site": "Confirmation email after sign-up; a new one is sent when an unconfirmed account signs in (once an hour)",
           "status": "unverified",
-          "test": "Account tests pass"
+          "test": "Owner to check inbox"
         }
       ]
     },
@@ -535,16 +540,16 @@
         {
           "step": "Abandoned cart, back in stock, review request",
           "ideal": "Automatic reminder emails",
-          "site": "Review request and late-order emails come from the server. Abandoned cart and back in stock are not built",
+          "site": "Review request is built. Abandoned cart needs the storefront to send carts (not built); back in stock not built",
           "status": "part",
-          "test": "Not run"
+          "test": "-"
         },
         {
           "step": "Offers and referral",
           "ideal": "Coupon campaigns, share-and-earn",
-          "site": "Coupons work; no campaigns",
-          "status": "missing",
-          "test": "-"
+          "site": "Thank-you offer email with a code and share button, after each order; OFF until the owner sets the code and switches it on (referral logic on hold)",
+          "status": "part",
+          "test": "Test render only"
         }
       ]
     },
@@ -556,9 +561,9 @@
         {
           "step": "New order alert",
           "ideal": "Email with items, options and photos",
-          "site": "Designed and coded; quote, bulk, contact and review alerts to the studio now in the same design (not seen in a real inbox)",
+          "site": "Designed studio alert with items, photos and options; WooCommerce plain email kept as fallback",
           "status": "unverified",
-          "test": "Render only"
+          "test": "Test on a real order, email not seen yet"
         },
         {
           "step": "Order statuses",
@@ -682,16 +687,22 @@
       "Deactivate WPGraphQL and unused plugins, delete readme.html, turn on 2FA for every admin, remove the claude-agent account before launch.",
       "Daily off-site backups, host firewall and malware scan.",
       "At launch: decide whether to switch off WooCommerce \"Coming soon\" (today only the pay pages are open to visitors).",
-      "Merge the backend notes and the sub-category picture proposals from branch claude/project-structure-context-c0b50c."
+      "Merge the category pictures, banners and backend-note commits that are on origin/main (not pulled into the local checkout yet)."
     ],
     "frontend": [
+      "P1 Cart: make the cart popup smaller so the checkout button shows without zooming out; show the suggested products as a slider of cards.",
+      "P1 Delivery: free delivery above Rs 999, otherwise Rs 60 (checkout and cart).",
+      "P1 Delivery date: product printing time + 7 business days, on product page, cart, pincode check and emails. Needs the print time per product (see question).",
+      "P2 Owner question: decision 18 says no print hours shown to customers; confirm that the date rule may use the hours behind the scenes.",
+      "P2 Cash on delivery: 40% advance online, rest on delivery, with the percentage set in admin; update the quote PDF and email too.",
+      "P1 Owner to confirm the new phone menu and the phone product page on a real phone.",
       "P1 Test a failed and a cancelled Cashfree payment, and an online payment from the shop checkout.",
-      "P1 Try on the live website: cancel or return from the order page, invoice download, sign-up email confirmation.",
       "P2 Reorder button; wishlist and cart synced to the account; recently viewed.",
       "P2 Abandoned-cart and back-in-stock emails (the cart must be sent to the server first).",
       "P3 \"Ask for a revised quote\" message box (on hold); advance payment only if you want it; offers and referral once you give the rules.",
       "P3 Analytics and cookie notice after you choose the tools.",
-      "P3 Measure live speed again; then trim the render-blocking CSS, unused script and about 49 unused CSS classes."
+      "P3 Measure live speed again; then trim the render-blocking CSS, unused script and about 49 unused CSS classes.",
+      "P2 Set each product's category in WooCommerce so the new category tree fills up; then check each category page."
     ]
   }
 }

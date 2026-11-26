@@ -419,6 +419,16 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
     await new Promise((r) => setTimeout(r, 400)); // slows guessing a little
     return json({ error: BAD_LOGIN }, 401);
   }
+  // An account that has not confirmed its address gets a new confirmation email on sign-in
+  // (at most one an hour per address, so it cannot be used to flood a mailbox).
+  const unconfirmed = await wpCustomer(env, '/me', jwt.token, 'GET');
+  if (unconfirmed.status === 200 && unconfirmed.data.email_verified === false) {
+    const key = `verify-login:${await sha(email)}`;
+    if ((await readCount(env, key)) === 0) {
+      await bump(env, key, 3600);
+      await wpService(env, '/verify/resend', { email });
+    }
+  }
   return json({ user: { name: nameOf(jwt), email } }, 200, {
     'Set-Cookie': sessionCookie(jwt.token, tokenSeconds(jwt.token)),
   });

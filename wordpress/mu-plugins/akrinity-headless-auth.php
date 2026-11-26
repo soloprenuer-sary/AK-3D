@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Akrinity headless account
  * Description: Customer sign-up, account details and orders, bulk prices and bulk quote requests for the headless storefront. The one approved WordPress snippet (decisions 20, 32 and 34).
- * Version: 2.7.0
+ * Version: 2.9.0
  *
  * Install: copy this file to wp-content/mu-plugins/ and add to wp-config.php:
  *   define( 'AKRINITY_FRONTEND_URL', 'https://www.example.com' );
@@ -124,6 +124,85 @@ function akr_after_response( callable $fn ): void {
 	);
 }
 
+/**
+ * Welcome email after sign-up: says the account was created and shows the shop with photos of
+ * in-stock products and the main categories. Sent once, when the account is made on the website.
+ */
+function akr_send_welcome( int $id ): void {
+	$user = get_user_by( 'id', $id );
+	$base = akr_frontend_url();
+	if ( ! $user || '' === $base || ! function_exists( 'akr_mail' ) || ! function_exists( 'akr_em_c' ) ) {
+		return;
+	}
+	$c     = akr_em_c();
+	$first = trim( (string) get_user_meta( $id, 'first_name', true ) );
+	$name  = '' !== $first ? $first : 'there';
+
+	// Photos: three in-stock products with a picture.
+	$picks = wc_get_products(
+		array(
+			'status'       => 'publish',
+			'stock_status' => 'instock',
+			'limit'        => 3,
+			'orderby'      => 'rand',
+			'return'       => 'objects',
+		)
+	);
+	$tiles = '';
+	foreach ( (array) $picks as $p ) {
+		$img = wp_get_attachment_image_url( $p->get_image_id(), 'woocommerce_thumbnail' );
+		if ( ! $img ) {
+			continue;
+		}
+		$tiles .= '<td width="33%" valign="top" style="padding:0 4px;"><a href="' . esc_url( $base . '/product/' . $p->get_slug() ) . '" style="text-decoration:none;">'
+			. '<img src="' . esc_url( $img ) . '" alt="' . esc_attr( $p->get_name() ) . '" width="170" style="display:block;width:100%;height:auto;border:1.5px solid ' . $c['ink'] . ';border-radius:16px;background:' . $c['white'] . ';" />'
+			. '<div style="font-family:' . $c['body'] . ';font-size:13px;font-weight:600;color:' . $c['ink'] . ';padding:8px 2px 0;line-height:1.3;">' . esc_html( wp_trim_words( $p->get_name(), 6, '…' ) ) . '</div></a></td>';
+	}
+	$photos = '' !== $tiles ? '<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>' . $tiles . '</tr></table>' : '';
+
+	// Categories as coloured chips linking into the shop.
+	$cats = array(
+		array( 'Decor', 'shop/decor', '#D8FF3A', '#0B0B0C' ),
+		array( 'Desk', 'shop/desk', '#5B2BE0', '#FFFFFF' ),
+		array( 'Jewellery', 'shop/jewellery', '#FF6A1F', '#0B0B0C' ),
+		array( 'Custom printing', 'quote', '#0B0B0C', '#F3F1EA' ),
+	);
+	$chips = '';
+	foreach ( $cats as $cat ) {
+		$chips .= '<td style="padding:0 4px 8px;"><a href="' . esc_url( $base . '/' . $cat[1] ) . '" style="display:inline-block;padding:11px 16px;border:1.5px solid ' . $c['ink'] . ';border-radius:999px;background:' . $cat[2] . ';color:' . $cat[3] . ';font-family:' . $c['body'] . ';font-size:14px;font-weight:700;text-decoration:none;">' . esc_html( $cat[0] ) . ' &rarr;</a></td>';
+	}
+	$chipTable = '<table role="presentation" cellpadding="0" cellspacing="0"><tr>' . $chips . '</tr></table>';
+
+	$blocks = array(
+		'<p style="font-family:' . $c['body'] . ';font-size:16px;line-height:1.55;color:' . $c['ink'] . ';margin:0;">Hi ' . esc_html( $name ) . ', your Akrinity account is ready. You can sign in any time to see your orders, save your addresses and reorder in one tap.</p>',
+		$photos,
+		'<p style="font-family:' . $c['disp'] . ';font-size:30px;line-height:1;text-transform:uppercase;color:' . $c['ink'] . ';margin:6px 0 4px;">Start <span style="background:' . $c['lime'] . ';padding:0 6px;">here</span></p>',
+		$chipTable,
+		akr_em_btn( 'Shop ready-made prints', $base . '/shop' ),
+		'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:' . $c['paper'] . ';border:1.5px solid ' . $c['ink'] . ';border-radius:16px;"><tr><td style="padding:14px 18px;font-family:' . $c['body'] . ';font-size:14px;line-height:1.5;color:' . $c['ink'] . ';"><b>Pay only when you order.</b> Made-to-order prints show a price before you pay. Track every order from your account, and get a GST invoice for each one.</td></tr></table>',
+	);
+
+	$text = ( 'there' === $name ? 'Hello,' : "Hi $first," ) . "\r\n\r\nYour Akrinity account is ready. Sign in any time to see your orders and reorder in one tap.\r\n\r\n"
+		. "Shop: {$base}/shop\r\n\r\nIf you did not create this account, reply to this email.\r\n";
+
+	akr_after_response(
+		function () use ( $user, $text, $blocks ) {
+			$html = akr_em_shell(
+				array(
+					'tag'    => 'Welcome',
+					'title'  => 'Welcome to ' . akr_em_hl( 'Akrinity.' ),
+					'head'   => 'Account created',
+					'pre'    => 'Your account is ready.',
+					'intro'  => 'Your account is ready. Made layer by layer in Mumbai, for your desk, home and collection.',
+					'blocks' => array_values( array_filter( $blocks ) ),
+					'help'   => 'If you did not create this account, reply to this email.',
+				)
+			);
+			wp_mail( $user->user_email, 'Welcome to Akrinity: your account is ready', $html, array( 'Content-Type: text/html; charset=UTF-8' ) );
+		}
+	);
+}
+
 // WooCommerce's welcome email is skipped for accounts created through the API: it is a slow extra
 // email, and the storefront signs the new customer in straight away.
 add_filter(
@@ -206,11 +285,14 @@ function akr_order_detail( WC_Order $o ): array {
 				'value' => wp_strip_all_tags( (string) $m->display_value ),
 			);
 		}
-		$items[] = array(
-			'name'     => $item->get_name(),
-			'quantity' => (int) $item->get_quantity(),
-			'total'    => (string) $item->get_total(),
-			'meta'     => $meta,
+		$product   = $item->get_product();
+		$items[]   = array(
+			'name'       => $item->get_name(),
+			'quantity'   => (int) $item->get_quantity(),
+			'total'      => (string) $item->get_total(),
+			'meta'       => $meta,
+			'product_id' => (int) $item->get_product_id(),
+			'slug'       => $product ? (string) $product->get_slug() : '',
 		);
 	}
 	$paid = $o->get_date_paid();
@@ -295,6 +377,7 @@ add_action(
 				// Soft email check: the account works at once, a banner asks the customer to confirm the address.
 				update_user_meta( $id, 'akr_email_verified', '0' );
 				akr_send_verify_email( (int) $id );
+				akr_send_welcome( (int) $id );
 				return new WP_REST_Response( array( 'id' => $id ), 201 );
 			},
 			$service

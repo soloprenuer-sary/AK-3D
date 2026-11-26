@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { SimpleForm, type FieldDef } from '@/components/forms/SimpleForm';
 import { ConfirmBanner } from './ConfirmBanner';
+import { downloadInvoice } from '@/lib/shop-client';
+import { useLiveProducts } from '@/lib/live-catalogue';
+import { useCart } from '@/lib/cart-store';
+import { productSlug } from '@/lib/shop-data';
 import {
   changePassword,
   currentUser,
@@ -134,7 +138,7 @@ export function AccountArea() {
         </div>
 
         <div className="info-card acct-panel">
-          {tab === 'orders' && <OrdersPanel />}
+          {tab === 'orders' && <OrdersPanel email={user.email} />}
           {tab === 'details' && <DetailsPanel user={user} onChange={setUser} />}
           {tab === 'addresses' && <AddressesPanel user={user} onChange={setUser} />}
           {tab === 'password' && <PasswordPanel />}
@@ -146,7 +150,7 @@ export function AccountArea() {
 
 // ---------- orders ----------
 
-function OrdersPanel() {
+function OrdersPanel({ email }: { email: string }) {
   const [orders, setOrders] = useState<OrderSummary[] | null>(null);
   const [error, setError] = useState('');
   const [open, setOpen] = useState<OrderDetail | null>(null);
@@ -174,7 +178,7 @@ function OrdersPanel() {
     } else setError(r.error ?? 'We could not load that order.');
   };
 
-  if (open) return <OrderView order={open} onBack={() => setOpen(null)} />;
+  if (open) return <OrderView order={open} email={email} onBack={() => setOpen(null)} />;
   if (orders === null) return <p aria-busy="true">Loading your orders…</p>;
   if (error && orders.length === 0) {
     return (
@@ -256,13 +260,92 @@ function AddressBlock({ title, a }: { title: string; a: Address }) {
   );
 }
 
-function OrderView({ order, onBack }: { order: OrderDetail; onBack: () => void }) {
+/** Statuses in which the GST invoice can be downloaded (the same rule as the order page). */
+function canInvoice(o: OrderDetail): boolean {
+  return (
+    ['in-transit', 'completed'].includes(o.status) ||
+    (o.status === 'processing' && o.date_paid !== '' && o.payment_method !== 'cod')
+  );
+}
+
+function OrderView({
+  order,
+  email,
+  onBack,
+}: {
+  order: OrderDetail;
+  email: string;
+  onBack: () => void;
+}) {
+  const catalogue = useLiveProducts([]);
+  const cart = useCart();
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const invoice = async () => {
+    setBusy(true);
+    setNote('');
+    const error = await downloadInvoice({ order: String(order.number), contact: email });
+    setBusy(false);
+    if (error) setNote(error);
+  };
+
+  const reorder = () => {
+    let added = 0;
+    const missing: string[] = [];
+    for (const it of order.items) {
+      const p = catalogue.find((x) => String(x.id) === String(it.product_id ?? ''));
+      if (!p || !p.price) {
+        missing.push(it.name);
+        continue;
+      }
+      for (let n = 0; n < it.quantity; n++) {
+        cart.add({
+          id: p.id,
+          slug: productSlug(p),
+          name: p.name,
+          mode: p.modes[0],
+          price: p.price,
+          image: p.images?.[0],
+          madeToOrder: !p.inStock,
+        });
+      }
+      added++;
+    }
+    setNote(
+      missing.length
+        ? `Added ${added} ${added === 1 ? 'item' : 'items'} to your cart. Not available now: ${missing.join(', ')}.`
+        : `Added ${added} ${added === 1 ? 'item' : 'items'} to your cart.`,
+    );
+  };
+
   return (
     <>
       <button type="button" className="link-btn" onClick={onBack}>
         ← All orders
       </button>
       <h2>Order #{order.number}</h2>
+      <div className="btn-row" style={{ margin: '12px 0' }}>
+        {canInvoice(order) && (
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={invoice}
+            disabled={busy}
+            aria-busy={busy}
+          >
+            {busy ? 'Preparing…' : 'Download GST invoice (PDF)'}
+          </button>
+        )}
+        <button type="button" className="btn btn-primary btn-sm" onClick={reorder}>
+          Reorder these items
+        </button>
+      </div>
+      {note && (
+        <p className="meta" role="status">
+          {note}
+        </p>
+      )}
       <p>
         <span className="tag">{order.status_label}</span>{' '}
         <span className="muted">
