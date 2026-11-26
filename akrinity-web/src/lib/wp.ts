@@ -18,7 +18,7 @@ import type { Block, Guide } from './guides-data';
 import { buildSpecs, htmlToBlocks, parseProductContent } from './product-content';
 
 const STORE_API = process.env.NEXT_PUBLIC_WC_STORE_API_URL ?? '';
-const GRAPHQL = process.env.NEXT_PUBLIC_WP_GRAPHQL_URL ?? '';
+const WP_V2 = STORE_API.replace(/\/wc\/store\/v1\/?$/, '/wp/v2');
 
 /** WooCommerce Store API product (only the fields we use). */
 export interface StoreProduct {
@@ -294,14 +294,29 @@ export interface GqlPost {
   categories: { nodes: { name: string }[] };
 }
 
-export const POSTS_QUERY = `{
-  posts(first: 50) {
-    nodes {
-      databaseId slug title excerpt content date
-      categories { nodes { name } }
-    }
-  }
-}`;
+/** One post from the WordPress REST API (with its categories embedded). */
+export interface RestPost {
+  id: number;
+  slug: string;
+  date: string;
+  title: { rendered: string };
+  excerpt: { rendered: string };
+  content: { rendered: string };
+  _embedded?: { 'wp:term'?: { name: string }[][] };
+}
+
+/** One REST post in the shape the article code reads. Categories are the first embedded term list. */
+export function restToPost(p: RestPost): GqlPost {
+  return {
+    databaseId: p.id,
+    slug: p.slug,
+    title: p.title.rendered,
+    excerpt: p.excerpt.rendered,
+    content: p.content.rendered,
+    date: p.date,
+    categories: { nodes: (p._embedded?.['wp:term']?.[0] ?? []).map((c) => ({ name: c.name })) },
+  };
+}
 
 function postToGuide(p: GqlPost): Guide {
   const cat = p.categories.nodes[0]?.name ?? 'Guides';
@@ -331,20 +346,22 @@ export function mapPosts(nodes: GqlPost[]): Guide[] {
   return nodes.filter((n) => n.slug !== 'hello-world').map(postToGuide);
 }
 
-/** Published posts from WPGraphQL, or null if WordPress cannot be reached. */
+/** Published posts from the WordPress REST API (only published posts are public), or null if unreachable. */
 export async function fetchPosts(): Promise<Guide[] | null> {
-  if (!GRAPHQL) return null;
+  if (!WP_V2) return null;
   try {
-    const res = await fetch(GRAPHQL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: POSTS_QUERY }),
-    });
-    if (!res.ok) return null;
-    const json = (await res.json()) as { data?: { posts?: { nodes: GqlPost[] } } };
-    const nodes = json.data?.posts?.nodes;
-    if (!nodes) return null;
-    return mapPosts(nodes);
+    const all: RestPost[] = [];
+    for (let page = 1; page <= 10; page++) {
+      const res = await fetch(
+        `${WP_V2}/posts?per_page=100&_embed&page=${page}&_t=${Math.floor(Date.now() / 60000)}`,
+      );
+      if (!res.ok) return page === 1 ? null : mapPosts(all.map(restToPost));
+      const data = (await res.json()) as RestPost[];
+      all.push(...data);
+      const pages = Number(res.headers.get('x-wp-totalpages') ?? 1);
+      if (page >= pages || data.length === 0) break;
+    }
+    return mapPosts(all.map(restToPost));
   } catch {
     return null;
   }

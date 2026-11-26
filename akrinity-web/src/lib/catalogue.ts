@@ -48,7 +48,7 @@ export async function getGuides(): Promise<Guide[]> {
   const posts = await fetchPosts();
   if (posts === null) {
     throw new Error(
-      'Could not read articles from WordPress. Check NEXT_PUBLIC_WP_GRAPHQL_URL and that the backend is online.',
+      'Could not read articles from WordPress. Check NEXT_PUBLIC_WC_STORE_API_URL and that the backend is online.',
     );
   }
   return posts;
