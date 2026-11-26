@@ -1,0 +1,90 @@
+[
+  {
+    "slug": "3d-printing-vs-normal-printing",
+    "title": "3D printing vs normal printing: what is the difference?",
+    "excerpt": "Both turn a file into something physical, but one puts ink on a page and the other builds an object layer by layer. Here is how they differ.",
+    "category": "Guides",
+    "cover": "cover-vs-printing.png",
+    "coverAlt": "A paper printer with a printed page beside a 3D printer building a vase"
+  },
+  {
+    "slug": "3d-printing-vs-injection-moulding-and-cnc",
+    "title": "3D printing, CNC machining, or moulding: which fits your part?",
+    "excerpt": "Adding, cutting, and moulding each have their place. Compare cost patterns, quantities, finish, and strength before you choose.",
+    "category": "Guides",
+    "cover": "cover-methods.png",
+    "coverAlt": "A printing nozzle, a milling cutter, and a mould shown side by side"
+  },
+  {
+    "slug": "common-3d-printing-problems-and-fixes",
+    "title": "7 common 3D printing problems and how to avoid them",
+    "excerpt": "Warping, stringing, shifted layers, and more: what each fault looks like, why it happens, and what to try first.",
+    "category": "Guides",
+    "cover": "cover-problems.png",
+    "coverAlt": "A failed print with loose strands beside a clean print"
+  },
+  {
+    "slug": "pla-petg-or-abs-asa-which-filament-for-your-part",
+    "title": "PLA, PETG, or ABS/ASA: which filament for your part?",
+    "excerpt": "PLA is forgiving to print and suits decor. PETG is tougher for everyday parts. ABS and ASA handle heat, and ASA is the choice outdoors.",
+    "category": "Materials",
+    "cover": "cover-materials.png",
+    "coverAlt": "Three filament spools in violet, orange, and white beside a resin bottle"
+  },
+  {
+    "slug": "designing-for-print-wall-thickness-and-overhangs",
+    "title": "Designing for print: wall thickness, overhangs, and fit",
+    "excerpt": "Starting numbers for walls, overhangs, bridges, and clearances, so your design prints cleanly and does its job.",
+    "category": "Design",
+    "cover": "cover-design.png",
+    "coverAlt": "A drawing of a bracket with its dimensions marked"
+  },
+  {
+    "slug": "how-to-prepare-a-3d-file-for-printing",
+    "title": "How to prepare a 3D file for printing: STL, 3MF, and STEP",
+    "excerpt": "Pick the right format, set millimetres, close the mesh, and send a clear brief. A short checklist before you upload.",
+    "category": "Design",
+    "cover": "cover-files.png",
+    "coverAlt": "Three file cards labelled STL, 3MF, and STEP"
+  },
+  {
+    "slug": "how-to-order-a-custom-3d-print",
+    "title": "How to order a custom 3D print, from idea to delivery",
+    "excerpt": "What to send, how the quote works, what changes the price, and what happens after you approve.",
+    "category": "Guides",
+    "cover": "cover-order.png",
+    "coverAlt": "A file, a quote with a tick, and a parcel joined by arrows"
+  },
+  {
+    "slug": "single-colour-or-multi-colour-what-actually-changes",
+    "title": "Single colour or multi-colour: what actually changes",
+    "excerpt": "Colour changes the cost, the waste, and the design. Compare single colour, multi-colour printing, and painting.",
+    "category": "Guides",
+    "cover": "cover-colour.png",
+    "coverAlt": "A single-colour vase beside a vase printed in bands of several colours"
+  },
+  {
+    "slug": "how-we-check-every-print-before-it-ships",
+    "title": "What we do differently: how we check every print",
+    "excerpt": "We question the design, quote before you pay, check layers, dimensions, and finish, and reprint what fails.",
+    "category": "Guides",
+    "cover": "cover-quality.png",
+    "coverAlt": "A magnifying glass over a printed vase with a tick beside it"
+  },
+  {
+    "slug": "non-food-contact-kitchen-pieces-what-that-means",
+    "title": "Caring for 3D prints, and what non-food-contact means",
+    "excerpt": "How to clean and store printed pieces, what heat and load do to them, and why our kitchen range is not for food.",
+    "category": "Guides",
+    "cover": "cover-care.png",
+    "coverAlt": "A printed vase on a shelf with a cloth, a sun, and a water drop"
+  },
+  {
+    "slug": "what-we-make-akrinity-3d-printed-products",
+    "title": "What we make: a tour of Akrinity's 3D printed products",
+    "excerpt": "Die-cast car displays, racket mounts, desk organisers, jewellery stands, decor, and custom work, with tips on choosing.",
+    "category": "Guides",
+    "cover": "cover-products.png",
+    "coverAlt": "Shelves holding a car display, a vase, a phone stand, and a racket mount"
+  }
+]

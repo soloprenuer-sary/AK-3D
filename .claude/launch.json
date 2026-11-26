@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "akrinity-web", "run", "dev", "--", "-p", "3100"],
       "port": 3100
+    },
+    {
+      "name": "akrinity-blog-preview",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["content/blog/preview.mjs"],
+      "port": 3200
     }
   ]
 }

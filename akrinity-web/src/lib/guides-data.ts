@@ -1,21 +1,24 @@
-/**
- * Knowledge hub articles. SAMPLE content: short, general explanations written as a template.
- * Replace with WordPress posts (WPGraphQL + ACF) when the backend is connected.
- */
+/** Knowledge hub articles. They come from WordPress posts (see `wp.ts` and `article-content.ts`). */
+import type { Block } from './article-content';
 
-export type Block =
-  | { t: 'p'; text: string }
-  | { t: 'h2'; text: string }
-  | { t: 'tip'; text: string }
-  | { t: 'img'; caption: string }
-  | { t: 'table'; head: string[]; rows: string[][] };
+export interface GuideImage {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+}
 
 export interface Guide {
   slug: string;
   title: string;
   summary: string;
   type: 'Materials' | 'Guides' | 'Design';
+  /** Publish date, YYYY-MM-DD. */
   date: string;
+  /** Date of the last edit, YYYY-MM-DD, when it is later than the publish date. */
+  updated?: string;
   minutes: number;
+  /** The post's featured image. */
+  cover?: GuideImage;
   body: Block[];
 }

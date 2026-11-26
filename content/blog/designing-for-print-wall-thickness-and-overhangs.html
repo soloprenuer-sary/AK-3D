@@ -1,0 +1,84 @@
+<p>A model can look flawless on screen and still fail on the build plate. Screens ignore gravity, nozzle width, and shrinking plastic. A printer cannot. Designing for print means shaping the part around what the machine does well. Keep walls thick enough for the load, round or split steep overhangs, leave room between moving parts, and export in millimetres. The numbers below are sensible starting points for a filament printer with a 0.4 mm nozzle. Your material and machine may allow more or need more, so test anything that must fit precisely.</p>
+
+<h2>Wall thickness</h2>
+<p>A wall is built from lines of plastic laid side by side. With a 0.4 mm nozzle, a wall thinner than about two lines is fragile, and very thin features may vanish from the sliced file altogether.</p>
+<ul>
+<li><strong>About 0.8 mm</strong> is a practical lower limit for light, decorative surfaces.</li>
+<li><strong>1.2 to 1.6 mm</strong> suits most everyday walls.</li>
+<li><strong>2 mm and above</strong> is wise for hooks, mounts, screw points, and anything carrying weight.</li>
+</ul>
+<p>Thicknesses that divide neatly into line widths often print cleaner. Where more strength is needed, adding walls usually helps more than filling the inside densely. Avoid sudden jumps from very thick to very thin, which can cool unevenly and leave marks.</p>
+
+<figure><img src="images/design-walls-clearance.png" alt="Diagram of a thin wall, a sturdy wall, and a peg in a hole with a small clearance gap marked" width="1600" height="900"><figcaption>Two numbers to decide early: how thick each wall is, and how much gap mating parts need.</figcaption></figure>
+
+<h2>Overhangs</h2>
+<p>Each layer needs something under it. When a surface leans outwards, part of every new line hangs over empty air. A common rule is that angles up to about 45 degrees from vertical print cleanly without support. Beyond that, surfaces start to droop or turn rough.</p>
+<figure><img src="images/design-overhang-angles.png" alt="Three overhangs: 30 degrees prints cleanly, 45 degrees is the usual limit, 70 degrees sags and needs support" width="1600" height="900"><figcaption>The further a surface leans from vertical, the less the layer below can hold it.</figcaption></figure>
+<p>Ways to handle a steep overhang:</p>
+<ul>
+<li>Replace a flat underside with a <strong>chamfer</strong> at 45 degrees.</li>
+<li>Turn a round hole in a vertical wall into a <strong>teardrop</strong> shape, pointed at the top.</li>
+<li><strong>Split the part</strong> into pieces that each print flat, then join them with pins, screws, or glue.</li>
+<li><strong>Rotate</strong> the model so the difficult face points upwards.</li>
+<li>Accept supports, and place them where marks will not show.</li>
+</ul>
+
+<h2>Bridges</h2>
+<p>A bridge is a straight span between two raised points. Printers can stretch plastic across a gap better than you might expect. Short spans, around 10 mm, are usually reliable. Longer ones can sag, depending on material and cooling. If the underside must look neat, redesign the span as an arch or add a central support.</p>
+
+<h2>Clearances and holes</h2>
+<p>Printed lines spread slightly, so outer dimensions can grow and holes can shrink. Two parts drawn at exactly the same size will not fit.</p>
+<table>
+<thead><tr><th>Fit you want</th><th>Starting gap on each side</th></tr></thead>
+<tbody>
+<tr><td>Tight, pressed together</td><td>About 0.1 to 0.2 mm</td></tr>
+<tr><td>Sliding fit</td><td>About 0.2 to 0.3 mm</td></tr>
+<tr><td>Loose or moving, printed as one piece</td><td>0.4 mm or more</td></tr>
+</tbody>
+</table>
+<p>Small holes often come out undersized, so draw them 0.2 to 0.4 mm larger, or plan to drill them to size. For parts that must match an existing object, send the object's measurements, ideally taken with a vernier caliper, and expect one test piece.</p>
+
+<h2>Small details and text</h2>
+<ul>
+<li>Make raised or recessed lines at least as wide as the nozzle, and preferably wider.</li>
+<li>Use bold, simple fonts. Thin serifs disappear.</li>
+<li>Text on a top or vertical face reads better than text on a face touching the bed.</li>
+<li>Thin pins snap easily. Thicken them or use a metal rod instead.</li>
+</ul>
+
+<h2>Strength and direction</h2>
+<p>Filament parts are usually weakest between layers, much like wood splits along its grain. A tall thin peg printed upright can break with a light sideways push. Printed lying down, the same peg has continuous strands running along its length. Decide which way the force acts, then orient the part so that force runs along the layers rather than pulling them apart.</p>
+<p>Round inner corners where an arm meets a base. A sharp inside corner concentrates stress, and a small fillet spreads it.</p>
+
+<h2>The base of the part</h2>
+<ul>
+<li>Give the part a flat face to stand on. A wide base sticks better and is less likely to topple.</li>
+<li>Add a small chamfer on the bottom edge to hide any elephant foot, the slight flare on the first layers.</li>
+<li>Round the corners of large flat bases to reduce warping.</li>
+</ul>
+
+<h2>Size and splitting</h2>
+<p>Every printer has a limit on the size it can build. Large objects can be divided into sections with keyed joints, so pieces locate themselves during assembly. Placing seams along natural edges or colour changes keeps them discreet.</p>
+
+<h2>A worked example: a small wall hook</h2>
+<p>Suppose you need a hook for a light bag. A first idea might be a thin L shape, 2 mm thick, with sharp corners and two screw holes the exact size of the screws.</p>
+<ul>
+<li>Thicken the arm and the back plate to 4 mm or more, because this part carries weight.</li>
+<li>Add a rounded fillet where the arm meets the plate, the point most likely to crack.</li>
+<li>Print the hook on its side, so the layers run along the arm and up the plate.</li>
+<li>Make the screw holes slightly larger than the screw, with a recess for the head.</li>
+<li>Add a small chamfer to the edge that touches the bed.</li>
+</ul>
+<p>None of these changes affects what the hook does, yet together they make it far more likely to survive daily use. Test it with the real load, close to the floor, before you trust it.</p>
+
+<h2>Check before you export</h2>
+<ol>
+<li>The model is in millimetres and measures what you expect.</li>
+<li>The surface is closed, with no holes or stray faces.</li>
+<li>No wall is thinner than your target.</li>
+<li>Mating parts have a gap.</li>
+<li>Steep overhangs are chamfered, split, or marked for support.</li>
+<li>The load direction is noted for whoever prints it.</li>
+</ol>
+<blockquote><p><strong>Tip:</strong> Before printing a large part, print only the section that has to fit. A small test saves material and shows if a clearance needs adjusting.</p></blockquote>
+<p>Next, learn <a href="/guides/how-to-prepare-a-3d-file-for-printing">how to prepare and export your file</a>. If you would like help, attach what you have to the <a href="/quote">quote form</a>, or ask our <a href="/design-service">design service</a> to model it from your sketch.</p>

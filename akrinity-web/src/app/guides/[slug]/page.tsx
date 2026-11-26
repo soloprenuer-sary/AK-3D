@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ArticleBody } from '@/components/guides/ArticleBody';
 import { ArticleMotion } from '@/components/guides/ArticleMotion';
 import { GuideCard } from '@/components/guides/GuideCard';
+import { Pic } from '@/components/ui/Pic';
 import { getGuides } from '@/lib/catalogue';
-import type { Block, Guide } from '@/lib/guides-data';
+import type { Guide } from '@/lib/guides-data';
+import { site } from '@/lib/site-config';
 
 /** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
 export const revalidate = 60;
@@ -19,66 +22,70 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const guide = (await getGuides()).find((g) => g.slug === slug);
-  return { title: guide?.title ?? 'Article', description: guide?.summary };
+  if (!guide) return { title: 'Article' };
+  const image = guide.cover;
+  return {
+    title: guide.title,
+    description: guide.summary,
+    alternates: { canonical: `/guides/${guide.slug}` },
+    openGraph: {
+      type: 'article',
+      title: guide.title,
+      description: guide.summary,
+      url: `/guides/${guide.slug}`,
+      publishedTime: guide.date,
+      modifiedTime: guide.updated ?? guide.date,
+      ...(image ? { images: [{ url: image.src, alt: image.alt || guide.title }] } : {}),
+    },
+    twitter: { card: 'summary_large_image', ...(image ? { images: [image.src] } : {}) },
+  };
 }
 
-function renderBlock(b: Block, i: number) {
-  switch (b.t) {
-    case 'p':
-      return <p key={i}>{b.text}</p>;
-    case 'h2':
-      return <h2 key={i}>{b.text}</h2>;
-    case 'tip':
-      return (
-        <div key={i} className="callout">
-          <b>Tip.</b> {b.text}
-        </div>
-      );
-    case 'img':
-      return (
-        <figure key={i} className="article-figure">
-          <div className="img-ph" role="img" aria-label={b.caption}>
-            <span>Image · 16 : 9</span>
-          </div>
-          <figcaption>{b.caption}</figcaption>
-        </figure>
-      );
-    case 'table':
-      return (
-        <table key={i}>
-          <thead>
-            <tr>
-              {b.head.map((h) => (
-                <th key={h} scope="col">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {b.rows.map((r) => (
-              <tr key={r.join('|')}>
-                {r.map((c, j) => (
-                  <td key={`${j}-${c}`}>{c}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      );
-  }
+/** "13 November 2026" from "2026-11-13". */
+const longDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+
+/** Three more articles: the same kind first, then the rest, starting after this one. */
+function moreArticles(guides: Guide[], current: Guide): Guide[] {
+  const at = guides.findIndex((g) => g.slug === current.slug);
+  const rest = [...guides.slice(at + 1), ...guides.slice(0, at)];
+  return [
+    ...rest.filter((g) => g.type === current.type),
+    ...rest.filter((g) => g.type !== current.type),
+  ].slice(0, 3);
 }
 
 export default async function ArticlePage({ params }: Params) {
   const { slug } = await params;
   const guides = await getGuides();
-  const guide = guides.find((g) => g.slug === slug) as Guide | undefined;
+  const guide = guides.find((g) => g.slug === slug);
   if (!guide) notFound();
-  const others = guides.filter((g) => g.slug !== guide.slug).slice(0, 2);
+  const others = moreArticles(guides, guide).map((g) => ({ ...g, body: [] }));
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: guide.title,
+    description: guide.summary,
+    datePublished: guide.date,
+    dateModified: guide.updated ?? guide.date,
+    ...(guide.cover ? { image: guide.cover.src } : {}),
+    author: { '@type': 'Organization', name: 'Akrinity' },
+    publisher: { '@type': 'Organization', name: 'Akrinity' },
+    mainEntityOfPage: `${site.url}/guides/${guide.slug}`,
+  };
 
   return (
     <main id="main">
-      <ArticleMotion bodyId="article-body" />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, '\\u003c') }}
+      />
+      <ArticleMotion key={guide.slug} bodyId="article-body" />
       <nav className="crumbs" aria-label="Breadcrumb">
         <Link href="/">Home</Link>
         <span aria-hidden="true">/</span>
@@ -89,16 +96,24 @@ export default async function ArticlePage({ params }: Params) {
 
       <article className="article">
         <span className="post-meta">
-          {guide.type} · {guide.minutes} min read · {guide.date}
+          {guide.type} · {guide.minutes} min read ·{' '}
+          {guide.updated ? `Updated ${longDate(guide.updated)}` : longDate(guide.date)}
         </span>
         <h1 style={{ marginTop: 14 }}>{guide.title}</h1>
         <p className="lead">{guide.summary}</p>
-        <div className="img-ph article-hero" role="img" aria-label="Article hero image placeholder">
-          <span>Hero image · 16 : 9 · 1600 × 900</span>
-        </div>
-        <div id="article-body" className="body">
-          {guide.body.map(renderBlock)}
-        </div>
+        {guide.cover && (
+          <Pic
+            className="article-hero"
+            src={guide.cover.src}
+            alt={guide.cover.alt}
+            width={guide.cover.width}
+            height={guide.cover.height}
+            sizes="(max-width: 760px) 100vw, 720px"
+            widths={[384, 640, 828, 1080, 1920]}
+            priority
+          />
+        )}
+        <ArticleBody blocks={guide.body} />
         <div style={{ marginTop: 48, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <Link className="btn btn-primary" href="/shop">
             Shop ready-made

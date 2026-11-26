@@ -1,0 +1,68 @@
+<p>Say "printing" and most people picture a sheet of paper sliding out of a machine on a desk. 3D printing borrows the word, but the result is an object you can pick up. Both turn a digital file into something physical, and both build it a little at a time. Almost everything else is different: the file, the material, the speed, the finishing, and what can go wrong. This guide explains the difference in plain language, so you know what to expect before you order or buy a printed part.</p>
+
+<h2>The short answer</h2>
+<p>An ordinary printer places ink or toner on a flat surface. The picture has width and height, and the thickness of the ink hardly matters. A 3D printer places material in space, so the result has width, height, and depth. It does this by stacking many thin layers, one above another, until the shape is complete. Engineers call this additive manufacturing, because material is added only where the part needs it.</p>
+
+<figure><img src="images/vs-flat-and-layers.png" alt="A flat sheet with one coat of ink beside a part built from many stacked layers" width="1600" height="900"><figcaption>Paper printing covers a surface once. 3D printing stacks surface on surface until there is a solid shape.</figcaption></figure>
+
+<h2>How an ordinary printer works</h2>
+<p>The two common office technologies are inkjet and laser. An inkjet printer fires tiny droplets of liquid ink from a moving head while rollers pull the paper forward. A laser printer uses light to draw the page as an electric charge on a drum, picks up powdered toner with that charge, transfers it to the paper, and fuses it with heat.</p>
+<p>Either way, the paper already exists and gives the print its strength and shape. The printer only decides where colour goes. The file is a document or an image, such as a PDF or a JPG, and the same file looks much the same on most printers. If a page comes out wrong, you lose one sheet and a little ink, and you print it again.</p>
+
+<h2>How a 3D printer works</h2>
+<p>A 3D printer starts with nothing but a flat build surface. It has to create both the shape and the strength of the object. The process has three steps.</p>
+<ol>
+<li><strong>Model.</strong> Someone designs the object in 3D software, or scans an existing one. The file describes the outer surface of the part, usually as an STL, 3MF, or STEP file.</li>
+<li><strong>Slice.</strong> Software called a slicer cuts the model into horizontal layers and plans the path for each one. It also sets the temperature, the speed, how solid the inside is, and where temporary supports are needed.</li>
+<li><strong>Print.</strong> The machine follows that plan, layer by layer, from the bottom up.</li>
+</ol>
+
+<figure><img src="images/vs-model-slice-print.png" alt="Three steps: a 3D model of a vase, the model cut into layers, and the printed vase on the build plate" width="1600" height="900"><figcaption>Model, slice, print. The slicer in the middle has a large say in how the finished part looks and behaves.</figcaption></figure>
+
+<h2>The two kinds of 3D printing you will meet most</h2>
+<h3>Filament printing (FDM)</h3>
+<p>A spool of plastic filament is fed into a hot nozzle. The nozzle melts it and draws each layer as a thin line, a bit like piping icing on a cake. The line cools and bonds to the one below. This is the most common method for decor, organisers, holders, brackets, and prototypes. You can see fine layer lines on the sides of the part, and they are a normal feature of the process.</p>
+
+<h3>Resin printing (SLA, MSLA, and similar)</h3>
+<p>The printer holds liquid resin in a shallow tank. Light hardens one layer at a time, and the part is lifted out of the liquid as it grows. Resin captures much finer detail and gives smoother surfaces, so it suits miniatures and small precise pieces. Finished parts need washing and a second round of light curing, and resin parts are usually more brittle than good filament parts.</p>
+
+<h2>Side by side</h2>
+<table>
+<thead><tr><th>Question</th><th>Paper printing</th><th>3D printing</th></tr></thead>
+<tbody>
+<tr><td>What comes out</td><td>A flat page</td><td>A solid object</td></tr>
+<tr><td>Material</td><td>Ink or toner on paper</td><td>Plastic filament or liquid resin</td></tr>
+<tr><td>Typical file</td><td>PDF, DOCX, JPG</td><td>STL, 3MF, OBJ, STEP</td></tr>
+<tr><td>Settings that matter</td><td>Paper size, colour, quality</td><td>Material, layer height, orientation, walls, infill, supports</td></tr>
+<tr><td>Speed</td><td>Seconds for a page</td><td>Far longer, and it grows with size and detail</td></tr>
+<tr><td>After printing</td><td>Ready to read</td><td>Supports removed, surfaces cleaned, sometimes sanded or cured</td></tr>
+<tr><td>Strength</td><td>Comes from the paper</td><td>Comes from the material and how it was printed</td></tr>
+<tr><td>Cost grows with</td><td>Number of pages and colour coverage</td><td>Material used, machine time, and handwork</td></tr>
+</tbody>
+</table>
+
+<h2>Why the settings matter so much</h2>
+<p>With paper, two people printing the same file will get nearly the same page. With 3D printing, the same model can come out strong or weak, smooth or rough, depending on choices made in the slicer.</p>
+<ul>
+<li><strong>Orientation.</strong> A part is usually weakest between its layers. Laying a hook flat can make it far tougher than printing it upright.</li>
+<li><strong>Layer height.</strong> Thinner layers look smoother and take longer. Thicker layers are quicker and show more texture.</li>
+<li><strong>Walls and infill.</strong> The inside of a part is often partly hollow, filled with a repeating pattern. More walls usually add more strength than a denser filling.</li>
+<li><strong>Supports.</strong> A printer cannot start a layer in mid-air. Steep overhangs need temporary supports, which leave small marks where they touched.</li>
+</ul>
+<blockquote><p><strong>Tip:</strong> When you ask for a custom part, say how it will be used. "It holds a 2 kg bag on a wall near a window" tells a printer far more than "make it strong".</p></blockquote>
+
+<h2>What each one is good at</h2>
+<p>Paper printing is the right tool for information: documents, photos, labels, posters, and packaging sleeves. It is fast, cheap per copy, and consistent.</p>
+<p>3D printing is the right tool for shape: a holder that fits your exact gadget, a replacement clip for something no longer sold, a prototype to test before spending on tooling, a display stand in a size shops do not stock, or a gift with a name built into it. Changing the design means changing the file, so small batches and one-off pieces are practical.</p>
+
+<h2>Common misunderstandings</h2>
+<ul>
+<li><strong>"You can print anything instantly."</strong> Printing takes real time, and some shapes need redesigning before they print well.</li>
+<li><strong>"A 3D printer can copy any object from a photo."</strong> A photo is flat. Someone has to model the missing sides and measurements.</li>
+<li><strong>"Printed parts look moulded."</strong> Filament prints show layer lines. Smoothing and painting are extra steps.</li>
+<li><strong>"All printed plastic is the same."</strong> Materials differ in strength, heat resistance, and how they cope with sunlight. Our <a href="/guides/pla-petg-or-abs-asa-which-filament-for-your-part">material guide</a> compares them.</li>
+<li><strong>"If it is plastic, it is fine for food."</strong> It is not that simple. Read <a href="/guides/non-food-contact-kitchen-pieces-what-that-means">what non-food-contact means</a> before using any print in the kitchen.</li>
+</ul>
+
+<h2>Where to go next</h2>
+<p>If you already have a file, learn <a href="/guides/how-to-prepare-a-3d-file-for-printing">how to prepare it for printing</a> and then <a href="/quote">request a quote</a>. If you have only an idea or a sketch, our <a href="/design-service">design service</a> turns it into a printable model. And if you would rather start with something finished, browse the <a href="/shop">ready-made products</a>.</p>

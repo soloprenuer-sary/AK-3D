@@ -53,3 +53,8 @@ export async function getGuides(): Promise<Guide[]> {
   }
   return posts;
 }
+
+/** Every article without its body, for cards, search and the home page slider. */
+export async function getListGuides(): Promise<Guide[]> {
+  return (await getGuides()).map((g) => ({ ...g, body: [] }));
+}
