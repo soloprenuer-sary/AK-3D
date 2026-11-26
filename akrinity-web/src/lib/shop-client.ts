@@ -50,6 +50,26 @@ export function toLines(lines: CartLine[]): LineIn[] {
 
 export const quoteCart = (q: QuoteIn) => post<QuoteReply>('quote', q);
 
+/** One cart line as the abandoned-cart reminder keeps it. */
+export interface SavedLine {
+  id: string;
+  slug: string;
+  name: string;
+  qty: number;
+  price: string;
+  image: string;
+  mode: string;
+  madeToOrder: boolean;
+}
+
+/** Sends the cart with the shopper's email, so a reminder can be sent if they leave it. */
+export const syncCart = (q: { email: string; name: string; lines: SavedLine[] }) =>
+  post<{ ok: boolean }>('cart', q);
+
+/** Reads back a saved cart from the "get my cart back" link. */
+export const restoreCart = (token: string) =>
+  post<{ lines: SavedLine[] }>('cart-restore', { token });
+
 export const placeOrder = (q: QuoteIn & { note?: string; terms: boolean }) =>
   post<PlaceReply>('place', q);
 
