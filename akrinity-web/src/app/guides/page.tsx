@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { GuideGrid } from '@/components/guides/GuideGrid';
 import { FaqAccordion } from '@/components/ui/FaqAccordion';
 import { FAQ } from '@/lib/faq-data';
-import { getGuides } from '@/lib/catalogue';
+import { getListGuides } from '@/lib/catalogue';
 
 /** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
 export const revalidate = 60;
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function KnowledgeHubPage() {
-  const guides = await getGuides();
+  const guides = await getListGuides();
   return (
     <main id="main">
       <nav className="crumbs" aria-label="Breadcrumb">
@@ -34,8 +34,8 @@ export default async function KnowledgeHubPage() {
           </h1>
         </div>
         <p className="muted" style={{ fontSize: 17, maxWidth: 480 }}>
-          Plain explanations of materials, colour options and design rules, plus test notes from the
-          studio. New articles appear here when they are published.
+          Plain guides to materials, colour options, design rules, ordering, and care. New articles
+          appear here when they are published.
         </p>
       </div>
 

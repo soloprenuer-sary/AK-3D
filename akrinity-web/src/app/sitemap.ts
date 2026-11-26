@@ -51,7 +51,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...fixed,
     ...categories,
     ...products.map((p) => at(`/product/${productSlug(p)}`, 0.8, 'daily')),
-    ...guides.map((g) => at(`/guides/${g.slug}`, 0.5)),
+    ...guides.map((g) => ({
+      ...at(`/guides/${g.slug}`, 0.5),
+      lastModified: g.updated ?? g.date,
+    })),
     ...MATERIAL_GUIDES.map((m) => at(`/materials/${m.slug}`, 0.5, 'monthly')),
   ];
 }

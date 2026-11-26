@@ -14,7 +14,8 @@ import type {
   ShopProduct,
   ShopVariation,
 } from './shop-data';
-import type { Block, Guide } from './guides-data';
+import { articleBlocks, wordCount } from './article-content';
+import type { Guide } from './guides-data';
 import { buildSpecs, htmlToBlocks, parseProductContent } from './product-content';
 
 const STORE_API = process.env.NEXT_PUBLIC_WC_STORE_API_URL ?? '';
@@ -291,14 +292,23 @@ export interface GqlPost {
   excerpt: string;
   content: string;
   date: string;
+  modified?: string;
   categories: { nodes: { name: string }[] };
+  featuredImage?: {
+    node?: {
+      sourceUrl?: string;
+      altText?: string;
+      mediaDetails?: { width?: number; height?: number } | null;
+    };
+  } | null;
 }
 
 export const POSTS_QUERY = `{
   posts(first: 50) {
     nodes {
-      databaseId slug title excerpt content date
+      databaseId slug title excerpt content date modified
       categories { nodes { name } }
+      featuredImage { node { sourceUrl altText mediaDetails { width height } } }
     }
   }
 }`;
@@ -306,22 +316,26 @@ export const POSTS_QUERY = `{
 function postToGuide(p: GqlPost): Guide {
   const cat = p.categories.nodes[0]?.name ?? 'Guides';
   const type: Guide['type'] = cat === 'Materials' || cat === 'Design' ? cat : 'Guides';
-  const text = stripTags(p.content);
-  const words = text.split(' ').length;
-  const paragraphs = p.content
-    .split(/<\/p>/i)
-    .map((chunk) => stripTags(chunk))
-    .filter((t) => t.length > 0);
-  const body: Block[] = paragraphs.length
-    ? paragraphs.map((t) => ({ t: 'p', text: t }))
-    : [{ t: 'p', text }];
+  const body = articleBlocks(p.content ?? '');
+  const date = p.date.slice(0, 10);
+  const updated = p.modified?.slice(0, 10);
+  const image = p.featuredImage?.node;
+  const { width, height } = image?.mediaDetails ?? {};
   return {
     slug: p.slug,
     title: decode(p.title),
-    summary: stripTags(p.excerpt) || text.slice(0, 160),
+    summary: stripTags(p.excerpt) || stripTags(p.content ?? '').slice(0, 160),
     type,
-    date: p.date.slice(0, 10),
-    minutes: Math.max(2, Math.round(words / 200)),
+    date,
+    updated: updated && updated > date ? updated : undefined,
+    minutes: Math.max(2, Math.round(wordCount(body) / 200)),
+    cover: image?.sourceUrl
+      ? {
+          src: image.sourceUrl,
+          alt: decode(image.altText ?? ''),
+          ...(width && height ? { width, height } : {}),
+        }
+      : undefined,
     body,
   };
 }

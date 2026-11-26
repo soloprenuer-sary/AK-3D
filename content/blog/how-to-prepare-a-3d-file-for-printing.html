@@ -1,0 +1,83 @@
+<p>A clean file is the quickest route to a good print. Many delays come from a handful of avoidable issues: the wrong units, a surface with holes, walls too thin to build, or a format that lost detail on the way out. This guide shows how to choose a format, export it well, and check it before you send it.</p>
+
+<h2>Which format should you send?</h2>
+<table>
+<thead><tr><th>Format</th><th>What it holds</th><th>Good to know</th></tr></thead>
+<tbody>
+<tr><td>STL</td><td>The surface as triangles</td><td>Works almost everywhere. Carries no units or colour in the standard form.</td></tr>
+<tr><td>3MF</td><td>Triangles plus units, and optionally colour and print settings</td><td>A modern choice that avoids unit mix-ups.</td></tr>
+<tr><td>OBJ</td><td>Triangles or polygons, can link to colour files</td><td>Common in art and game software. Send the material files with it.</td></tr>
+<tr><td>STEP (.step, .stp)</td><td>Exact CAD surfaces</td><td>Best for engineering parts that may need editing.</td></tr>
+<tr><td>IGES (.iges, .igs)</td><td>CAD surfaces, an older standard</td><td>Use STEP instead if your software offers both.</td></tr>
+</tbody>
+</table>
+<p>If your software exports 3MF, it is a sound default. If you designed an engineering part in CAD, send STEP, and add a 3MF or STL as a visual reference. We accept STL, 3MF, OBJ, STEP, and IGES files with a quote request, up to 300 MB per file.</p>
+
+<h2>Get the units right</h2>
+<p>An STL file stores numbers without saying what they measure. A part drawn as 2 inches wide can arrive as 2 mm. Before exporting, set your project to millimetres. After exporting, reopen the file or load it into a free slicer and check one dimension you know.</p>
+<blockquote><p><strong>Tip:</strong> Write the overall size in your message, for example "80 x 40 x 25 mm". It takes a moment and catches unit errors immediately.</p></blockquote>
+
+<h2>Choose a sensible resolution</h2>
+<p>STL, 3MF, and OBJ describe curves with flat triangles. Too few triangles and a round part prints with visible facets. Too many and the file grows huge without any visible gain, because the printer cannot reproduce detail smaller than its nozzle and layers.</p>
+<figure><img src="images/files-resolution.png" alt="A circle exported with few triangles looks like a polygon, and with a fine setting looks smooth" width="1600" height="900"><figcaption>Coarse exports show flat faces on curves. A fine preset is usually enough.</figcaption></figure>
+<p>Most software offers coarse, medium, and fine presets. Fine is a good starting point. If you see flat bands on a curve in the preview, raise the setting. If the file is enormous for a small object, lower it.</p>
+
+<h2>Make the model watertight</h2>
+<p>A printer needs to know what is inside the part and what is outside. A printable mesh is closed, with no gaps, and every edge shared by exactly two faces. People call this watertight or manifold.</p>
+<figure><img src="images/files-watertight.png" alt="A closed box ready to print beside a box with a missing face that the slicer cannot understand" width="1600" height="900"><figcaption>A closed shape has a clear inside. A missing face leaves the slicer guessing.</figcaption></figure>
+<p>Common faults include:</p>
+<ul>
+<li>Holes where faces are missing.</li>
+<li>Faces pointing inwards (flipped normals).</li>
+<li>Overlapping bodies that were never joined.</li>
+<li>Flat surfaces with zero thickness, such as a single sheet used as a wall.</li>
+<li>Stray points or tiny loose pieces left from editing.</li>
+</ul>
+<p>Most 3D tools and slicers can find these and repair simple ones. Always look at the layer preview after a repair, because automatic fixes sometimes fill a gap that was meant to stay open.</p>
+
+<h2>Check the design, not only the mesh</h2>
+<p>A perfect mesh can still be unprintable. Look at wall thickness, overhangs, clearances, and small text. Our guide to <a href="/guides/designing-for-print-wall-thickness-and-overhangs">designing for print</a> gives starting numbers. If parts must fit together or fit an existing object, say which dimensions are critical.</p>
+
+<h2>Organise multi-part and multi-colour files</h2>
+<ul>
+<li>Export separate parts as separate bodies or files, with clear names such as "lid" and "base".</li>
+<li>State the quantity of each part.</li>
+<li>For multi-colour pieces, keep each colour as its own body, aligned in the same position, or use a 3MF that stores the colours.</li>
+<li>Include a picture showing which colour goes where.</li>
+</ul>
+
+<h2>No 3D file yet?</h2>
+<p>A sketch, a photo, or a reference image is a fine start. Add rough measurements, say what the object is for, and mention anything it must hold or fit onto. JPG, PNG, and PDF files work for this. We model an original design from your idea through the <a href="/design-service">design service</a>.</p>
+
+<h2>Make sure you may print it</h2>
+<p>Downloading a model does not always give you the right to have it made. Check the licence on the page you got it from. Some licences forbid commercial use or paid printing. Characters, logos, and brand designs usually belong to someone else. We print files you own or have permission to use, and we do not print licensed characters without written permission. We also refuse weapons and parts meant to bypass locks.</p>
+
+<h2>Exporting from common kinds of software</h2>
+<ul>
+<li><strong>Engineering CAD</strong> (parametric modelling tools): use "Save as" or "Export" and choose STEP for the editable shape, then 3MF or STL for the mesh.</li>
+<li><strong>Sculpting and art tools:</strong> join the visible parts into one body, apply any modifiers and scale, then export OBJ, STL, or 3MF. Heavy sculpts may need their triangle count reduced.</li>
+<li><strong>Browser-based beginner tools:</strong> select only the objects you want printed, group them, and download as STL or OBJ.</li>
+<li><strong>Phone scans:</strong> scans usually contain holes and extra background. Clean them first, and give one real measurement so the size can be set.</li>
+</ul>
+<p>Menu names change between programs and versions, so check your software's help pages. Whatever you use, open the exported file once more before sending it. What you see there is what the printer will receive.</p>
+
+<h2>Name the file and write a short brief</h2>
+<p>"bracket_v3_80mm.stl" is far more helpful than "final_final.stl". Along with the file, include:</p>
+<ol>
+<li>What the part does and where it will be used.</li>
+<li>Preferred material and colour, or "not sure".</li>
+<li>Quantity.</li>
+<li>The date you need it by, if there is one.</li>
+<li>Critical dimensions and any surface that must look clean.</li>
+</ol>
+
+<h2>A two-minute final check</h2>
+<ul>
+<li>Millimetres, correct size.</li>
+<li>One clean, closed body per part.</li>
+<li>Curves look smooth in the preview.</li>
+<li>Walls and gaps are large enough.</li>
+<li>File type is accepted and under the size limit.</li>
+<li>You have the right to print it.</li>
+</ul>
+<p>Ready? Upload it on the <a href="/quote">quote page</a>, where you can preview an STL before sending. To see what happens afterwards, read <a href="/guides/how-to-order-a-custom-3d-print">how to order a custom print</a>.</p>

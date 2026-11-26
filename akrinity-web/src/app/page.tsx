@@ -11,13 +11,13 @@ import { SelectedWork } from '@/components/home/SelectedWork';
 import { FinalCta } from '@/components/home/FinalCta';
 import { KnowledgeHub } from '@/components/home/KnowledgeHub';
 
-import { getGuides, getListProducts } from '@/lib/catalogue';
+import { getListGuides, getListProducts } from '@/lib/catalogue';
 
 /** Pages are rebuilt in the background at most once a minute, so WordPress edits appear without a deploy. */
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [guides, products] = await Promise.all([getGuides(), getListProducts()]);
+  const [guides, products] = await Promise.all([getListGuides(), getListProducts()]);
   return (
     <main id="main">
       <Hero />

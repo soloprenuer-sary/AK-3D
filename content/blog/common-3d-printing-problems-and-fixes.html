@@ -1,0 +1,95 @@
+<p>Every 3D printer produces a bad print sooner or later. The good news is that most faults leave clear clues. Once you can name the problem, the fix is usually a small change to the first layer, the temperature, the cooling, the filament, or the design. This guide covers the faults seen most often on filament (FDM) printers, what causes them, and what to try first.</p>
+<p>Change one thing at a time and print a small test. If you change five settings together, you will not know which one worked.</p>
+
+<figure><img src="images/problems-six-faults.png" alt="Six common print faults drawn side by side: warping, stringing, elephant foot, layer shift, gaps from under-extrusion, and split layers" width="1600" height="900"><figcaption>Six faults that account for many failed or disappointing prints.</figcaption></figure>
+
+<h2>1. The print does not stick to the bed</h2>
+<p><strong>What you see:</strong> The first lines drag, curl, or ball up on the nozzle. Sometimes the whole part comes loose halfway and ends as a nest of loose plastic.</p>
+<p><strong>Likely causes:</strong> The nozzle is too far from the bed, the surface is greasy, the bed is too cool, or the first layer is printed too fast.</p>
+<ul>
+<li>Clean the build surface and avoid touching it with your fingers. Skin oil is a common reason for lifting.</li>
+<li>Level the bed and set the first-layer height so each line is gently pressed flat.</li>
+<li>Slow down the first layer and keep the cooling fan off or low for it.</li>
+<li>Add a brim, a thin ring around the base, for small footprints and tall parts.</li>
+</ul>
+
+<figure><img src="images/problems-first-layer.png" alt="Three first layers compared: nozzle too high leaves round loose lines, correct height gives flat joined lines, nozzle too low squeezes the plastic into ridges" width="1600" height="900"><figcaption>The first layer decides a great deal. Aim for flat lines that touch their neighbours.</figcaption></figure>
+
+<h2>2. Warping and lifted corners</h2>
+<p><strong>What you see:</strong> Corners peel up from the bed, or a flat base becomes curved.</p>
+<p><strong>Likely causes:</strong> Plastic shrinks as it cools. Upper layers pull on lower ones, and the stress shows at sharp corners. ABS and ASA are especially prone to it.</p>
+<ul>
+<li>Use a bed temperature suited to the material, and keep the surface clean.</li>
+<li>Keep draughts, fans, and air conditioning away from the printer. An enclosure helps a lot with ABS and ASA.</li>
+<li>Add a brim, or round the corners of the design to spread the stress.</li>
+<li>Reduce part cooling for materials that dislike it.</li>
+</ul>
+
+<h2>3. Elephant foot</h2>
+<p><strong>What you see:</strong> The bottom one or two layers bulge outwards, so the base is wider than designed and parts do not fit together.</p>
+<p><strong>Likely causes:</strong> The nozzle is too close on the first layer, or the bed is hot enough to keep the lower layers soft while weight builds above.</p>
+<ul>
+<li>Raise the first-layer height in very small steps.</li>
+<li>Lower the bed temperature slightly, without losing adhesion.</li>
+<li>Add a small chamfer to the bottom edge in the design, or use the slicer's elephant-foot compensation.</li>
+</ul>
+
+<h2>4. Stringing and blobs</h2>
+<p><strong>What you see:</strong> Fine hairs between separate parts of a model, or small beads on the surface.</p>
+<p><strong>Likely causes:</strong> Melted plastic leaks from the nozzle while it travels. High temperature, weak retraction (the filament is not pulled back far or fast enough), or damp filament all add to it.</p>
+<ul>
+<li>Lower the nozzle temperature in steps of about 5 °C using a test print.</li>
+<li>Tune retraction distance and speed for your printer and material.</li>
+<li>Dry the filament if you also hear popping or see tiny bubbles.</li>
+</ul>
+
+<h2>5. Gaps and thin walls (under-extrusion)</h2>
+<p><strong>What you see:</strong> Missing sections, holes in top surfaces, or walls with visible gaps between lines.</p>
+<p><strong>Likely causes:</strong> A partly blocked nozzle, a tangled spool, a slipping feed gear, printing too fast for the temperature, or a wrong filament diameter in the settings.</p>
+<ul>
+<li>Check that the spool turns freely.</li>
+<li>Clean or replace the nozzle, and clean the feed gear teeth.</li>
+<li>Raise the temperature a little or print more slowly.</li>
+<li>Confirm the slicer matches your filament and nozzle size.</li>
+</ul>
+
+<h2>6. Shifted layers</h2>
+<p><strong>What you see:</strong> The upper part of the print is offset sideways, like a stack of books nudged out of line.</p>
+<p><strong>Likely causes:</strong> A loose belt or pulley, the nozzle striking a curled section, speeds too high for the machine, or someone bumping the table.</p>
+<ul>
+<li>Tighten belts and pulley screws as the maker's instructions describe.</li>
+<li>Fix any warping or curling first, so the nozzle does not collide with it.</li>
+<li>Reduce acceleration and travel speed.</li>
+<li>Put the printer on a steady surface.</li>
+</ul>
+
+<h2>7. Layers that split apart</h2>
+<p><strong>What you see:</strong> Cracks run along layer lines, or the part snaps cleanly between two layers.</p>
+<p><strong>Likely causes:</strong> Each layer was not hot enough to bond with the one below. Low temperature, too much cooling, thick layers for the nozzle size, and moisture all contribute.</p>
+<ul>
+<li>Raise the nozzle temperature and reduce cooling.</li>
+<li>Keep layer height comfortably below the nozzle width.</li>
+<li>Rotate the part so the main load does not pull layers apart.</li>
+</ul>
+
+<h2>Moisture: the hidden cause</h2>
+<p>Many filaments absorb water from the air, and a humid season makes it worse. In a city like Mumbai, a spool left open during the monsoon can start to behave badly within days or weeks. Wet filament pops and hisses at the nozzle, strings more, looks rough, and breaks more easily. PETG tends to take up moisture faster than PLA. Store spools sealed with desiccant, and dry them at the temperature the filament maker recommends. Too much heat can deform the spool or the filament.</p>
+
+<h2>Quick diagnosis table</h2>
+<table>
+<thead><tr><th>Symptom</th><th>Check first</th></tr></thead>
+<tbody>
+<tr><td>Part comes loose</td><td>Clean surface, first-layer height</td></tr>
+<tr><td>Corners lift</td><td>Draughts, bed temperature, brim</td></tr>
+<tr><td>Wide base</td><td>First layer too squashed or bed too hot</td></tr>
+<tr><td>Fine hairs</td><td>Temperature, retraction, damp filament</td></tr>
+<tr><td>Holes and gaps</td><td>Blockage, spool tangle, print speed</td></tr>
+<tr><td>Sideways step</td><td>Belts, collisions, table movement</td></tr>
+<tr><td>Cracks between layers</td><td>Temperature, cooling, orientation</td></tr>
+</tbody>
+</table>
+
+<h2>Prevent problems at the design stage</h2>
+<p>Settings cannot rescue every model. Large flat plates warp, thin spikes snap, and steep overhangs sag. A few design changes prevent much of this, and our guide to <a href="/guides/designing-for-print-wall-thickness-and-overhangs">wall thickness, overhangs, and fit</a> walks through them.</p>
+<blockquote><p><strong>Tip:</strong> Printer firmware and slicers differ. Use your machine maker's manual for adjustment steps, and switch off and cool the printer before touching the nozzle or belts.</p></blockquote>
+<p>Would you rather skip the troubleshooting? Send us the file through the <a href="/quote">quote form</a>, and we will tell you if something needs changing before it is printed.</p>

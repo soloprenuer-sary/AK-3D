@@ -17,8 +17,9 @@ const CACHE_SECONDS = 60;
 const POSTS_QUERY = `{
   posts(first: 50) {
     nodes {
-      databaseId slug title excerpt content date
+      databaseId slug title excerpt content date modified
       categories { nodes { name } }
+      featuredImage { node { sourceUrl altText mediaDetails { width height } } }
     }
   }
 }`;
