@@ -30,10 +30,37 @@ export default function Contact() {
         'For custom prints, use the quote form so we have your file and your details in one place.',
       ],
     },
+    {
+      heading: 'What to send with your message',
+      paragraphs: ['A short message is fastest. These details help us answer in one reply:'],
+      items: [
+        'Your order number, if the message is about an order',
+        'The product name or a link to the product page',
+        'Photos of the part, if something arrived damaged',
+        'The size, colour or material you want, for a custom request',
+      ],
+    },
+    {
+      heading: 'Common questions',
+      paragraphs: [
+        'Many answers are already on the site. Check these first, they open in a few seconds:',
+      ],
+      items: [
+        'Order status: Track an order, with your order number and email or phone',
+        'Cancel or return: from the order page, within the time shown on it',
+        'Shipping and delivery: the Shipping page explains dispatch and tracking',
+        'Materials: the knowledge hub explains PLA, PETG, ABS, ASA and resin',
+      ],
+    },
   ];
   return (
     <InfoPage
       title="Contact"
+      heroImage={{
+        src: '/images/about/process.png',
+        alt: 'Four steps from check to print to finish to ship',
+        caption: 'Every message goes to the studio, which replies by email or WhatsApp.',
+      }}
       intro={`Questions about an order, a custom print or a design? Send us a message below${site.whatsappText ? ', or reach the studio on WhatsApp' : ''}${site.supportEmail ? ' or by email' : ''}.`}
       sections={sections}
     >
