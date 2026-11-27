@@ -623,6 +623,66 @@ async function handleRequest(request: Request, env: ServerEnv): Promise<Response
 }
 
 /** The GST invoice for an order, as a PDF download. */
+/** Forwards a cart with its email to WordPress, which keeps it for the abandoned-cart reminder. */
+async function handleCartSync(request: Request, env: ServerEnv): Promise<Response> {
+  const body = await readJson(request);
+  const email = str(body?.email, 254).toLowerCase();
+  if (!body || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ ok: false }, 400);
+  const raw = Array.isArray(body.lines) ? body.lines.slice(0, 30) : [];
+  const lines = raw
+    .filter((l): l is Record<string, unknown> => !!l && typeof l === 'object')
+    .map((l) => ({
+      id: str(l.id, 40),
+      slug: str(l.slug, 200),
+      name: str(l.name, 200),
+      qty: Math.max(1, Math.min(100, Number(l.qty) || 1)),
+      price: str(l.price, 40),
+      image: str(l.image, 500),
+      mode: str(l.mode, 20),
+      madeToOrder: l.madeToOrder === true,
+    }));
+  const limited = await limitIp(env, request, 'cart-sync', { max: 60, window: 900 });
+  if (limited) return limited;
+  if (!env.AKRINITY_SHARED_SECRET || !env.WP_URL) return json({ ok: false }, 503);
+  try {
+    await fetch(`${env.WP_URL}/wp-json/akrinity/v1/cart`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Akrinity-Key': env.AKRINITY_SHARED_SECRET },
+      body: JSON.stringify({ email, name: str(body.name, 120), lines }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch {
+    // The shopper's checkout must never wait on this; a missed save only means no reminder.
+  }
+  return json({ ok: true });
+}
+
+/** Reads a saved cart for the "get my cart back" link. */
+async function handleCartRestore(request: Request, env: ServerEnv): Promise<Response> {
+  const body = await readJson(request);
+  const token = str(body?.token, 200);
+  if (!token || token.length < 20) return json({ error: 'This link is not valid.' }, 400);
+  const limited = await limitIp(env, request, 'cart-restore', { max: 20, window: 900 });
+  if (limited) return limited;
+  if (!env.AKRINITY_SHARED_SECRET || !env.WP_URL) return json({ error: 'Not available.' }, 503);
+  try {
+    const res = await fetch(`${env.WP_URL}/wp-json/akrinity/v1/cart/restore`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Akrinity-Key': env.AKRINITY_SHARED_SECRET },
+      body: JSON.stringify({ token }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok)
+      return json({ error: 'This cart link has expired or the order was already placed.' }, 404);
+    const data = (await res.json()) as { lines?: Record<string, unknown>[] };
+    return json({ lines: Array.isArray(data.lines) ? data.lines : [] });
+  } catch {
+    return json({ error: 'Not available right now. Please try again.' }, 503);
+  }
+}
+
 async function handleInvoice(request: Request, env: ServerEnv): Promise<Response> {
   const body = await readJson(request);
   if (!body) return json({ error: 'Something went wrong. Reload the page and try again.' }, 400);
@@ -696,6 +756,8 @@ export async function POST(request: Request, ctx: RouteContext): Promise<Respons
   if (action === 'lookup') return handleLookup(request, env);
   if (action === 'request') return handleRequest(request, env);
   if (action === 'invoice') return handleInvoice(request, env);
+  if (action === 'cart') return handleCartSync(request, env);
+  if (action === 'cart-restore') return handleCartRestore(request, env);
   return json({ error: 'Not found.' }, 404);
 }
 

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { EmptyCart } from './CartView';
 import { formatRupees, useCart } from '@/lib/cart-store';
 import { currentUser } from '@/lib/auth-client';
-import { placeOrder, quoteCart, toLines } from '@/lib/shop-client';
+import { placeOrder, quoteCart, syncCart, toLines } from '@/lib/shop-client';
 import { METHOD_LABEL, STATES, type CartView } from '@/lib/shop-types';
 
 const BLANK = {
@@ -76,6 +76,29 @@ export function CheckoutView() {
   }, []);
 
   const linesKey = JSON.stringify(toLines(lines));
+
+  // Keep the cart for an abandoned-cart reminder once an email address is typed (waits a moment while typing).
+  useEffect(() => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email) || lines.length === 0) return;
+    const t = setTimeout(() => {
+      syncCart({
+        email: v.email.trim(),
+        name: v.name.trim(),
+        lines: lines.map((l) => ({
+          id: l.id,
+          slug: l.slug ?? '',
+          name: l.name,
+          qty: l.qty,
+          price: l.price ?? '',
+          image: l.image ?? '',
+          mode: l.mode,
+          madeToOrder: !!l.madeToOrder,
+        })),
+      });
+    }, 1500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- lines are tracked through linesKey
+  }, [v.email, v.name, linesKey]);
   const pinOk = /^\d{6}$/.test(v.pincode);
 
   const run = useCallback(

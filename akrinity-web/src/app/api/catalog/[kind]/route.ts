@@ -12,17 +12,9 @@
 
 export const runtime = 'nodejs';
 
-const CACHE_SECONDS = 60;
+import { restToPost, type RestPost } from '@/lib/wp';
 
-const POSTS_QUERY = `{
-  posts(first: 100) {
-    nodes {
-      databaseId slug title excerpt content date modified
-      categories { nodes { name } }
-      featuredImage { node { sourceUrl altText mediaDetails { width height } } }
-    }
-  }
-}`;
+const CACHE_SECONDS = 60;
 
 const reply = (body: string): Response =>
   new Response(body, {
@@ -92,17 +84,16 @@ async function products(base: string): Promise<Response> {
 }
 
 async function posts(base: string): Promise<Response> {
-  const res = await fetch(`${base}/graphql`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: POSTS_QUERY }),
-    next: { revalidate: CACHE_SECONDS },
-    signal: AbortSignal.timeout(20000),
-  });
+  const res = await fetch(
+    `${base}/wp-json/wp/v2/posts?per_page=100&_embed&_t=${Math.floor(Date.now() / 60000)}`,
+    {
+      next: { revalidate: CACHE_SECONDS },
+      signal: AbortSignal.timeout(20000),
+    },
+  );
   if (!res.ok) return failure('The article service is unavailable.', 502);
-  const json = (await res.json()) as { data?: { posts?: { nodes: unknown[] } } };
-  if (!json.data?.posts) return failure('The article service is unavailable.', 502);
-  return reply(JSON.stringify(json.data.posts.nodes));
+  const data = (await res.json()) as RestPost[];
+  return reply(JSON.stringify(data.map(restToPost)));
 }
 
 export async function GET(
