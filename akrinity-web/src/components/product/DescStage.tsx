@@ -46,6 +46,34 @@ function toSections(blocks: DescBlock[]): DescBlock[][] {
   return byHeading.length >= 3 ? byHeading : blocks.map((b) => [b]);
 }
 
+/** Words in a block of text, for the phone "Read more" cut-off. */
+function wordsIn(b: DescBlock): number {
+  const text = b.t === 'ul' ? b.items.join(' ') : 'text' in b ? b.text : '';
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+/** On phones the text stops after about this many words; the rest waits behind "Read more". */
+const PHONE_WORDS = 400;
+
+/** Splits the sections into the part shown on phones at first and the rest (collapsed on phones). */
+function splitAt(sections: DescBlock[][]): { head: DescBlock[][]; tail: DescBlock[][] } {
+  let total = 0;
+  for (const s of sections) total += s.reduce((n, b) => n + wordsIn(b), 0);
+  if (total <= PHONE_WORDS) return { head: sections, tail: [] };
+  let used = 0;
+  let cut = sections.length;
+  for (let i = 0; i < sections.length; i++) {
+    const w = sections[i].reduce((n, b) => n + wordsIn(b), 0);
+    // Stop before the block that would go past the limit (the first block is always shown).
+    if (i > 0 && used + w > PHONE_WORDS) {
+      cut = i;
+      break;
+    }
+    used += w;
+  }
+  return { head: sections.slice(0, cut), tail: sections.slice(cut) };
+}
+
 /** Seconds each picture stays before the next one fades in. */
 const SLIDE_SECONDS = 5;
 
@@ -58,6 +86,28 @@ const SLIDE_SECONDS = 5;
  */
 export function DescStage({ blocks, pictures }: { blocks: DescBlock[]; pictures: StagePicture[] }) {
   const sections = toSections(blocks);
+  const { head, tail } = splitAt(sections);
+  const [more, setMore] = useState(false);
+  const collapsible = tail.length > 0;
+  const moreButton = collapsible ? (
+    <button
+      type="button"
+      className="dg-more-btn"
+      aria-expanded={more}
+      onClick={() => setMore((o) => !o)}
+    >
+      {more ? 'Show less' : 'Read more'}
+    </button>
+  ) : null;
+  const tailBlock = collapsible ? (
+    <div className={more ? 'dg-tail open' : 'dg-tail'}>
+      {tail.map((s, i) => (
+        <div key={`t${i}`} className="dg-sec">
+          <Prose blocks={s} />
+        </div>
+      ))}
+    </div>
+  ) : null;
   const [bad, setBad] = useState<Set<string>>(new Set());
   const shown = pictures.filter((p) => !bad.has(p.src));
   const [active, setActive] = useState(0);
@@ -83,7 +133,19 @@ export function DescStage({ blocks, pictures }: { blocks: DescBlock[]; pictures:
     return (
       <div className="dg dg-solo">
         <div className="dg-text">
-          <Prose blocks={blocks} />
+          {collapsible ? (
+            <>
+              {head.map((sec, i) => (
+                <div key={i} className="dg-sec">
+                  <Prose blocks={sec} />
+                </div>
+              ))}
+              {tailBlock}
+              {moreButton}
+            </>
+          ) : (
+            <Prose blocks={blocks} />
+          )}
         </div>
       </div>
     );
@@ -92,11 +154,13 @@ export function DescStage({ blocks, pictures }: { blocks: DescBlock[]; pictures:
   return (
     <div className="dg">
       <div className="dg-text">
-        {sections.map((s, i) => (
+        {head.map((sec, i) => (
           <div key={i} className="dg-sec">
-            <Prose blocks={s} />
+            <Prose blocks={sec} />
           </div>
         ))}
+        {tailBlock}
+        {moreButton}
       </div>
 
       <aside className="dg-side" aria-label="Pictures and summary">
