@@ -1655,3 +1655,19 @@ header.site:has(.mobile-menu){z-index:45}
 .mm2-block.tone-ink{background:var(--ink);color:var(--paper)}
 .mm2-dock{flex:none;padding:12px var(--gutter) calc(14px + env(safe-area-inset-bottom,0px));border-top:1.5px solid var(--ink);background:var(--paper)}
 @media (min-width:640px){.mm2-links,.mm2-blocks{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* ===== Studio picture slider (About page) ===== */
+.studio-slider{max-width:960px;margin:0 auto;padding:0 var(--gutter)}
+.ss-stage{margin:0}
+.ss-img{width:100%;height:auto;display:block;border:1.5px solid var(--ink);border-radius:28px;background:var(--white);animation:ssIn .45s var(--ease)}
+@keyframes ssIn{from{opacity:.4;transform:translateX(12px)}to{opacity:1;transform:none}}
+.ss-caption{margin-top:12px;font-size:15px;color:var(--muted);display:flex;gap:12px;align-items:baseline}
+.ss-count{font-weight:700;color:var(--ink);white-space:nowrap}
+.ss-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+.ss-btn{width:48px;height:48px;border-radius:50%;border:1.5px solid var(--ink);background:var(--white);font-size:20px;cursor:pointer;flex:none}
+.ss-btn:hover:not(:disabled){background:var(--accent)}
+.ss-btn:disabled{opacity:.35;cursor:default}
+.ss-dots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.ss-dot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--ink);background:var(--white);padding:0;cursor:pointer}
+.ss-dot[aria-current="true"]{background:var(--ink)}
+@media (prefers-reduced-motion:reduce){.ss-img{animation:none}}

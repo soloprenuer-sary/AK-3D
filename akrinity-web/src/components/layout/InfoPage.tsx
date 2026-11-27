@@ -23,6 +23,7 @@ export function InfoPage({
   sections,
   note,
   heroImage,
+  afterSections,
   children,
 }: {
   title: string;
@@ -30,6 +31,8 @@ export function InfoPage({
   sections: InfoSection[];
   note?: string;
   heroImage?: InfoImage;
+  /** Shown after the cards, before the closing block (for example a picture slider). */
+  afterSections?: ReactNode;
   /** Extra content shown after the sections, for example a form. */
   children?: ReactNode;
 }) {
@@ -150,6 +153,12 @@ export function InfoPage({
           </article>
         ))}
       </section>
+
+      {afterSections && (
+        <section className="wrap" style={{ paddingBottom: 'var(--sec)' }}>
+          {afterSections}
+        </section>
+      )}
 
       {children && (
         <section className="wrap" style={{ paddingBottom: 'var(--sec)' }}>

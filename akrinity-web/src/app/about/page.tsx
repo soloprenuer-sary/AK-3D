@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { InfoPage } from '@/components/layout/InfoPage';
+import { StudioSlider } from '@/components/layout/StudioSlider';
 
 export const metadata: Metadata = {
   title: 'About',
@@ -17,6 +18,27 @@ export default function About() {
         alt: 'Four printed objects in brand colours standing on a striped lime background',
         caption: 'Illustration. Studio photos are coming.',
       }}
+      afterSections={
+        <StudioSlider
+          slides={[
+            {
+              src: '/images/about/slide-printer.png',
+              alt: 'Illustration of a 3D printer building a part layer by layer',
+              caption: 'The printer: one thin layer at a time.',
+            },
+            {
+              src: '/images/about/slide-workshop.png',
+              alt: 'Illustration of the workshop bench where parts are finished',
+              caption: 'The workshop: where parts are finished.',
+            },
+            {
+              src: '/images/about/slide-packaging.png',
+              alt: 'Illustration of a box being packed for dispatch',
+              caption: 'Packing: checked, wrapped and boxed.',
+            },
+          ]}
+        />
+      }
       sections={[
         {
           heading: 'Why we started',
