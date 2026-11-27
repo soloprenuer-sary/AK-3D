@@ -59,18 +59,22 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const product = findProduct(await getProducts(), slug);
   if (!product) return { title: 'Product' };
   const text = (product.description ?? '').replace(/\s+/g, ' ').trim();
+  // What the owner typed in Rank Math wins; otherwise the short description and the product name.
   const description =
-    text.length > 20
+    product.seoDescription ||
+    (text.length > 20
       ? text.slice(0, 155)
-      : `${product.name}. 3D printed in Mumbai, shipped across India. Prices include GST.`;
+      : `${product.name}. 3D printed in Mumbai, shipped across India. Prices include GST.`);
+  const title = product.seoTitle || product.name;
   const image = product.images?.[0];
   return {
-    title: product.name,
+    // A typed SEO title is used exactly as written, without the site name added.
+    title: product.seoTitle ? { absolute: product.seoTitle } : product.name,
     description,
     alternates: { canonical: `/product/${productSlug(product)}` },
     openGraph: {
       type: 'website',
-      title: product.name,
+      title,
       description,
       url: `/product/${productSlug(product)}`,
       ...(image ? { images: [{ url: image, alt: product.name }] } : {}),

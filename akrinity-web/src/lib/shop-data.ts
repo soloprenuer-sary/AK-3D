@@ -198,6 +198,10 @@ export interface ShopVariation {
 }
 
 export interface ShopProduct {
+  /** SEO title typed in Rank Math, when there is one. */
+  seoTitle?: string;
+  /** Meta description typed in Rank Math, when there is one. */
+  seoDescription?: string;
   id: string;
   /** WooCommerce slug (the page address). Falls back to a slug made from the name. */
   slug?: string;

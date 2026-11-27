@@ -60,6 +60,8 @@ export interface StoreProduct {
       upsell_ids?: number[];
     };
     akrinity_content?: unknown;
+    /** The SEO title and meta description typed in Rank Math (empty when not typed). */
+    akrinity_seo?: { title?: string; description?: string };
     akrinity_model?: { url?: string; type?: string };
   };
 }
@@ -249,6 +251,8 @@ export function mapStoreProduct(p: StoreProduct, tree: ShopCategory[] = CATEGORI
       : undefined,
     // The WordPress short description as plain text.
     description: shortText(p.short_description || p.description || ''),
+    seoTitle: shortText(p.extensions?.akrinity_seo?.title ?? ''),
+    seoDescription: shortText(p.extensions?.akrinity_seo?.description ?? ''),
     variation,
     rating: Number(p.average_rating) > 0 ? Number(p.average_rating) : undefined,
     reviewCount: p.review_count && p.review_count > 0 ? p.review_count : undefined,
