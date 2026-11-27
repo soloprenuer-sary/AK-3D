@@ -1,0 +1,90 @@
+<p>Cut a printed part in half and you may be surprised: it is often not solid. Inside the outer walls sits a repeating pattern of thin lines with air between them. This inner structure is called infill. Together with the walls, it decides how strong, heavy, and expensive a part is. Understanding the two helps you ask for a part that is strong where it needs to be, without paying for plastic that adds nothing.</p>
+
+<h2>The parts of a printed object</h2>
+<ul>
+<li><strong>Walls or perimeters:</strong> the outer lines that trace the shape.</li>
+<li><strong>Top and bottom layers:</strong> solid skins that close the part.</li>
+<li><strong>Infill:</strong> the pattern that fills the space inside.</li>
+</ul>
+
+<h2>Why parts are not printed solid</h2>
+<p>A solid part uses much more material, takes longer, and can warp more as it cools. Many objects never need that strength. A decorative vase holds its own weight. A display shelf holds light models. Even working parts often gain more from thicker walls than from a solid middle.</p>
+
+<h2>Infill percentage</h2>
+<p>Slicers describe density as a percentage. Zero is hollow and one hundred is solid. Light decor is often printed with low values, while parts that take force use more. The jump from 10 to 30 percent usually adds more strength than the jump from 60 to 80 percent, which mostly adds weight and time.</p>
+
+<figure><img src="images/infill-patterns.png" alt="Cross sections showing grid, honeycomb, gyroid, and solid infill" width="1600" height="900"><figcaption>Common inner patterns. Each spreads force differently.</figcaption></figure>
+
+<h2>Patterns in brief</h2>
+<table>
+<thead><tr><th>Pattern</th><th>Character</th><th>Often used for</th></tr></thead>
+<tbody>
+<tr><td>Lines</td><td>Quick and light</td><td>Decor and models</td></tr>
+<tr><td>Grid</td><td>Good all-round stiffness</td><td>Everyday parts</td></tr>
+<tr><td>Honeycomb</td><td>Strong for its weight, slower</td><td>Parts under load</td></tr>
+<tr><td>Gyroid</td><td>Fairly even strength in many directions</td><td>Parts loaded from several sides</td></tr>
+<tr><td>Concentric</td><td>Follows the outline</td><td>Flexible parts</td></tr>
+</tbody>
+</table>
+<p>The differences are real but smaller than many expect. Walls and orientation usually matter more.</p>
+
+<h2>Walls do heavy lifting</h2>
+<p>When a part bends, the greatest stress sits near its outer surface. Adding wall lines places material exactly there. Going from two walls to four often strengthens a hook or bracket more than doubling infill. Walls also help screws bite and stop sanding from breaking through.</p>
+
+<figure><img src="images/infill-walls.png" alt="Two hooks cut open: one with thin walls and dense infill, one with thick walls and light infill, the second marked stronger" width="1600" height="900"><figcaption>For bending loads, thicker walls usually beat denser infill.</figcaption></figure>
+
+<h2>Top and bottom layers</h2>
+<p>A top surface needs several solid layers to span the gaps in the infill. Too few, and the top may sag or show holes. Increase them for flat lids, surfaces that carry weight, and parts that will be sanded.</p>
+
+<h2>Strength where it counts</h2>
+<p>Some slicers allow different settings in different regions: dense around screw holes, lighter elsewhere. Rounded inner corners, ribs, and gussets in the design can do even more. A thin plate with two ribs may be stiffer and lighter than a thick flat one.</p>
+
+<h2>Orientation still rules</h2>
+<p>No infill setting fixes a part that is loaded across its weakest direction. Layers pull apart more readily than they break along their length. Read <a href="/guides/print-orientation-strength-and-finish">how orientation affects strength</a> before increasing density.</p>
+
+<h2>Starting points</h2>
+<ul>
+<li><strong>Decor and display:</strong> two walls, about 10 to 15 percent infill.</li>
+<li><strong>Everyday organisers:</strong> two or three walls, about 15 to 25 percent.</li>
+<li><strong>Hooks, mounts, brackets:</strong> four or more walls, about 30 to 50 percent.</li>
+<li><strong>Small parts under high stress:</strong> mostly walls, which can make them nearly solid.</li>
+</ul>
+<p>Treat these as general guidance, then test the real part with a safe load.</p>
+
+<h2>Common mistakes</h2>
+<ul>
+<li>Choosing one hundred percent infill and expecting an unbreakable part.</li>
+<li>Ignoring thin necks where the part will fail first.</li>
+<li>Forgetting that heavy parts put more load on wall fixings.</li>
+<li>Trusting a printed part for safety-critical use.</li>
+</ul>
+
+<h2>How to describe the strength you need</h2>
+<p>Numbers help more than adjectives. Say what will rest on the part, for how long, and from which direction the force comes. "A two-kilogram bag, hanging all day, pulling downwards" gives a printer something to design for. Mention knocks, vibration, and heat as well, because they change the choice of material and wall count.</p>
+<p>Then test gently. Hang the load close to the floor, leave it for a few days, and look for bending or fine cracks near screws and corners. Printed plastic can creep slowly under constant weight, so a part that looks fine on the first afternoon deserves a second look the following week.</p>
+<blockquote><p><strong>Tip:</strong> Say what the part must hold and for how long. That tells a printer how many walls and how much infill to use better than a percentage does.</p></blockquote>
+
+<h2>Common questions</h2>
+<h3>Does infill show from outside?</h3>
+<p>Normally not. It is hidden by the walls and the solid top and bottom layers. Very thin top layers can let the pattern show through as slight dips.</p>
+<h3>Is a heavier part always stronger?</h3>
+<p>No. Weight in the wrong place adds little. Material near the surface and good orientation usually do more than a dense middle.</p>
+<h3>Can I ask for a solid part?</h3>
+<p>Yes, and it makes sense for small parts under high stress or parts that will be machined. It adds material and production time, so say why you need it.</p>
+<h3>Which pattern should I request?</h3>
+<p>Unless you have a special need, let the printer choose. Tell them the load and direction, which matter far more than the pattern name.</p>
+
+<h2>Quick checklist</h2>
+<ul>
+<li>Describe the load: weight, direction, and how long it stays on.</li>
+<li>Ask for more walls before asking for denser infill.</li>
+<li>Add rounded inner corners and ribs where parts bend.</li>
+<li>Choose the print direction so force runs along the layers.</li>
+<li>Test gently with the real object, close to the floor, and check again after a week.</li>
+</ul>
+
+<h2>Weight matters too</h2>
+<p>Strength is not the only goal. A wall-mounted holder that is heavier than needed puts more load on its screws, and a dense large model takes more material and longer to make. Ask for the lightest design that does the job with a sensible margin, and spend extra material only at the points that carry force.</p>
+
+<h2>Next steps</h2>
+<p>Add the load and use to your <a href="/quote">quote request</a>. For design numbers on walls and gaps, see <a href="/guides/designing-for-print-wall-thickness-and-overhangs">designing for print</a>, and for surface choices see <a href="/guides/layer-height-explained">layer height</a>.</p>

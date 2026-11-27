@@ -1,0 +1,90 @@
+<p>Many useful objects are made of more than one piece: a box and lid, a bracket and clamp, a stand that folds flat. 3D printing lets you design the joint into the parts themselves. A good joint holds firmly, survives repeated use, and can be assembled without a fight. This guide covers the common options and how to size them for printed plastic.</p>
+
+<h2>Start with how it will be used</h2>
+<p>Ask four questions before choosing a joint. Will it be opened often? How much force will it take? Must it come apart for cleaning or repair? Should the joint be visible? The answers point to different solutions.</p>
+
+<h2>Common joint types</h2>
+<table>
+<thead><tr><th>Joint</th><th>Good for</th><th>Watch out for</th></tr></thead>
+<tbody>
+<tr><td>Snap fit</td><td>Lids and covers opened sometimes</td><td>Fatigue and cracking if the arm is too stiff</td></tr>
+<tr><td>Screws into plastic</td><td>Fixed assemblies</td><td>Stripping if overtightened</td></tr>
+<tr><td>Heat-set inserts</td><td>Parts opened many times</td><td>Needs thick walls and a hot tool</td></tr>
+<tr><td>Captive nut</td><td>Strong metal thread</td><td>Needs a pocket in the design</td></tr>
+<tr><td>Pins and sockets</td><td>Locating parts before gluing</td><td>Tight fits that will not seat</td></tr>
+<tr><td>Dovetail or slide</td><td>Panels and modular systems</td><td>Needs correct clearance</td></tr>
+<tr><td>Print-in-place hinge</td><td>Moving parts printed assembled</td><td>Fusing together if the gap is small</td></tr>
+</tbody>
+</table>
+
+<figure><img src="images/joints-types.png" alt="Four joints drawn side by side: snap fit, screw, pin and socket, and dovetail" width="1600" height="900"><figcaption>Four joints that work well in printed parts.</figcaption></figure>
+
+<h2>Snap fits</h2>
+<p>A snap fit uses a flexible arm with a small hook that clicks over a ledge. The arm bends during assembly and springs back. Longer, gently tapered arms bend more easily and last longer than short thick ones. Round the base of the arm to avoid a stress crack, and print so the layers run along the arm, not across it. PETG usually tolerates repeated flexing better than plain PLA.</p>
+
+<figure><img src="images/joints-snap.png" alt="A snap fit arm shown before, during, and after clicking into place" width="1600" height="900"><figcaption>A snap arm bends, passes the ledge, and springs back to hold.</figcaption></figure>
+
+<h2>Screws</h2>
+<p>Self-tapping screws can cut their own thread into a printed pilot hole. Make the hole slightly smaller than the screw's outer width, surround it with plenty of wall, and tighten gently. A screw head sitting in a recess looks neat and protects fingers. For parts opened repeatedly, use metal threaded inserts or a captive nut so the plastic thread does not wear out.</p>
+
+<h2>Printed threads</h2>
+<p>Large threads, such as jar lids, print reasonably well. Small threads are fragile and often rough. Below roughly 6 mm, metal hardware is usually the better choice.</p>
+
+<h2>Pins, keys, and dovetails</h2>
+<p>When a large model is split, small pins or keyed shapes help pieces line up exactly. Give pins a slight taper or chamfer so they find their holes. Dovetails slide together and resist pulling apart, useful for modular trays and display systems.</p>
+
+<h2>Clearances</h2>
+<p>Printed parts need a gap to fit. As a starting point, allow about 0.1 to 0.2 mm on each side for a tight press fit, 0.2 to 0.3 mm for a sliding fit, and 0.4 mm or more between parts printed already assembled. Machines differ, so print a small test of the joint before the full part. See <a href="/guides/designing-for-print-wall-thickness-and-overhangs">designing for print</a>.</p>
+
+<h2>Glue or no glue</h2>
+<p>Glue is simple and strong for parts that never need to come apart. Combine it with pins so alignment stays accurate. Our guide to <a href="/guides/gluing-and-repairing-3d-prints">gluing prints</a> covers adhesives.</p>
+
+<h2>Material choice</h2>
+<ul>
+<li><strong>PLA:</strong> stiff and precise, but brittle in flexing joints.</li>
+<li><strong>PETG:</strong> more flexible, good for clips and snaps.</li>
+<li><strong>ABS or ASA:</strong> tough, good for hardware inserts and warm places.</li>
+<li><strong>Resin:</strong> precise, but standard resins crack in snap joints.</li>
+</ul>
+
+<h2>A test plan</h2>
+<ol>
+<li>Print only the joint at a few clearances.</li>
+<li>Assemble and take apart the way a user would.</li>
+<li>Repeat many times and look for whitening or cracks.</li>
+<li>Pick the gap that works, then print the full part.</li>
+</ol>
+<blockquote><p><strong>Tip:</strong> Tell the printer which screws you plan to use, or send one along. Holes designed around the actual hardware fit first time more often.</p></blockquote>
+
+<h2>Common mistakes</h2>
+<ul>
+<li>Drawing both parts the same size, so they cannot fit.</li>
+<li>Placing a screw too close to an edge, which splits the wall.</li>
+<li>Making a snap arm so short that it breaks on first use.</li>
+<li>Printing a flexing arm across the layers.</li>
+<li>Forgetting space for a screwdriver to reach the screw.</li>
+</ul>
+<p>Most of these show up in the first test print, which is why a small trial of the joint is worth the effort. Adjust one dimension at a time, label each test piece with its gap, and keep the winner for reference. That small habit builds a personal table of fits that works for your material and printer, and saves guesswork on the next project.</p>
+
+<h2>Common questions</h2>
+<h3>How many times can a printed snap fit be opened?</h3>
+<p>It varies with material, arm length, and how far it bends. If it must open very often, screws with inserts or magnets in pockets may serve better.</p>
+<h3>Can I drill a printed part?</h3>
+<p>Yes, slowly and with light pressure, so friction does not melt the plastic. Printing the hole slightly small and drilling to size gives a clean result.</p>
+<h3>Are magnets an option?</h3>
+<p>Small magnets fit neatly into designed pockets and make smooth lids. Keep them away from young children, since swallowed magnets are dangerous.</p>
+
+<h2>Quick checklist</h2>
+<ul>
+<li>Decide how often the joint will open and what force it takes.</li>
+<li>Pick the material to suit flexing, heat, and load.</li>
+<li>Allow a clearance, and confirm it with a small test print.</li>
+<li>Round the base of any flexing arm and print along its length.</li>
+<li>Surround screw holes with enough wall, and leave room for the screwdriver.</li>
+</ul>
+
+<h2>Design for repair</h2>
+<p>A joint that comes apart without damage lets someone replace one worn piece instead of the whole object. Screws, captive nuts, and slide fits help with that, while glue locks parts together for good. If a lid or clip is likely to wear first, make it a separate piece so it can be printed again on its own.</p>
+
+<h2>Next steps</h2>
+<p>If you have parts that must fit together, describe them in the <a href="/quote">quote form</a>, or let our <a href="/design-service">design service</a> model the joint for you.</p>

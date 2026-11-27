@@ -10,6 +10,7 @@ import { createRequire } from 'node:module';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import secondSet from './set2.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const web = resolve(here, '../../akrinity-web');
@@ -861,6 +862,13 @@ images['products-range'] = svg(
     circle(1165, 590, 10, C.white) +
     circle(1265, 666, 10, C.white) +
     pill(1230, 760, 'Custom parts', C.orange),
+);
+
+/* ---------- the second batch ---------- */
+
+Object.assign(
+  images,
+  secondSet({ W, H, C, rect, circle, path, line, group, shadow, title, label, card, pill, tick, cross, arrow, vase, printer, spool, car, parcel, doc, textLines, cube, nozzle, drop, sun, magnifier, ruler, phoneStand, racket, dots, layers, svg }),
 );
 
 /* ---------- write the files ---------- */

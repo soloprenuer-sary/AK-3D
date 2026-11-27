@@ -1,0 +1,94 @@
+<p>A printer builds from the bottom up, and each layer needs something underneath it. When part of a design hangs in mid-air, the printer adds temporary scaffolding called supports. They make impossible shapes possible, but they also use extra material, take extra work to remove, and can leave marks. This guide shows when supports are needed, the main kinds, and how smart design reduces them.</p>
+
+<h2>When are supports needed?</h2>
+<ul>
+<li><strong>Steep overhangs</strong> that lean more than about 45 degrees from vertical.</li>
+<li><strong>Long bridges</strong> between two points, beyond what the printer can span cleanly.</li>
+<li><strong>Islands</strong>, features that start in mid-air, such as the tip of an outstretched hand.</li>
+<li><strong>Deep undercuts</strong> under a brim, a ledge, or an arm.</li>
+</ul>
+
+<h2>Where they are not needed</h2>
+<p>Vertical walls, gentle slopes, short bridges, and shapes that widen gradually usually print cleanly without help. A cone standing on its base needs nothing. The same cone upside down, balanced on its point, would need plenty.</p>
+
+<h2>The main kinds of support</h2>
+<table>
+<thead><tr><th>Type</th><th>How it looks</th><th>Strengths</th></tr></thead>
+<tbody>
+<tr><td>Grid or line</td><td>Straight walls under the overhang</td><td>Stable for flat undersides</td></tr>
+<tr><td>Tree</td><td>Branching trunks reaching to points</td><td>Uses less material, touches less surface</td></tr>
+<tr><td>Soluble</td><td>A second material that dissolves</td><td>Clean results in hidden cavities, needs special setup</td></tr>
+<tr><td>Resin pillars</td><td>Thin tipped columns</td><td>Standard in resin printing</td></tr>
+</tbody>
+</table>
+
+<figure><img src="images/supports-types.png" alt="The same overhang held up by grid supports, tree supports, and resin pillars" width="1600" height="900"><figcaption>Three ways of holding up the same overhang.</figcaption></figure>
+
+<h2>The cost of supports</h2>
+<p>Support material is thrown away. Removing it takes care, and thin features can break during removal. Where supports touch the part, the surface is rougher and may show small bumps or pits. For a display piece, this matters. For a hidden bracket, it often does not.</p>
+
+<h2>Designing out supports</h2>
+<ol>
+<li><strong>Use chamfers.</strong> Replace a flat ledge with a 45 degree slope underneath.</li>
+<li><strong>Reshape holes.</strong> A teardrop-shaped horizontal hole prints cleanly.</li>
+<li><strong>Split the model.</strong> Two flat-bottomed halves can be joined after printing.</li>
+<li><strong>Change orientation.</strong> Often the simplest fix. See <a href="/guides/print-orientation-strength-and-finish">print orientation</a>.</li>
+<li><strong>Add a built-in rib.</strong> A slim rib that stays in the design can carry an overhang.</li>
+<li><strong>Break up long bridges</strong> with an extra column or an arch.</li>
+</ol>
+
+<figure><img src="images/supports-avoid.png" alt="A flat ledge needing supports beside a chamfered ledge that prints without them" width="1600" height="900"><figcaption>A small change in shape can remove the need for supports.</figcaption></figure>
+
+<h2>Where marks should go</h2>
+<p>If supports are unavoidable, choose where they touch. Put them on the back, the underside, or a surface that will be hidden against a wall. Keep them away from faces, lettering, and parts that must fit together.</p>
+
+<h2>Removal and cleanup</h2>
+<p>Supports usually snap off by hand or with small pliers and a flush cutter. Remove them slowly, supporting thin features with your fingers. A light sand can smooth the contact points, though sanding may change the sheen. Resin supports are best removed carefully, following the maker's curing advice, with eye protection.</p>
+
+<h2>Trade-offs to weigh</h2>
+<ul>
+<li><strong>Fewer supports, weaker orientation?</strong> Sometimes a stronger position needs more support. Strength may be worth it.</li>
+<li><strong>Splitting, extra joint?</strong> A glued seam can be visible or weak if placed badly.</li>
+<li><strong>Chamfer, changed look?</strong> A sloped underside may not suit a design that needs a flat ledge.</li>
+</ul>
+
+<h2>What to ask about your part</h2>
+<ul>
+<li>Where will supports touch?</li>
+<li>Can any be designed away without changing the function?</li>
+<li>How visible will the marks be?</li>
+<li>Is sanding or painting needed afterwards?</li>
+</ul>
+<blockquote><p><strong>Tip:</strong> When you design, tilt your model on screen and imagine rain falling from below. Surfaces that would catch it are the ones that need support.</p></blockquote>
+
+<h2>Reading a slicer preview</h2>
+<p>Free slicing software shows supports before anything is printed, usually in a different colour. Slide through the layers and watch for features that appear with nothing underneath. Check inside holes and slots, where supports can be impossible to reach with tools. If you see support trapped in a closed cavity, change the design, because it may never come out.</p>
+<p>Also check the contact points on thin parts such as antennae, fingers, or blades. A support that is harder to break than the feature it holds will damage it. Thickening the feature slightly, or turning the model, is usually the cure.</p>
+
+<h2>Supports are not a fault</h2>
+<p>Some shapes cannot be made without them, and a well-placed, carefully removed support leaves little trace. The aim is not to remove every one, but to use them where they earn their cost and leave marks where nobody looks. When you compare quotes, remember that careful cleanup is real work and part of what you pay for.</p>
+
+<h2>Common questions</h2>
+<h3>Will supports always leave marks?</h3>
+<p>Usually some trace remains where they touched. Careful settings and gentle removal keep it small, and hidden placement keeps it out of sight.</p>
+<h3>Can I remove supports myself?</h3>
+<p>Yes, if you receive a part with them still attached. Work slowly with small pliers or a flush cutter, and protect your eyes.</p>
+<h3>Do supports affect size?</h3>
+<p>Surfaces resting on supports can come out slightly rough or uneven. If that face must be accurate, ask for a different orientation.</p>
+<h3>Are tree supports always better?</h3>
+<p>No. They save material and touch less surface, but broad flat undersides are often steadier on straight grid supports.</p>
+
+<h2>Quick checklist</h2>
+<ul>
+<li>Look for ledges steeper than about 45 degrees, long bridges, and features that start in mid-air.</li>
+<li>Try a chamfer, a teardrop hole, or a different orientation first.</li>
+<li>Choose a hidden face for any unavoidable contact points.</li>
+<li>Check that support inside holes and slots can actually be reached and removed.</li>
+<li>Thicken delicate features that might break during cleanup.</li>
+</ul>
+
+<h2>A note on resin</h2>
+<p>Resin printing almost always uses supports, because parts are pulled from the liquid layer by layer and need holding firmly. The skill lies in angling the model so the thin tips land on backs, bases, and hidden folds. Ask to have faces and fine details kept clear, and expect to see a few tiny marks where tips were removed.</p>
+
+<h2>Next steps</h2>
+<p>For exact starting angles and gaps, read <a href="/guides/designing-for-print-wall-thickness-and-overhangs">designing for print</a>. Send your file through the <a href="/quote">quote form</a> and we will check where supports would go before anything is printed.</p>

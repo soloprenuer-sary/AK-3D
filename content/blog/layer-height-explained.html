@@ -1,0 +1,86 @@
+<p>Look closely at a printed vase and you will see fine horizontal lines. Each line is one layer. The thickness of those layers, called layer height, is one of the first settings a printer operator chooses, and one of the most visible. It affects how smooth the part looks, how long it takes, and in some cases how strong it is. Here is what it means and how to ask for the right finish.</p>
+
+<h2>What layer height is</h2>
+<p>A printer builds a part in slices. Layer height is the thickness of each slice, measured in millimetres. On filament printers with a common 0.4 mm nozzle, values between about 0.1 mm and 0.3 mm are typical. Resin printers often use much thinner layers.</p>
+<p>Thinner layers mean more layers for the same height. A 100 mm tall object needs 500 layers at 0.2 mm, but 1,000 layers at 0.1 mm.</p>
+
+<figure><img src="images/layers-compare.png" alt="Three cylinders printed with thick, medium, and thin layers, showing smoother sides as layers get thinner" width="1600" height="900"><figcaption>The same shape in thick, medium, and thin layers. Thinner layers look smoother and need more passes.</figcaption></figure>
+
+<h2>How it changes the look</h2>
+<p>Thick layers give a textured, ridged surface that catches light. Thin layers look smoother and show fine detail better. The effect is strongest on gentle slopes and rounded tops, where each layer creates a visible step, a pattern sometimes called stair stepping. Vertical walls show it less.</p>
+
+<h2>How it changes the time and cost</h2>
+<p>Because every layer is drawn separately, halving the layer height roughly doubles the number of layers and adds substantially to the production time. That can affect the quote. Choose fine layers where they make a visible difference, not by habit.</p>
+
+<h2>Does it change strength?</h2>
+<p>It can. Layers bond to each other by heat and pressure. Very thick layers relative to the nozzle may bond less well, while very thin layers create many joints. For most everyday parts, wall thickness, orientation, and material matter more than layer height. Keeping layer height comfortably under about three quarters of the nozzle width is a common guideline.</p>
+
+<h2>Choosing a finish</h2>
+<table>
+<thead><tr><th>Finish</th><th>Typical filament layer height</th><th>Suits</th></tr></thead>
+<tbody>
+<tr><td>Draft</td><td>About 0.28 mm</td><td>Early prototypes, fit tests, large hidden parts</td></tr>
+<tr><td>Standard</td><td>About 0.2 mm</td><td>Most organisers, mounts, and everyday pieces</td></tr>
+<tr><td>Fine</td><td>About 0.12 mm</td><td>Display pieces, rounded shapes, small lettering</td></tr>
+<tr><td>Resin</td><td>About 0.05 mm or less</td><td>Miniatures and very detailed work</td></tr>
+</tbody>
+</table>
+<p>These are common starting points. The best value depends on the machine, nozzle, and model.</p>
+
+<figure><img src="images/layers-curve.png" alt="A rounded dome showing visible steps with thick layers and a smooth curve with thin layers" width="1600" height="900"><figcaption>Curved tops show layer steps the most. That is where fine layers help.</figcaption></figure>
+
+<h2>Variable layer height</h2>
+<p>Many slicers can use thin layers where the surface curves and thicker layers on straight walls. This keeps the smooth look where it matters and saves time elsewhere. It works well on domes, vases with a rounded shoulder, and figurines with mixed shapes.</p>
+
+<h2>Nozzle size matters too</h2>
+<p>A larger nozzle can lay thicker, wider lines, which suits big, sturdy parts. A smaller nozzle gives finer features but takes longer. Layer height is chosen together with nozzle size, not on its own.</p>
+
+<h2>Hiding layer lines in other ways</h2>
+<ul>
+<li><strong>Matte filament</strong> scatters light and makes lines less obvious. See <a href="/guides/single-colour-or-multi-colour-what-actually-changes">colour choices</a>.</li>
+<li><strong>Textured designs</strong> turn lines into a deliberate pattern.</li>
+<li><strong>Orientation</strong> can place the visible face where steps are smallest. See <a href="/guides/print-orientation-strength-and-finish">print orientation</a>.</li>
+<li><strong>Sanding and primer</strong> smooth surfaces after printing, covered in <a href="/guides/sanding-priming-and-painting-3d-prints">finishing and painting</a>.</li>
+</ul>
+
+<h2>Common misunderstandings</h2>
+<ul>
+<li><strong>"The thinnest setting is always best."</strong> It adds time and may not look different on straight walls.</li>
+<li><strong>"Thick layers mean poor quality."</strong> They are a sensible choice for hidden or functional parts.</li>
+<li><strong>"Layer height changes dimensions."</strong> Overall size stays the same, though very fine vertical features may round to the nearest layer.</li>
+</ul>
+
+<h2>A quick way to see the difference</h2>
+<p>Print or request three small domes from the same file at draft, standard, and fine settings. Put them side by side under a desk lamp and look from arm's length, which is how most pieces are seen. Many people find the standard setting good enough for everyday items and save the fine setting for gifts and display work. Keep the samples as a reference for future orders.</p>
+<p>Look at the underside too. Faces printed against supports have their own texture, which layer height alone will not change. Knowing that in advance prevents surprises.</p>
+
+<h2>What to tell the printer</h2>
+<ol>
+<li>Which face people will see most.</li>
+<li>Whether the part is for show, function, or a fit test.</li>
+<li>Whether smoothness or speed matters more to you.</li>
+<li>Any small text or fine detail that must stay readable.</li>
+</ol>
+<blockquote><p><strong>Tip:</strong> For a first prototype, accept a draft finish. Spend on fine layers once the shape is final.</p></blockquote>
+
+<h2>Common questions</h2>
+<h3>Can one part use two layer heights?</h3>
+<p>Yes. Variable layer height is common, with fine layers on curves and thicker ones on straight walls. Ask whether it suits your model.</p>
+<h3>Will finer layers fix rough surfaces?</h3>
+<p>Only the stepped kind. Strings, blobs, and support marks come from other causes and need their own fixes.</p>
+<h3>Do thin layers make small text clearer?</h3>
+<p>They help text on sloped faces. On a flat top face, the width of the nozzle matters more than the height of the layer.</p>
+<h3>Which should I pick if unsure?</h3>
+<p>Choose the standard setting. It balances appearance and production time for most organisers, mounts, and gifts.</p>
+
+<h2>Quick checklist</h2>
+<ul>
+<li>Decide which face will be seen most, and say so in your request.</li>
+<li>Pick draft for fit tests, standard for everyday pieces, and fine for display work.</li>
+<li>Expect fine layers to add production time, which can change the quote.</li>
+<li>Look at curved tops first when judging a finish, since steps show there.</li>
+<li>Keep a sample you like, and quote it as the reference next time.</li>
+</ul>
+
+<h2>Next steps</h2>
+<p>Mention the finish you want in the notes of the <a href="/quote">quote form</a>. To learn how the inside of a part affects strength, read <a href="/guides/infill-and-walls-print-strength">infill and walls</a>.</p>

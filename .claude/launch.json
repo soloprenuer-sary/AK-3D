@@ -18,6 +18,12 @@
       "runtimeExecutable": "node",
       "runtimeArgs": ["content/blog/preview.mjs"],
       "port": 3200
+    },
+    {
+      "name": "akrinity-blog-preview-built",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["content/blog/preview.mjs", "start"],
+      "port": 3200
     }
   ]
 }

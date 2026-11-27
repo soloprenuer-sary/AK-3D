@@ -86,5 +86,205 @@
     "category": "Guides",
     "cover": "cover-products.png",
     "coverAlt": "Shelves holding a car display, a vase, a phone stand, and a racket mount"
+  },
+  {
+    "slug": "resin-vs-filament-3d-printing",
+    "title": "Resin vs filament: which 3D printing process fits your piece?",
+    "excerpt": "Filament draws with melted plastic, resin hardens liquid with light. Compare detail, strength, size, and finishing.",
+    "category": "Materials",
+    "cover": "cover-resin-vs-filament.png",
+    "coverAlt": "A filament spool and printed vase beside a resin bottle and a miniature"
+  },
+  {
+    "slug": "pla-vs-pla-plus",
+    "title": "PLA vs PLA+: what the plus really means",
+    "excerpt": "There is no single recipe for PLA+. Here is what usually changes, what does not, and how to test a spool.",
+    "category": "Materials",
+    "cover": "cover-pla-plus.png",
+    "coverAlt": "Two filament spools joined by a plus sign"
+  },
+  {
+    "slug": "asa-for-outdoor-3d-prints",
+    "title": "ASA for outdoor 3D prints: sun, rain, and heat",
+    "excerpt": "Why ASA is the usual choice outdoors, where it needs care, and how to design a part that lasts.",
+    "category": "Materials",
+    "cover": "cover-asa.png",
+    "coverAlt": "An outdoor railing with a printed hook and plant under sun and rain"
+  },
+  {
+    "slug": "filament-storage-in-monsoon",
+    "title": "Storing 3D printing filament in the monsoon",
+    "excerpt": "Damp filament pops, strings, and breaks. Keep spools dry with sealed boxes, desiccant, and gentle drying.",
+    "category": "Materials",
+    "cover": "cover-monsoon.png",
+    "coverAlt": "Rain clouds over a sealed box holding filament spools and desiccant"
+  },
+  {
+    "slug": "is-3d-printing-eco-friendly",
+    "title": "Is 3D printing eco-friendly? The honest answer",
+    "excerpt": "Where printing saves material, where it creates waste, what biodegradable PLA means, and how to waste less.",
+    "category": "Materials",
+    "cover": "cover-eco.png",
+    "coverAlt": "A recycling circle around a leaf beside a spool and a printed vase"
+  },
+  {
+    "slug": "layer-height-explained",
+    "title": "Layer height explained: smooth or quick?",
+    "excerpt": "How layer height changes the look, the production time, and the quote, and which finish to ask for.",
+    "category": "Design",
+    "cover": "cover-layer-height.png",
+    "coverAlt": "Three columns printed in thick, medium, and thin layers"
+  },
+  {
+    "slug": "infill-and-walls-print-strength",
+    "title": "Infill and walls: what makes a 3D print strong",
+    "excerpt": "Parts are rarely solid inside. See how walls and infill patterns affect strength, weight, and cost.",
+    "category": "Design",
+    "cover": "cover-infill.png",
+    "coverAlt": "Three printed squares cut open to show different infill patterns"
+  },
+  {
+    "slug": "print-orientation-strength-and-finish",
+    "title": "Print orientation: the choice that decides strength",
+    "excerpt": "The way a part faces on the build plate changes its strength, surface, and supports.",
+    "category": "Design",
+    "cover": "cover-orientation.png",
+    "coverAlt": "The same hook shown upright and turned on its side"
+  },
+  {
+    "slug": "3d-printing-supports-explained",
+    "title": "3D printing supports explained, and how to need fewer",
+    "excerpt": "When supports are needed, the main kinds, where marks go, and design changes that remove them.",
+    "category": "Design",
+    "cover": "cover-supports.png",
+    "coverAlt": "A tree-shaped support holding up an overhanging printed part"
+  },
+  {
+    "slug": "snap-fits-screws-and-joints",
+    "title": "Snap fits, screws, and joints in printed parts",
+    "excerpt": "Choose and size joints for printed plastic, from snap arms and screws to pins, dovetails, and clearances.",
+    "category": "Design",
+    "cover": "cover-joints.png",
+    "coverAlt": "Interlocking pieces beside a screw going into a printed part"
+  },
+  {
+    "slug": "measure-a-broken-part-for-replacement",
+    "title": "How to measure a broken part for a 3D printed replacement",
+    "excerpt": "What to measure, how to use a caliper, and what to send so a new part fits the first time.",
+    "category": "Design",
+    "cover": "cover-measure.png",
+    "coverAlt": "A digital caliper measuring a small bracket"
+  },
+  {
+    "slug": "designing-a-name-plate",
+    "title": "Designing a name plate that reads well and lasts",
+    "excerpt": "Fonts, sizes, colours, materials, and fixings for desk, door, and outdoor name plates.",
+    "category": "Design",
+    "cover": "cover-nameplate.png",
+    "coverAlt": "A large name plate reading Your name with a paintbrush"
+  },
+  {
+    "slug": "beginner-3d-design-software",
+    "title": "Beginner 3D design software: where to start",
+    "excerpt": "Free tools sorted by what you want to make, a first project, and the skills worth practising.",
+    "category": "Design",
+    "cover": "cover-software.png",
+    "coverAlt": "A laptop showing 3D shapes beside a gear, a vase, and a cursor"
+  },
+  {
+    "slug": "short-history-of-3d-printing",
+    "title": "A short history of 3D printing",
+    "excerpt": "From light-hardened layers in the 1980s to desktop printers: the landmarks in plain language.",
+    "category": "Guides",
+    "cover": "cover-history.png",
+    "coverAlt": "A timeline with a lamp, a resin bottle, a nozzle, and a desktop printer"
+  },
+  {
+    "slug": "useful-things-to-3d-print-for-home",
+    "title": "10 useful things to 3D print for your home",
+    "excerpt": "Drawer dividers, hooks, cable clips, and more, with what to measure and which material to choose.",
+    "category": "Guides",
+    "cover": "cover-home-ideas.png",
+    "coverAlt": "A house outline filled with printed shelves, hooks, a drawer, and a planter"
+  },
+  {
+    "slug": "desk-setup-ideas-cables-and-organisers",
+    "title": "Desk setup ideas: tidy cables and useful organisers",
+    "excerpt": "Plan your desk in zones, route cables once, and pick accessories that earn their space.",
+    "category": "Guides",
+    "cover": "cover-desk.png",
+    "coverAlt": "A tidy desk with a monitor, phone stand, pen cup, and plant"
+  },
+  {
+    "slug": "die-cast-car-display-ideas",
+    "title": "Die-cast car display ideas for a growing collection",
+    "excerpt": "Layouts, wall planning, light, dust, and storage for pocket-size model cars.",
+    "category": "Guides",
+    "cover": "cover-diecast.png",
+    "coverAlt": "Hexagon wall racks each holding a small model car"
+  },
+  {
+    "slug": "how-to-store-and-hang-sports-rackets",
+    "title": "How to store and hang sports rackets",
+    "excerpt": "Keep rackets away from heat and damp, choose a good spot, and fit a wall mount safely.",
+    "category": "Guides",
+    "cover": "cover-rackets.png",
+    "coverAlt": "Five rackets hanging from a wall mount with a ball below"
+  },
+  {
+    "slug": "personalised-3d-printed-gift-ideas",
+    "title": "Personalised 3D printed gift ideas by person",
+    "excerpt": "Thoughtful ideas for colleagues, collectors, players, and families, and how to order in good time.",
+    "category": "Guides",
+    "cover": "cover-gifts.png",
+    "coverAlt": "Three wrapped gift boxes with ribbons and sparkles"
+  },
+  {
+    "slug": "3d-printing-for-small-businesses",
+    "title": "3D printing for small businesses: displays, signs, and samples",
+    "excerpt": "Where printed parts help a shop or studio, how to sample before a batch, and what to put in a brief.",
+    "category": "Guides",
+    "cover": "cover-business.png",
+    "coverAlt": "A shopfront beside a table with a sign, a vase, and a parcel"
+  },
+  {
+    "slug": "3d-printing-for-student-projects",
+    "title": "3D printing for student projects: plan it right",
+    "excerpt": "What to print and what to buy, a five-step plan, and how to finish before the deadline.",
+    "category": "Guides",
+    "cover": "cover-students.png",
+    "coverAlt": "A student with a laptop, a robot cart, and an idea bulb"
+  },
+  {
+    "slug": "from-idea-to-prototype",
+    "title": "From idea to prototype: test before you commit",
+    "excerpt": "Give each prototype one question, print only what you need, and learn from every round.",
+    "category": "Guides",
+    "cover": "cover-prototype.png",
+    "coverAlt": "A light bulb turning into an outline and then a finished model"
+  },
+  {
+    "slug": "copyright-licences-and-3d-printing",
+    "title": "Copyright, licences, and 3D printing: the basics",
+    "excerpt": "What different rights protect, how model licences work, and five checks before you send a file. Not legal advice.",
+    "category": "Guides",
+    "cover": "cover-copyright.png",
+    "coverAlt": "A document, a lock, a key, and a copyright symbol"
+  },
+  {
+    "slug": "sanding-priming-and-painting-3d-prints",
+    "title": "Sanding, priming, and painting 3D prints",
+    "excerpt": "A safe, step-by-step finish: clean up, sand through the grits, prime, paint, and seal.",
+    "category": "Guides",
+    "cover": "cover-painting.png",
+    "coverAlt": "A half-primed printed vase with a brush and paint pots"
+  },
+  {
+    "slug": "gluing-and-repairing-3d-prints",
+    "title": "Gluing and repairing 3D prints",
+    "excerpt": "Pick the right adhesive, prepare the joint, and know when a part should be replaced instead.",
+    "category": "Guides",
+    "cover": "cover-gluing.png",
+    "coverAlt": "A broken printed part being joined with a tube of glue"
   }
 ]

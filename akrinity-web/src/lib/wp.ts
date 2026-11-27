@@ -304,7 +304,7 @@ export interface GqlPost {
 }
 
 export const POSTS_QUERY = `{
-  posts(first: 50) {
+  posts(first: 100) {
     nodes {
       databaseId slug title excerpt content date modified
       categories { nodes { name } }

@@ -2,6 +2,7 @@
  * Preview the articles in this folder on the real website before they are published.
  *
  *   node content/blog/preview.mjs        site on http://localhost:3200/guides
+ *   node content/blog/preview.mjs build  then  node content/blog/preview.mjs start   (built site, faster)
  *
  * It answers the article query the way WordPress would (a stand-in on port 4100) and starts the
  * frontend pointed at it. Products and categories are still read from the live store (read only).
@@ -73,9 +74,12 @@ createServer((req, res) => {
   }
 }).listen(API_PORT, '127.0.0.1', () => {
   console.log(`Article stand-in on ${api}`);
+  // "build" then "start" shows the built site; "none" runs only the article stand-in.
+  const command = process.argv[2] ?? process.env.BLOG_PREVIEW_CMD ?? 'dev';
+  if (command === 'none') return;
   const next = spawn(
     process.execPath,
-    [join(web, 'node_modules/next/dist/bin/next'), process.env.BLOG_PREVIEW_CMD ?? 'dev', '-p', SITE_PORT],
+    [join(web, 'node_modules/next/dist/bin/next'), command, ...(command === 'build' ? [] : ['-p', SITE_PORT])],
     {
       cwd: web,
       stdio: 'inherit',
