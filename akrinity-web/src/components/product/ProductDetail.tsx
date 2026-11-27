@@ -6,7 +6,6 @@ import { Pic } from '@/components/ui/Pic';
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { PhotoCarousel } from './PhotoCarousel';
-import { ModelViewer } from '@/components/three/ModelViewer';
 import {
   COLOURS,
   MODE_LABEL,
@@ -47,10 +46,6 @@ interface ProductDetailProps {
   /** A draft preview: show exactly the data given, never the public copy. */
   preview?: boolean;
 }
-
-/** Local test model, set in .env.local and only used by the development server. */
-const DEV_MODEL_URL =
-  process.env.NODE_ENV === 'development' ? process.env.NEXT_PUBLIC_DEV_MODEL_URL : undefined;
 
 /** One product in a suggestion row. */
 function SuggestCard({ p }: { p: ShopProduct }) {
@@ -126,8 +121,6 @@ export function ProductDetail({
     };
   }, []);
   const [material, setMaterial] = useState<Material>(product.material);
-  const [view, setView] = useState<'photo' | '3d'>('photo');
-  const model = product.model ?? (DEV_MODEL_URL ? { url: DEV_MODEL_URL, type: '3mf' } : undefined);
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
   const [mode, setMode] = useState<ColourMode>(product.modes[0]);
   // Options come from the WooCommerce variations of a variable product. A simple product has none.
@@ -221,38 +214,7 @@ export function ProductDetail({
 
       <section className="pdp wrap" aria-labelledby="product-name">
         <div className="gallery">
-          <div className="tabs" role="tablist" aria-label="Product views">
-            <button
-              type="button"
-              id="tab-photo"
-              role="tab"
-              className="tab"
-              aria-selected={view === 'photo'}
-              aria-controls="pv-photo"
-              onClick={() => setView('photo')}
-            >
-              Photos
-            </button>
-            <button
-              type="button"
-              id="tab-3d"
-              role="tab"
-              className="tab"
-              aria-selected={view === '3d'}
-              aria-controls="pv-3d"
-              onClick={() => setView('3d')}
-            >
-              3D view
-            </button>
-          </div>
-
-          <div
-            id="pv-photo"
-            role="tabpanel"
-            aria-labelledby="tab-photo"
-            className="gal-wrap"
-            hidden={view !== 'photo'}
-          >
+          <div className="gal-wrap">
             {photos.length ? (
               <PhotoCarousel photos={photos} name={product.name} />
             ) : (
@@ -263,22 +225,6 @@ export function ProductDetail({
               </div>
             )}
             <WishButton id={product.id} name={product.name} className="pdp-heart-float" />
-          </div>
-
-          <div id="pv-3d" role="tabpanel" aria-labelledby="tab-3d" hidden={view !== '3d'}>
-            {view === '3d' && (
-              <>
-                <div className="main-3d">
-                  <ModelViewer product={product} model={model} />
-                </div>
-                {!model && (
-                  <p className="meta" style={{ margin: '10px 4px 0' }}>
-                    Sample 3D preview in this product&apos;s colour. The exact 3D model of this
-                    product is coming soon.
-                  </p>
-                )}
-              </>
-            )}
           </div>
         </div>
 

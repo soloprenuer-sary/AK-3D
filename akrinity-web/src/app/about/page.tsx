@@ -15,6 +15,12 @@ const FACTS = [
   'Checked before packing',
 ];
 
+/** The people behind the studio. Add `photo` (a path under /public) and `bio` when they are ready. */
+const TEAM: { name: string; role: string; tone: string; photo?: string; bio?: string }[] = [
+  { name: 'Satyam Chaudhary', role: 'Founder', tone: 'lime' },
+  { name: 'Sujit Prajapati', role: 'Co-Founder', tone: 'violet' },
+];
+
 const MAKE = [
   'Home decor and desk organisers',
   'Display stands for die-cast cars',
@@ -81,6 +87,26 @@ export default function About() {
             width={1200}
             height={900}
           />
+        </section>
+
+        <section aria-labelledby="ab-team">
+          <h2 className="ab-h" id="ab-team">
+            Meet the <span className="hl">team</span>
+          </h2>
+          <ul className="ab-team">
+            {TEAM.map((m) => (
+              <li key={m.name} className="ab-person">
+                <div className={`ab-avatar tone-${m.tone}`} aria-hidden="true">
+                  {m.photo ? <img src={m.photo} alt="" /> : <span>{m.name.charAt(0)}</span>}
+                </div>
+                <div>
+                  <b>{m.name}</b>
+                  <span className="ab-role">{m.role}</span>
+                  {m.bio && <p>{m.bio}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="ab-card" aria-labelledby="ab-make">

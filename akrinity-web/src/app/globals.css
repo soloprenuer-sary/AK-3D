@@ -1355,10 +1355,12 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 }
 
 /* WhatsApp button */
-.wa-fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));z-index:40;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--ink);border:1.5px solid var(--ink);box-shadow:0 4px 0 var(--ink);transition:transform .15s var(--ease)}
-.wa-fab:hover{transform:translateY(-2px)}
-.wa-fab:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
-@media (prefers-reduced-motion:reduce){.wa-fab{transition:none}}
+.wa-help{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:max(18px,env(safe-area-inset-bottom,0px));z-index:40;display:inline-flex;align-items:center;gap:8px;min-height:50px;padding:0 20px 0 16px;border-radius:999px;background:var(--accent);color:var(--ink);border:1.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);font-weight:700;font-size:15px;text-decoration:none;transition:transform .15s var(--ease)}
+.wa-help:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+.wa-help:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+@media (max-width:939px){body:has(.buyrow) .wa-help{bottom:max(96px,calc(96px + env(safe-area-inset-bottom,0px)))}}
+@media (max-width:480px){.wa-help{padding:0 16px 0 12px;min-height:46px;font-size:14px}}
+@media (prefers-reduced-motion:reduce){.wa-help{transition:none}}
 
 /* Filter buttons keep readable text on hover and when picked */
 .side-cat:hover{background:var(--paper);color:var(--ink);border-color:var(--ink)}
@@ -1743,3 +1745,19 @@ header.site:has(.mobile-menu){z-index:45}
 @media (max-width:900px){.ab-grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.ab-hero,.ab-studio{grid-template-columns:minmax(0,1fr)}.ab-chips{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:520px){.ab{gap:22px}.ab-hero,.ab-card{padding:18px 16px}.ab-chips{grid-template-columns:minmax(0,1fr)}.ab-grid4{gap:10px}.ab-mat{flex-direction:column;align-items:flex-start}}
 
+
+/* About page: team */
+.ab-team{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ab-person{display:flex;gap:16px;align-items:center;background:var(--white);border:1.5px solid var(--ink);border-radius:24px;padding:18px}
+.ab-avatar{flex:none;width:84px;height:84px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;overflow:hidden}
+.ab-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.ab-avatar span{font:400 40px/1 var(--display);text-transform:uppercase}
+.ab-person>div:last-child{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ab-person b{font:400 26px/1.05 var(--display);text-transform:uppercase}
+.ab-role{font-size:14px;font-weight:700;color:var(--muted)}
+.ab-person p{margin:4px 0 0;font-size:15px;line-height:1.5;color:var(--muted)}
+@media (max-width:640px){.ab-team{grid-template-columns:minmax(0,1fr)}}
+
+/* Header cart: icon with a small highlighted item count */
+.cart-btn{position:relative}
+.cart-count{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--accent);border:1.5px solid var(--ink);font-size:11px;font-weight:800;line-height:17px;text-align:center;color:var(--ink)}

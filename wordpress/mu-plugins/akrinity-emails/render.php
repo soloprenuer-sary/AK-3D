@@ -401,6 +401,52 @@ function akr_em_upsell( WC_Order $o, string $lead = '' ): string {
 /**
  * $o: tag, title (HTML), intro (HTML), blocks (list of HTML), help (HTML), head (right side of the top bar), pre (preview text).
  */
+/* ---------- marketing opt-out link (version 1.1.0) ---------- */
+
+/** Signed token for one address. Only the link in an email carries it, so nobody can opt another address out. */
+function akr_optout_token( string $email ): string {
+	return hash_hmac( 'sha256', 'optout|' . strtolower( trim( $email ) ), wp_salt( 'auth' ) );
+}
+
+/** True when this address has asked not to receive marketing emails. Use before sending any marketing. */
+function akr_is_opted_out( string $email ): bool {
+	$list = (array) get_option( 'akr_optout', array() );
+	return in_array( strtolower( trim( $email ) ), $list, true );
+}
+
+/** The address the email being built goes to, or '' for emails to the shop owner (no opt-out link). */
+function akr_em_set_recipient( string $kind, array $a ): void {
+	$GLOBALS['akr_em_to'] = '';
+	if ( in_array( $kind, array( 'neworder', 'adminfailed' ), true ) ) {
+		return;
+	}
+	$order = $a['order'] ?? null;
+	if ( $order instanceof WC_Order ) {
+		$GLOBALS['akr_em_to'] = (string) $order->get_billing_email();
+	} elseif ( ! empty( $a['email'] ) ) {
+		$GLOBALS['akr_em_to'] = (string) $a['email'];
+	} elseif ( ! empty( $a['user_login'] ) ) {
+		$user = get_user_by( 'login', (string) $a['user_login'] );
+		$GLOBALS['akr_em_to'] = $user ? (string) $user->user_email : '';
+	}
+}
+
+/** "Stop marketing emails" link for the footer of a customer email. Empty when there is no customer address. */
+function akr_em_optout_footer(): string {
+	$email = isset( $GLOBALS['akr_em_to'] ) ? (string) $GLOBALS['akr_em_to'] : '';
+	if ( '' === $email || ! is_email( $email ) ) {
+		return '';
+	}
+	$url = add_query_arg(
+		array(
+			'email' => strtolower( trim( $email ) ),
+			'token' => akr_optout_token( $email ),
+		),
+		akr_em_front() . '/stop-marketing'
+	);
+	return ' <a href="' . esc_url( $url ) . '" style="color:#B8B4A8;text-decoration:underline;">Stop marketing emails</a>.';
+}
+
 function akr_em_shell( array $o ): string {
 	$c     = akr_em_c();
 	$parts = array();
@@ -436,7 +482,7 @@ function akr_em_shell( array $o ): string {
 	$parts[]  = '<tr><td bgcolor="' . $c['ink'] . '" class="pad" style="padding:28px 32px;border-radius:0 0 18px 18px;">' .
 		'<div style="font-family:' . $c['body'] . ';font-size:15px;line-height:1.55;color:#F3F1EA;">' . $help . '</div>' .
 		'<div style="padding-top:14px;font-family:' . $c['body'] . ';font-size:13px;line-height:1.9;">' . implode( ' &nbsp;·&nbsp; ', $nav ) . '</div>' .
-		'<div style="padding-top:16px;border-top:1px solid #34343A;margin-top:16px;font-family:' . $c['body'] . ';font-size:12px;line-height:1.6;color:#B8B4A8;">Akrinity · 3D printing from Mumbai, India · GSTIN ' . $gstin . '<br>Prices include GST. You are getting this because of your activity on ' . esc_html( $site ) . '.</div></td></tr>';
+		'<div style="padding-top:16px;border-top:1px solid #34343A;margin-top:16px;font-family:' . $c['body'] . ';font-size:12px;line-height:1.6;color:#B8B4A8;">Akrinity Mumbai, India · GSTIN ' . $gstin . '<br>Prices include GST. You are getting this because of your activity on ' . esc_html( $site ) . '.' . akr_em_optout_footer() . '</div></td></tr>';
 
 	return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">' .
 		'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">' .
@@ -463,6 +509,7 @@ function akr_em_whatsapp(): string {
  * reset, neworder, cancelled. $a holds what that email needs (the order, the note, the link, ...).
  */
 function akr_em_build( string $kind, array $a ): string {
+	akr_em_set_recipient( $kind, $a );
 	/** @var WC_Order|null $o */
 	$o     = $a['order'] ?? null;
 	$front = akr_em_front();

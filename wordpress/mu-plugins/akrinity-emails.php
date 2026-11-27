@@ -3,6 +3,7 @@
  * Plugin Name: Akrinity emails
  * Description: The Akrinity look (lime poster, order tracker, product photos, more from the same category) for the WooCommerce emails, plus the "In transit" email. Needs akrinity-shop.php (version 1.1.0 or newer) for the In transit status. Version 1.0.0.
  *
+ * Version 1.1.0: customer emails carry a "Stop marketing emails" link (GET /wp-json/akrinity/v1/optout).
  * Install: copy this file AND the folder akrinity-emails/ (render.php and stub.php) to wp-content/mu-plugins/.
  * Optional constants for wp-config.php, shown in the email footer:
  *   define( 'AKRINITY_WHATSAPP', '+91 98xxx xxxxx' );
@@ -199,4 +200,32 @@ add_filter(
 	},
 	20,
 	3
+);
+
+/** Records "no marketing emails" for an address, when the signed token from the email matches. */
+add_action(
+	'rest_api_init',
+	function () {
+		register_rest_route(
+			'akrinity/v1',
+			'/optout',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => '__return_true',
+				'callback'            => function ( WP_REST_Request $req ) {
+					$email = strtolower( trim( (string) $req->get_param( 'email' ) ) );
+					$token = (string) $req->get_param( 'token' );
+					if ( ! is_email( $email ) || ! hash_equals( akr_optout_token( $email ), $token ) ) {
+						return new WP_Error( 'akr_optout_invalid', 'This link is not valid.', array( 'status' => 400 ) );
+					}
+					$list = (array) get_option( 'akr_optout', array() );
+					if ( ! in_array( $email, $list, true ) ) {
+						$list[] = $email;
+						update_option( 'akr_optout', $list, false );
+					}
+					return array( 'ok' => true );
+				},
+			)
+		);
+	}
 );

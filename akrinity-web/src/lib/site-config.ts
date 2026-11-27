@@ -28,7 +28,10 @@ function liveAddress(): string {
   return 'https://ak-3-d.vercel.app';
 }
 
-const whatsappDigits = text(process.env.NEXT_PUBLIC_WHATSAPP).replace(/\D/g, '');
+/** Support WhatsApp number. NEXT_PUBLIC_WHATSAPP overrides it when set. */
+const DEFAULT_WHATSAPP = '918459625396';
+const whatsappDigits =
+  text(process.env.NEXT_PUBLIC_WHATSAPP).replace(/\D/g, '') || DEFAULT_WHATSAPP;
 
 export const site = {
   name: 'Akrinity',
