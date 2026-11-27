@@ -1,0 +1,227 @@
+[
+ {
+  "title": "TPU flexible filament: what it is good for",
+  "slug": "tpu-flexible-filament-what-it-is-good-for",
+  "cat": "Materials",
+  "excerpt": "TPU bends, squeezes and springs back. Here is where a flexible part earns its place, and where a rigid one is better.",
+  "cover": "tpu-flexible-filament-what-it-is-good-for-cover.png",
+  "detail": "tpu-flexible-filament-what-it-is-good-for-detail.png",
+  "html": "<p>Some parts need to give a little. A phone case that absorbs a drop, a grip that feels soft in the hand, a gasket that seals a lid. That is what <strong>TPU</strong> is for. It is a flexible filament that bends, squeezes and returns to shape.</p>\n<h2>Where TPU shines</h2>\n<ul><li><strong>Covers and bumpers</strong> that take a knock without cracking.</li><li><strong>Grips and handles</strong> that sit comfortably in the palm.</li><li><strong>Seals, gaskets and pads</strong> that press against another surface.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_tpu-flexible-filament-what-it-is-good-for\" src=\"{IMG_detail}\" alt=\"Four tips for printing TPU\" width=\"1200\" height=\"760\"><figcaption>Four habits that make flexible prints come out clean.</figcaption></figure>\n<h2>Where it is the wrong choice</h2>\n<p>A soft part does not hold a load. For a bracket, a hinge or a part that must keep an exact size, a stiffer material such as <a href=\"/guides/pla-petg-or-abs-asa-which-filament-for-your-part\">PETG or PLA+</a> does the job better.</p>\n<h2>Printing tips</h2>\n<ul><li>Print slowly, because fast moves make the soft strand buckle in the feed path.</li><li>Use a direct-drive extruder if you have one. It feeds TPU more reliably.</li><li>Keep the shape simple. Tall, thin, soft parts wobble on the way up.</li></ul>\n<p>Want a flexible part made for you? <a href=\"/quote\">Send us the file</a> and we will tell you whether TPU suits it.</p>"
+ },
+ {
+  "title": "Nylon (PA): strong parts for wear and load",
+  "slug": "nylon-pa-strong-parts-for-wear-and-load",
+  "cat": "Materials",
+  "excerpt": "Nylon is tough, slightly flexible and resists rubbing. It is the choice for gears and clips, if you keep it dry.",
+  "cover": "nylon-pa-strong-parts-for-wear-and-load-cover.png",
+  "detail": "nylon-pa-strong-parts-for-wear-and-load-detail.png",
+  "html": "<p>If a part has to work every day, slide against another part, or take a knock without snapping, <strong>nylon</strong> (also called PA) is a strong candidate. It is one of the toughest common filaments, and it bends a little before it breaks.</p>\n<h2>When nylon is the right answer</h2>\n<ul><li><strong>Gears and clips</strong> used again and again.</li><li><strong>Parts that rub</strong>, where a rigid plastic would wear through.</li><li><strong>Tools and holders</strong> that take a fall or a knock.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_nylon-pa-strong-parts-for-wear-and-load\" src=\"{IMG_detail}\" alt=\"Nylon before you print\" width=\"1200\" height=\"760\"><figcaption>Keep it dry, warm the bed, and use an enclosure.</figcaption></figure>\n<h2>The catch: moisture</h2>\n<p>Nylon takes water from the air. A damp spool prints with bubbles, rough walls and weak layers. Keep it in a sealed box with desiccant. If it has been open a while, dry it before you print. Our guide on <a href=\"/guides/filament-storage-how-moisture-ruins-a-print\">filament storage</a> shows how.</p>\n<h2>Warping and printing</h2>\n<p>Nylon shrinks more than PLA as it cools. Use an enclosure if you can, and a build plate that grips it well. Keep large, flat bases to a minimum.</p>\n<p>Nylon parts need a little more care, but they last. <a href=\"/shop\">Browse our functional range</a> or <a href=\"/quote\">ask us for a custom part</a>.</p>"
+ },
+ {
+  "title": "PLA+ and tough PLA: when the upgrade is worth it",
+  "slug": "pla-plus-and-tough-pla-when-the-upgrade-is-worth-it",
+  "cat": "Materials",
+  "excerpt": "Standard PLA is crisp and easy, but it snaps. PLA+ and tough PLA bend a little more. Here is how to choose.",
+  "cover": "pla-plus-and-tough-pla-when-the-upgrade-is-worth-it-cover.png",
+  "detail": "pla-plus-and-tough-pla-when-the-upgrade-is-worth-it-detail.png",
+  "html": "<p>PLA is the most common 3D printing material for a reason. It prints easily, holds fine detail and comes in many colours. Its weakness is that it is brittle, so a part dropped on a hard floor can crack.</p>\n<h2>Standard PLA is best for</h2>\n<ul><li><strong>Figurines and display pieces</strong> that are looked at, not handled.</li><li><strong>Decor</strong> that stays indoors.</li><li><strong>Prototypes</strong> where looks matter more than strength.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_pla-plus-and-tough-pla-when-the-upgrade-is-worth-it\" src=\"{IMG_detail}\" alt=\"Choosing between PLA types\" width=\"1200\" height=\"760\"><figcaption>Look at what the part has to do, then pick.</figcaption></figure>\n<h2>PLA+ and tough PLA are better for</h2>\n<ul><li><strong>Brackets and clips</strong> that carry a little weight.</li><li><strong>Covers and cases</strong> that may be dropped.</li><li><strong>Parts that are handled</strong> many times a day.</li></ul>\n<h2>The limit to know</h2>\n<p>All PLA softens at fairly low temperatures. A part left on a hot dashboard or in direct sun can sag. For heat, look at <a href=\"/guides/heat-resistance-which-material-survives-a-hot-place\">ASA, ABS or PETG</a>.</p>\n<p>Our <a href=\"/materials/pla\">PLA guide</a> covers colours and finishes. Not sure which fits your part? <a href=\"/contact\">Ask us</a>.</p>"
+ },
+ {
+  "title": "Carbon-fibre filament: stiff, light, and matte",
+  "slug": "carbon-fibre-filament-stiff-light-and-matte",
+  "cat": "Materials",
+  "excerpt": "Carbon-fibre filament makes stiff, light parts with a velvet matte finish. It also needs the right nozzle.",
+  "cover": "carbon-fibre-filament-stiff-light-and-matte-cover.png",
+  "detail": "carbon-fibre-filament-stiff-light-and-matte-detail.png",
+  "html": "<p>Carbon-fibre filament is a base plastic mixed with short carbon fibres. The result is stiffer than the plastic alone, lighter than most metals and has a dull, velvet look that hides fingerprints.</p>\n<h2>Why people choose it</h2>\n<ul><li><strong>Stiffness for weight</strong>, useful for tool handles and drone parts.</li><li><strong>A matte finish</strong> that looks premium straight off the printer.</li><li><strong>Less warp</strong> than some unfilled materials.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_carbon-fibre-filament-stiff-light-and-matte\" src=\"{IMG_detail}\" alt=\"Before a carbon print\" width=\"1200\" height=\"760\"><figcaption>Check the nozzle, dry the spool, and print a test.</figcaption></figure>\n<h2>The catch: the nozzle</h2>\n<p>The fibres are hard and wear brass nozzles quickly. Use a <strong>hardened steel</strong> or ruby-tipped nozzle for carbon-filled material. A brass nozzle may last only a few spools.</p>\n<h2>Printing tips</h2>\n<ul><li>Dry the spool. The base plastic still takes in moisture.</li><li>Add wall thickness to thin sections, because the material can be brittle there.</li><li>Clean the nozzle often, since fibres leave residue.</li></ul>\n<p>Looking for a stiff, light part? <a href=\"/quote\">Send us your file</a>.</p>"
+ },
+ {
+  "title": "Resin or filament: which one for fine detail",
+  "slug": "resin-or-filament-which-one-for-fine-detail",
+  "cat": "Materials",
+  "excerpt": "Resin gives very fine detail and a smooth surface. Filament is easier to run and cheaper per part. Here is how to choose.",
+  "cover": "resin-or-filament-which-one-for-fine-detail-cover.png",
+  "detail": "resin-or-filament-which-one-for-fine-detail-detail.png",
+  "html": "<p>Both resin and filament printers make 3D printed parts, but they are good at different things. A <strong>resin printer</strong> cures liquid with light, layer by layer. A <strong>filament printer</strong> melts plastic and lays it down as a thread.</p>\n<h2>Choose resin for</h2>\n<ul><li><strong>Miniatures</strong> with small faces, hands and lettering.</li><li><strong>Glossy, smooth surfaces</strong> with almost no layer lines.</li><li><strong>Tiny, very detailed</strong> parts.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_resin-or-filament-which-one-for-fine-detail\" src=\"{IMG_detail}\" alt=\"Resin or filament at a glance\" width=\"1200\" height=\"760\"><figcaption>Detail and finish on one side, size and strength on the other.</figcaption></figure>\n<h2>Choose filament for</h2>\n<ul><li><strong>Large parts</strong> and big batches.</li><li><strong>Functional parts</strong> that need strength or heat resistance.</li><li><strong>Lower running cost</strong> and simpler cleaning.</li></ul>\n<h2>Know the resin routine</h2>\n<p>Resin parts must be washed in alcohol or a cleaner and then cured under UV light. Uncured resin irritates the skin, so wear gloves. Read our <a href=\"/guides/resin-printer-basics-curing-washing-and-safety\">resin printer basics</a> before you start.</p>\n<p>Both processes are used in our studio. <a href=\"/shop\">Browse ready-made parts</a> or <a href=\"/quote\">ask which process suits your design</a>.</p>"
+ },
+ {
+  "title": "Wood-fill and silk filament: the finish you get",
+  "slug": "wood-fill-and-silk-filament-the-finish-you-get",
+  "cat": "Materials",
+  "excerpt": "Wood-fill looks like timber and can be sanded and stained. Silk has a satin shine. Each needs its own settings.",
+  "cover": "wood-fill-and-silk-filament-the-finish-you-get-cover.png",
+  "detail": "wood-fill-and-silk-filament-the-finish-you-get-detail.png",
+  "html": "<p>Specialty filaments change how a plain plastic looks. <strong>Wood-fill</strong> mixes fine wood powder into PLA, so a finished part looks like timber. <strong>Silk</strong> filament has a glossy, satin sheen that catches the light.</p>\n<h2>Wood-fill, step by step</h2>\n<ul><li>Sand the printed part to bring out the grain.</li><li>Stain or wax it for a warm, natural colour.</li><li>Use a larger nozzle, often 0.6 mm, so the powder does not block the tip.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_wood-fill-and-silk-filament-the-finish-you-get\" src=\"{IMG_detail}\" alt=\"Getting a good wood finish\" width=\"1200\" height=\"760\"><figcaption>Sand, stain, and use a bigger nozzle.</figcaption></figure>\n<h2>Silk and its shine</h2>\n<p>Glossy colours show layer lines more than matte ones. Lower the layer height for a smoother surface. Silk can also be a little less stiff than standard PLA, so choose the wall thickness with care.</p>\n<p>Lighting changes these finishes a lot. Print a small sample and look at it in your own room. <a href=\"/materials/pla\">Read about our PLA materials</a>, or <a href=\"/quote\">send a file</a> for a finish test.</p>"
+ },
+ {
+  "title": "Translucent and glow filament for lamps",
+  "slug": "translucent-and-glow-filament-for-lamps",
+  "cat": "Materials",
+  "excerpt": "Thin translucent filament lets light through and makes a warm lamp shade. Here is how to print one that glows evenly.",
+  "cover": "translucent-and-glow-filament-for-lamps-cover.png",
+  "detail": "translucent-and-glow-filament-for-lamps-detail.png",
+  "html": "<p>Translucent filament lets light through. A single-wall lamp shade in a light colour glows warmly when a small bulb sits inside. It is one of the most rewarding things to print.</p>\n<h2>What makes a good lamp part</h2>\n<ul><li><strong>Thin walls</strong>, usually one or two perimeters, so light is not blocked.</li><li><strong>Even thickness</strong>, so the glow is even.</li><li><strong>A natural or white base</strong>, which glows more than dark colours.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_translucent-and-glow-filament-for-lamps\" src=\"{IMG_detail}\" alt=\"Four rules for a glowing shade\" width=\"1200\" height=\"760\"><figcaption>Thin, even, light, and kept cool.</figcaption></figure>\n<h2>Choosing the material</h2>\n<p>PLA and PETG are the usual choices. PETG is a little tougher and handles a warm bulb better. Keep the bulb small and the shade ventilated.</p>\n<h2>Glow-in-the-dark is different</h2>\n<p>Glow filament stores light and fades over minutes. It does not light up by itself, so it suits decor rather than a working lamp.</p>\n<p>Want a lamp designed for your room? <a href=\"/quote\">Tell us the size and colour</a>.</p>"
+ },
+ {
+  "title": "Filament storage: how moisture ruins a print",
+  "slug": "filament-storage-how-moisture-ruins-a-print",
+  "cat": "Materials",
+  "excerpt": "Damp filament pops, bubbles and prints weak. A sealed box and a little desiccant keep every spool in shape.",
+  "cover": "filament-storage-how-moisture-ruins-a-print-cover.png",
+  "detail": "filament-storage-how-moisture-ruins-a-print-detail.png",
+  "html": "<p>Filament takes in water from the air over time. A wet spool hisses and pops in the nozzle, and the part comes out rough, stringy or weak. <strong>Nylon and PETG</strong> are the most sensitive, but PLA can be affected too.</p>\n<h2>Signs a spool is wet</h2>\n<ul><li>A popping or crackling sound while it prints.</li><li>Rough, bubbly surfaces and fuzzy top layers.</li><li>Parts that snap along the layers.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_filament-storage-how-moisture-ruins-a-print\" src=\"{IMG_detail}\" alt=\"Keeping filament dry\" width=\"1200\" height=\"760\"><figcaption>A sealed box, desiccant and only one spool open at a time.</figcaption></figure>\n<h2>How to store it</h2>\n<ul><li>Keep spools in a sealed box with silica gel or a desiccant pack.</li><li>Use a vacuum bag for long storage.</li><li>Open only the spool you are printing.</li><li>Re-dry in a filament dryer, if the maker allows it.</li></ul>\n<p>Good storage is the cheapest upgrade a printer can get. Our <a href=\"/guides/nylon-pa-strong-parts-for-wear-and-load\">nylon guide</a> explains why it matters most for that material.</p>"
+ },
+ {
+  "title": "Heat resistance: which material survives a hot place",
+  "slug": "heat-resistance-which-material-survives-a-hot-place",
+  "cat": "Materials",
+  "excerpt": "A part on a sunny sill or in a hot car can sag. Compare PLA, PETG, ASA and nylon to pick one that stays put.",
+  "cover": "heat-resistance-which-material-survives-a-hot-place-cover.png",
+  "detail": "heat-resistance-which-material-survives-a-hot-place-detail.png",
+  "html": "<p>Heat changes how a 3D printed part behaves. A car interior or a window ledge in the sun can reach temperatures that soften some plastics. Choosing the right material avoids a part that sags out of shape.</p>\n<h2>A quick comparison</h2>\n<ul><li><strong>PLA</strong> softens at low temperatures. Good indoors, poor in a hot car.</li><li><strong>PETG</strong> handles moderate heat and is tough. A practical middle choice.</li><li><strong>ASA</strong> is made for outdoor sun, with good UV resistance.</li><li><strong>Nylon</strong> handles heat well and is strong, but it takes in moisture.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_heat-resistance-which-material-survives-a-hot-place\" src=\"{IMG_detail}\" alt=\"Where each material belongs\" width=\"1200\" height=\"760\"><figcaption>Match the material to the place it will live.</figcaption></figure>\n<h2>What we would choose</h2>\n<p>For a part in the sun, choose ASA. For an indoor part that must not sag, PETG is a good, practical answer. Always check the heat figure on the data sheet before you order a critical part.</p>\n<p>Need a part for a hot place? <a href=\"/quote\">Send us the details</a> and we will suggest a material.</p>"
+ },
+ {
+  "title": "How an FDM 3D printer works",
+  "slug": "how-an-fdm-printer-works",
+  "cat": "Machines",
+  "excerpt": "Most desktop printers melt plastic and build a part one thin layer at a time. Here is what each part of the machine does.",
+  "cover": "how-an-fdm-printer-works-cover.png",
+  "detail": "how-an-fdm-printer-works-detail.png",
+  "html": "<p>Most home and studio printers use a method called <strong>fused deposition modelling</strong>, or FDM. Plastic filament is pulled into a hot nozzle, melted and pushed out as a thread. The nozzle follows a path on each layer, and the part grows upward one thin slice at a time.</p>\n<h2>The main parts</h2>\n<ul><li><strong>Extruder</strong> grips the filament and pushes it toward the heat.</li><li><strong>Hot end</strong> melts the filament to the right temperature.</li><li><strong>Nozzle</strong>, usually 0.4 mm, is where the plastic leaves the machine.</li><li><strong>Build plate</strong> is the surface the part sticks to.</li><li><strong>Frame and motion system</strong> move the head and bed on accurate rails.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_how-an-fdm-printer-works\" src=\"{IMG_detail}\" alt=\"The five parts to know\" width=\"1200\" height=\"760\"><figcaption>Each part is a place to look when something goes wrong.</figcaption></figure>\n<h2>Why this helps you</h2>\n<p>Knowing these parts makes problems easier to solve. A poor first layer points to the bed. Weak parts can point to temperature or moisture. Our <a href=\"/guides/7-common-3d-printing-problems-and-how-to-avoid-them\">common problems</a> article follows the same logic.</p>"
+ },
+ {
+  "title": "Bed levelling explained",
+  "slug": "bed-levelling-explained",
+  "cat": "Machines",
+  "excerpt": "A level bed is the first step to a good print. Here is how levelling works and how to check it without guesswork.",
+  "cover": "bed-levelling-explained-cover.png",
+  "detail": "bed-levelling-explained-detail.png",
+  "html": "<p>Every print starts with the first layer, and the first layer depends on the gap between the nozzle and the bed. It should be about the thickness of a sheet of paper, at every point. Too high and the plastic does not stick. Too low and the nozzle scratches the surface.</p>\n<h2>Two ways to level</h2>\n<ul><li><strong>Manual levelling</strong>: turn the bed screws until a sheet of paper drags a little at each corner and the centre.</li><li><strong>Automatic levelling</strong>: a probe measures many points and corrects the first layer in software.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_bed-levelling-explained\" src=\"{IMG_detail}\" alt=\"A four-step check\" width=\"1200\" height=\"760\"><figcaption>Warm the bed, print a test, read the lines, and re-check.</figcaption></figure>\n<h2>How to check it</h2>\n<ul><li>Heat the bed to its normal temperature, because metal expands when warm.</li><li>Print a single-layer test square and look at the lines.</li><li>Re-check after moving the printer or changing the build plate.</li></ul>\n<p>If the first layer still fails, look at the <a href=\"/guides/first-layer-not-sticking\">first-layer guide</a> next.</p>"
+ },
+ {
+  "title": "Nozzle sizes: what changes when you switch",
+  "slug": "nozzle-sizes-what-changes-when-you-switch",
+  "cat": "Machines",
+  "excerpt": "The nozzle diameter sets the detail and speed of a print. Here is what a 0.2, 0.4 or 0.6 mm nozzle does well.",
+  "cover": "nozzle-sizes-what-changes-when-you-switch-cover.png",
+  "detail": "nozzle-sizes-what-changes-when-you-switch-detail.png",
+  "html": "<p>The <strong>nozzle</strong> is the small opening the plastic leaves through. The common size is 0.4 mm. Changing it shifts the balance between detail and speed.</p>\n<h2>Smaller nozzles, such as 0.2 mm</h2>\n<ul><li>Finer lines and sharper small details.</li><li>Much slower printing, often several times longer.</li><li>Clogs more easily with dirty filament.</li></ul>\n<h2>Larger nozzles, such as 0.6 mm</h2>\n<ul><li>Faster printing for large, simple parts.</li><li>Coarser lines and less fine detail.</li><li>Good for wood-fill and other filled materials.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_nozzle-sizes-what-changes-when-you-switch\" src=\"{IMG_detail}\" alt=\"Choosing a nozzle\" width=\"1200\" height=\"760\"><figcaption>Detail on one side, speed and size on the other.</figcaption></figure>\n<h2>Changing the nozzle</h2>\n<p>Update the nozzle size in your slicer too, and check the first layer again. A mismatch between the slicer and the real nozzle causes many poor prints. Our <a href=\"/guides/layer-height-detail-against-speed\">layer height</a> article explains how the two settings work together.</p>"
+ },
+ {
+  "title": "Layer height: detail against speed",
+  "slug": "layer-height-detail-against-speed",
+  "cat": "Machines",
+  "excerpt": "Layer height is the thickness of each slice. Thin layers look smooth and take longer. Here is how to pick one.",
+  "cover": "layer-height-detail-against-speed-cover.png",
+  "detail": "layer-height-detail-against-speed-detail.png",
+  "html": "<p><strong>Layer height</strong> is how thick each slice of the part is. A 0.2 mm layer is common for detailed work. A thicker layer is used when speed matters more than a smooth surface.</p>\n<h2>Thin layers</h2>\n<ul><li>Smoother surfaces with fainter layer lines.</li><li>Better for curves and small detail.</li><li>Much longer print times.</li></ul>\n<h2>Thick layers</h2>\n<ul><li>Faster prints, sometimes in half the time.</li><li>Visible steps on curved surfaces.</li><li>Good for functional parts where looks matter less.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_layer-height-detail-against-speed\" src=\"{IMG_detail}\" alt=\"Three layer heights, three jobs\" width=\"1200\" height=\"760\"><figcaption>Pick the height by what the part is for.</figcaption></figure>\n<h2>A practical rule</h2>\n<p>Keep the layer height below about three quarters of the nozzle size. With a 0.4 mm nozzle, layers between about 0.1 and 0.3 mm work well. Print the same part twice and compare, to see what you gain for the time.</p>"
+ },
+ {
+  "title": "Enclosures: why they matter for ABS and ASA",
+  "slug": "enclosures-why-they-matter-for-abs-and-asa",
+  "cat": "Machines",
+  "excerpt": "Some materials shrink as they cool. An enclosure keeps the air warm and still, so large parts stay flat.",
+  "cover": "enclosures-why-they-matter-for-abs-and-asa-cover.png",
+  "detail": "enclosures-why-they-matter-for-abs-and-asa-detail.png",
+  "html": "<p>ABS and ASA shrink as they cool. Without help, the corners of a large part lift off the bed and crack. A closed box around the printer keeps the air warm and still, so the part cools slowly and evenly.</p>\n<h2>What an enclosure does</h2>\n<ul><li>Holds the air temperature steady around the part.</li><li>Stops cold draughts from a fan or an open window.</li><li>Keeps fumes from ABS and ASA contained.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_enclosures-why-they-matter-for-abs-and-asa\" src=\"{IMG_detail}\" alt=\"When an enclosure matters\" width=\"1200\" height=\"760\"><figcaption>Shrinking materials need it. Easy materials often do not.</figcaption></figure>\n<h2>When you can skip it</h2>\n<p>PLA, PETG and most TPU prints work without one. Keep the printer away from fans and open windows, and print at a steady room temperature. Ventilate the room when you print ABS or ASA, even with an enclosure.</p>\n<p>For warping on big flat parts, see our <a href=\"/guides/warping-and-lifting-corners\">warping guide</a>.</p>"
+ },
+ {
+  "title": "Build plate types: PEI, glass and textured",
+  "slug": "build-plate-types-pei-glass-and-textured",
+  "cat": "Machines",
+  "excerpt": "The build plate decides whether a part sticks while it prints and releases once it cools. Here is how the common types compare.",
+  "cover": "build-plate-types-pei-glass-and-textured-cover.png",
+  "detail": "build-plate-types-pei-glass-and-textured-detail.png",
+  "html": "<p>The <strong>build plate</strong> is the surface your part is printed on. It has to hold the part while it prints and let go once it cools. No single plate does everything well.</p>\n<h2>Common choices</h2>\n<ul><li><strong>PEI sheet</strong> sticks well to PLA, PETG and ABS when warm, and releases when cool.</li><li><strong>Smooth glass</strong> gives a flat, glossy bottom. Some materials need an adhesive.</li><li><strong>Textured sheet</strong> gives a matte bottom and grips well, good for PETG and nylon.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_build-plate-types-pei-glass-and-textured\" src=\"{IMG_detail}\" alt=\"Match the plate to the material\" width=\"1200\" height=\"760\"><figcaption>Start from the material, then choose the surface.</figcaption></figure>\n<h2>Care for your plate</h2>\n<ul><li>Clean with isopropyl alcohol and never touch the surface with bare fingers.</li><li>Replace a worn sheet before it starts to lift parts.</li><li>Use a glue stick only if the material asks for it.</li></ul>\n<p>Still getting parts that will not stick? Read <a href=\"/guides/first-layer-not-sticking\">first layer not sticking</a>.</p>"
+ },
+ {
+  "title": "Resin printer basics: curing, washing and safety",
+  "slug": "resin-printer-basics-curing-washing-and-safety",
+  "cat": "Machines",
+  "excerpt": "A resin printer needs a wash and a cure after every print. Here is the routine that gives strong, clean results.",
+  "cover": "resin-printer-basics-curing-washing-and-safety-cover.png",
+  "detail": "resin-printer-basics-curing-washing-and-safety-detail.png",
+  "html": "<p>A resin printer cures liquid resin with UV light, one layer at a time. The part that comes off the plate is still soft and wet with resin, so it needs two more steps before it is finished.</p>\n<h2>The routine</h2>\n<ul><li>Print, then lift the plate and let the excess resin drip off.</li><li>Wash the part in isopropyl alcohol or a resin cleaner.</li><li>Dry it fully, then cure under UV for the time on the resin data sheet.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_resin-printer-basics-curing-washing-and-safety\" src=\"{IMG_detail}\" alt=\"Four steps, every time\" width=\"1200\" height=\"760\"><figcaption>Drain, wash, dry, cure.</figcaption></figure>\n<h2>Safety first</h2>\n<ul><li>Wear nitrile gloves. Uncured resin irritates the skin.</li><li>Work in a ventilated room, away from food areas.</li><li>Store resin in its bottle, away from light and heat.</li></ul>\n<p>Resin suits detail work. Compare it with filament in <a href=\"/guides/resin-or-filament-which-one-for-fine-detail\">resin or filament</a>.</p>"
+ },
+ {
+  "title": "Print speed and acceleration: fast without losing quality",
+  "slug": "print-speed-and-acceleration-fast-without-losing-quality",
+  "cat": "Machines",
+  "excerpt": "Faster printing saves time, but high speed and acceleration can ripple the surface and weaken layers. Here is how to tune them.",
+  "cover": "print-speed-and-acceleration-fast-without-losing-quality-cover.png",
+  "detail": "print-speed-and-acceleration-fast-without-losing-quality-detail.png",
+  "html": "<p><strong>Print speed</strong> is how fast the nozzle moves while it extrudes. <strong>Acceleration</strong> is how quickly it reaches that speed. High values save time, but they make the frame shake and leave ripples.</p>\n<h2>Signs the speed is too high</h2>\n<ul><li><strong>Ringing</strong>: wavy lines near sharp corners.</li><li><strong>Weak layers</strong> or uneven walls.</li><li>Skipped steps or a head that shifts.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_print-speed-and-acceleration-fast-without-losing-quality\" src=\"{IMG_detail}\" alt=\"Tuning in four steps\" width=\"1200\" height=\"760\"><figcaption>Start from the default and change one thing at a time.</figcaption></figure>\n<h2>How to tune it</h2>\n<ul><li>Start from the slicer default for your material and printer.</li><li>Raise the speed in steps of about 10 percent, and print the same test part each time.</li><li>If ringing appears, lower the acceleration first.</li></ul>\n<p>For ringing and shifting, see <a href=\"/guides/layer-shifts-and-ringing-when-the-print-moves\">layer shifts and ringing</a>.</p>"
+ },
+ {
+  "title": "Stringing and oozing: how to stop the hairs",
+  "slug": "stringing-and-oozing-how-to-stop-the-hairs",
+  "cat": "Troubleshooting",
+  "excerpt": "Fine hairs between parts come from heat, retraction and damp filament. Here is how to fix each cause.",
+  "cover": "stringing-and-oozing-how-to-stop-the-hairs-cover.png",
+  "detail": "stringing-and-oozing-how-to-stop-the-hairs-detail.png",
+  "html": "<p><strong>Stringing</strong> is the fine hair of plastic left between two parts when the nozzle crosses an open gap. Oozing is the same thing, leaking while the nozzle moves.</p>\n<h2>Causes and fixes</h2>\n<ul><li><strong>Too hot</strong>: lower the temperature in steps of about 5 °C until the hairs stop.</li><li><strong>Retraction too low</strong>: increase the distance and speed a little.</li><li><strong>Damp filament</strong>: dry the spool and print again.</li><li><strong>Travel too slow</strong>: raise the travel speed so the nozzle spends less time over gaps.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_stringing-and-oozing-how-to-stop-the-hairs\" src=\"{IMG_detail}\" alt=\"Four quick fixes\" width=\"1200\" height=\"760\"><figcaption>Work through them in this order.</figcaption></figure>\n<h2>Check the nozzle</h2>\n<p>A worn or dirty nozzle drips more. Clean it, and replace it if the tip is damaged. Our <a href=\"/guides/nozzle-clogs-how-to-clear-them\">clog guide</a> shows how to clear a blocked tip.</p>"
+ },
+ {
+  "title": "Warping and lifting corners",
+  "slug": "warping-and-lifting-corners",
+  "cat": "Troubleshooting",
+  "excerpt": "When corners lift off the bed, the plastic shrinks unevenly. Here is what to change to keep the part flat.",
+  "cover": "warping-and-lifting-corners-cover.png",
+  "detail": "warping-and-lifting-corners-detail.png",
+  "html": "<p>Warping happens when the bottom of a part cools and shrinks faster than the top. The corners lift and can crack away from the plate. It is most common with ABS, ASA and large flat parts.</p>\n<h2>Fixes to try</h2>\n<ul><li>Heat the bed to the right temperature for the material.</li><li>Use an enclosure to keep the air warm and still.</li><li>Add a <strong>brim</strong>, a thin flat border around the part, so it holds better.</li><li>Clean the build plate. Oil from fingers stops adhesion.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_warping-and-lifting-corners\" src=\"{IMG_detail}\" alt=\"Keeping corners down\" width=\"1200\" height=\"760\"><figcaption>Heat, enclosure, brim and a clean plate.</figcaption></figure>\n<h2>Design helps too</h2>\n<p>Round the corners of a part, and avoid very large flat bases. A smaller footprint warps less. Our <a href=\"/guides/enclosures-why-they-matter-for-abs-and-asa\">enclosure guide</a> covers the air side of the problem.</p>"
+ },
+ {
+  "title": "Layer shifts and ringing: when the print moves",
+  "slug": "layer-shifts-and-ringing-when-the-print-moves",
+  "cat": "Troubleshooting",
+  "excerpt": "A sudden shift or ripples near edges point to belts, the frame or the speed. Here is how to tell which.",
+  "cover": "layer-shifts-and-ringing-when-the-print-moves-cover.png",
+  "detail": "layer-shifts-and-ringing-when-the-print-moves-detail.png",
+  "html": "<p>A <strong>layer shift</strong> is a sudden sideways jump, and every layer above it sits off-centre. <strong>Ringing</strong> is a set of ripples near sharp edges. They have different causes but often appear together.</p>\n<h2>Causes of a layer shift</h2>\n<ul><li><strong>Loose belts</strong>. Tighten until a plucked belt gives a steady note, without bending the motor shaft.</li><li>Loose pulleys or screws on the carriage.</li><li>Speed or acceleration too high for the frame.</li><li>A tangle or snag on the spool that stops the feed.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_layer-shifts-and-ringing-when-the-print-moves\" src=\"{IMG_detail}\" alt=\"Shift or ringing?\" width=\"1200\" height=\"760\"><figcaption>Sudden jumps are belts. Ripples at corners are speed and frame.</figcaption></figure>\n<h2>Causes of ringing</h2>\n<ul><li>High acceleration, so the frame vibrates at each corner.</li><li>A frame that is not rigid. Check every bolt.</li><li>A heavy or unbalanced fan on the head.</li></ul>\n<p>Tuning the speed is covered in <a href=\"/guides/print-speed-and-acceleration-fast-without-losing-quality\">print speed and acceleration</a>.</p>"
+ },
+ {
+  "title": "Under-extrusion: gaps and weak walls",
+  "slug": "under-extrusion-gaps-and-weak-walls",
+  "cat": "Troubleshooting",
+  "excerpt": "When the printer does not push out enough plastic, walls come out thin and gappy. Here is how to find the cause.",
+  "cover": "under-extrusion-gaps-and-weak-walls-cover.png",
+  "detail": "under-extrusion-gaps-and-weak-walls-detail.png",
+  "html": "<p><strong>Under-extrusion</strong> means the nozzle is not pushing out the planned amount of plastic. The walls look thin, the infill has gaps, and the part feels weak.</p>\n<h2>Check in this order</h2>\n<ul><li><strong>A blocked nozzle</strong>. Clear it first; see <a href=\"/guides/nozzle-clogs-how-to-clear-them\">clearing a clog</a>.</li><li><strong>Filament drive</strong>. Too tight, or a worn gear that slips.</li><li><strong>Temperature too low</strong>, so the plastic does not melt fully.</li><li><strong>Flow set too low</strong> in the slicer.</li><li><strong>Damp filament</strong> that swells and resists the feed.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_under-extrusion-gaps-and-weak-walls\" src=\"{IMG_detail}\" alt=\"Find it in five checks\" width=\"1200\" height=\"760\"><figcaption>Start with the nozzle and work down the list.</figcaption></figure>\n<h2>A simple test</h2>\n<p>Print a small cube and measure the walls with calipers. If they are thin by a steady amount, change the flow multiplier in small steps and print again.</p>"
+ },
+ {
+  "title": "First layer not sticking",
+  "slug": "first-layer-not-sticking",
+  "cat": "Troubleshooting",
+  "excerpt": "If the first layer does not stick, nothing above it will print well. Here is the order to check the bed, the nozzle and the settings.",
+  "cover": "first-layer-not-sticking-cover.png",
+  "detail": "first-layer-not-sticking-detail.png",
+  "html": "<p>The first layer is the foundation of the whole print. If it lifts, shifts or leaves gaps, the print fails. Most first-layer problems come from the gap between nozzle and bed, or from a dirty surface.</p>\n<h2>Check these first</h2>\n<ul><li><strong>Bed level</strong>. Too high leaves gaps and loose ropes; too low scratches and blobs. See <a href=\"/guides/bed-levelling-explained\">bed levelling</a>.</li><li><strong>Build plate</strong>. Clean it with isopropyl alcohol.</li><li><strong>Bed temperature</strong>. Too cold means weak adhesion for PETG and ABS.</li><li><strong>First-layer speed</strong>. Slow it down, often to about 20 to 30 mm/s.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_first-layer-not-sticking\" src=\"{IMG_detail}\" alt=\"Five checks for a first layer\" width=\"1200\" height=\"760\"><figcaption>Level, clean, warm, slow, then dry the filament.</figcaption></figure>\n<h2>Then check the filament</h2>\n<p>Wet filament and old spools change how the first layer lays down. Dry it and try again.</p>"
+ },
+ {
+  "title": "Nozzle clogs: how to clear them",
+  "slug": "nozzle-clogs-how-to-clear-them",
+  "cat": "Troubleshooting",
+  "excerpt": "A clog stops the filament at the nozzle. Most can be cleared with heat, a cold pull or a fresh needle.",
+  "cover": "nozzle-clogs-how-to-clear-them-cover.png",
+  "detail": "nozzle-clogs-how-to-clear-them-detail.png",
+  "html": "<p>A clogged nozzle prints thin lines, grinds the filament or does not extrude at all. The usual cause is dust, burnt filament or a piece of an old colour stuck in the tip.</p>\n<h2>Clearing a clog</h2>\n<ul><li><strong>Heat</strong> the nozzle to the material temperature and push a little filament through by hand.</li><li><strong>Cold pull</strong>: heat, push filament in, cool to about 90 °C, then pull the filament out quickly to take the debris with it.</li><li><strong>Needle</strong>: with the nozzle hot, use a fine cleaning needle. Keep fingers clear.</li><li>If the blockage is hard, remove the nozzle and soak or replace it.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_nozzle-clogs-how-to-clear-them\" src=\"{IMG_detail}\" alt=\"Clearing a clog, in order\" width=\"1200\" height=\"760\"><figcaption>Heat, cold pull, needle, replace.</figcaption></figure>\n<h2>Prevent the next one</h2>\n<ul><li>Keep filament dry and dust-free.</li><li>Clean the nozzle after every colour or material change.</li><li>Do not let the nozzle sit far below printing temperature.</li></ul>\n<p>A clog often shows up as under-extrusion. See <a href=\"/guides/under-extrusion-gaps-and-weak-walls\">under-extrusion</a>.</p>"
+ },
+ {
+  "title": "Blobs and zits on the surface",
+  "slug": "blobs-and-zits-on-the-surface",
+  "cat": "Troubleshooting",
+  "excerpt": "Small bumps on the outside of a print usually come from the seam, retraction or temperature. Here is how to tame them.",
+  "cover": "blobs-and-zits-on-the-surface-cover.png",
+  "detail": "blobs-and-zits-on-the-surface-detail.png",
+  "html": "<p>Blobs and zits are small bumps on the surface, often in a line or in one spot. They happen when the nozzle pauses in one place long enough to leave a little extra plastic.</p>\n<h2>Likely causes</h2>\n<ul><li><strong>Seam placement</strong>. Each layer starts and ends in the same place. Move the seam to a corner or a hidden side.</li><li><strong>Retraction too low</strong>, so plastic oozes while the nozzle moves.</li><li><strong>Temperature too high</strong> for the outer wall.</li><li><strong>Slow outer walls</strong> with long pauses.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_blobs-and-zits-on-the-surface\" src=\"{IMG_detail}\" alt=\"Three settings to check\" width=\"1200\" height=\"760\"><figcaption>Seam, retraction and temperature.</figcaption></figure>\n<h2>Fixes</h2>\n<p>Set the seam to a hidden corner, tune retraction in small steps, and lower the temperature a little. Print a test cube and compare. For stringing between parts, see <a href=\"/guides/stringing-and-oozing-how-to-stop-the-hairs\">stringing and oozing</a>.</p>"
+ },
+ {
+  "title": "Supports that will not come off",
+  "slug": "supports-that-will-not-come-off",
+  "cat": "Troubleshooting",
+  "excerpt": "Supports should snap away cleanly. When they fuse to the part, the settings are usually too dense or too close.",
+  "cover": "supports-that-will-not-come-off-cover.png",
+  "detail": "supports-that-will-not-come-off-detail.png",
+  "html": "<p>Supports hold up overhangs while the part prints. They should break away cleanly. When they fuse to the surface, the part is left with scars and rough patches.</p>\n<h2>Why supports stick</h2>\n<ul><li><strong>Too dense</strong>. A high density bonds more strongly to the part.</li><li><strong>No gap</strong>. The interface layer sits right on the part; add a small gap, usually one layer.</li><li><strong>Too hot</strong>, which makes the plastic bond harder.</li></ul>\n<figure><img class=\"wp-image-IMG_detail_supports-that-will-not-come-off\" src=\"{IMG_detail}\" alt=\"Easier supports\" width=\"1200\" height=\"760\"><figcaption>Less density, a small gap, and better design.</figcaption></figure>\n<h2>Better settings</h2>\n<ul><li>Lower the density and use a simple pattern.</li><li>Use an interface layer with a small gap.</li><li>Design overhangs at 45 degrees or less, so supports are needed less.</li><li>Try tree supports, which touch the part at fewer points.</li></ul>\n<p>Designing parts for printing is a big help. Our <a href=\"/guides/designing-for-print-wall-thickness-and-overhangs\">design guide</a> covers overhangs in detail.</p>"
+ }
+]
