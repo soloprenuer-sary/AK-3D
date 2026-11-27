@@ -1,13 +1,15 @@
 # Backend task: upload the Knowledge hub articles to WordPress
 
-From the frontend side, 2026-11-27. The owner chose WordPress as the place articles live, so they can be edited without a code change. Nothing has been uploaded yet.
+From the frontend side, 2026-11-27. The owner chose WordPress as the place articles live, so they can be edited without a code change.
+
+**Status, 2026-11-27: done up to drafts.** The 11 first articles are published and the other 25 are drafts (posts 633 to 729). Do not run steps 1 to 4 again. To publish the 25 after the owner's yes: run step 6 from `~/blog-upload-36` on the server (it publishes every draft in this package), or press Publish on chosen drafts in WordPress. Five topics overlap with the separate "round 2" drafts; the owner chooses first.
 
 **Job:** put 36 articles and 106 pictures on `admin.akrinity.in`. 31 are new; five replace the short "Sample article." posts and keep their addresses. This replaces the earlier package of 11: if that one was already uploaded, run the same steps with this one, and the script adds only what is missing and updates the rest without making copies.
 
 ## Read before you start
 
-1. **Drafts are safe at any time. Publish only after the new article pages are live on the website.** The new page code is on branch `claude/confident-banach-47cfa4` (commit `0ef34b1` or later) and is not merged or pushed yet. The current website drops pictures and tables from posts and runs headings and lists into the text.
-2. **Keep WPGraphQL active.** The website reads articles through it (`/graphql`). An earlier hardening list suggested turning it off; do not.
+1. **Drafts are safe at any time.** The new article pages (commit `0ef34b1`) are merged and live.
+2. The website reads articles from the WordPress REST API (`/wp-json/wp/v2/posts`). Keep it readable for the public.
 3. **The owner confirms the facts below before publishing.**
 4. No plugin, theme, setting, or must-use file changes. The script is a one-off tool; keep it outside the web folder.
 
@@ -117,12 +119,11 @@ cd ~/blog-upload && wp --path=<wordpress folder> eval-file import-articles.php p
 ## Check after publishing
 
 ```bash
-curl -s -X POST https://admin.akrinity.in/graphql -H "Content-Type: application/json" \
-  --data '{"query":"{ posts(first: 50) { nodes { slug featuredImage { node { sourceUrl } } } } }"}'
+curl -s "https://admin.akrinity.in/wp-json/wp/v2/posts?per_page=100&_fields=slug,featured_media"
 ```
 
 - 36 articles (plus the default "Hello world!" if it is still there; the website hides it), each with a featured picture. The website reads up to 100 posts.
-- `https://<website>/guides` shows 36 cards within a few minutes. If it does not, clear the WordPress host cache for `/graphql` **[VERIFY whether the host caches it]**.
+- `https://<website>/guides` shows 36 cards within a few minutes. If it does not, clear the WordPress host cache for the posts address **[VERIFY whether the host caches it]**.
 - Open two articles on a phone and a computer: pictures, tables, and links work.
 - The website's sitemap lists the new addresses within an hour.
 

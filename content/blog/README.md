@@ -1,6 +1,6 @@
-# Knowledge hub articles (not uploaded yet)
+# Knowledge hub articles (11 published, 25 drafts)
 
-Thirty-six articles, ready to upload. Nothing here is live yet. Articles live in WordPress (owner decision 2026-11-27, see `docs/PROJECT_CONTEXT.md`, decision 57). How to upload them: `docs/BACKEND_TASK_BLOG.md`.
+Thirty-six articles. Uploaded on 2026-11-27: articles 1 to 11 are published, 12 to 36 are WordPress drafts. Articles live in WordPress (owner decision 2026-11-27, see `docs/PROJECT_CONTEXT.md`, decision 57). How to upload them: `docs/BACKEND_TASK_BLOG.md`.
 
 ## Files
 
