@@ -2,7 +2,7 @@
 
 From the frontend side, 2026-11-27. The owner chose WordPress as the place articles live, so they can be edited without a code change.
 
-**Status, 2026-11-27: done up to drafts.** The 11 first articles are published and the other 25 are drafts (posts 633 to 729). Do not run steps 1 to 4 again. To publish the 25 after the owner's yes: run step 6 from `~/blog-upload-36` on the server (it publishes every draft in this package), or press Publish on chosen drafts in WordPress. Five topics overlap with the separate "round 2" drafts; the owner chooses first.
+**Status, 2026-11-27: finished.** All 36 articles are published. Nothing in this note needs running again; it is kept as a record and for editing advice.
 
 **Job:** put 36 articles and 106 pictures on `admin.akrinity.in`. 31 are new; five replace the short "Sample article." posts and keep their addresses. This replaces the earlier package of 11: if that one was already uploaded, run the same steps with this one, and the script adds only what is missing and updates the rest without making copies.
 

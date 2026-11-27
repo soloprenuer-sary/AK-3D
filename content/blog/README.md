@@ -1,6 +1,6 @@
-# Knowledge hub articles (11 published, 25 drafts)
+# Knowledge hub articles (all 36 published)
 
-Thirty-six articles. Uploaded on 2026-11-27: articles 1 to 11 are published, 12 to 36 are WordPress drafts. Articles live in WordPress (owner decision 2026-11-27, see `docs/PROJECT_CONTEXT.md`, decision 57). How to upload them: `docs/BACKEND_TASK_BLOG.md`.
+Thirty-six articles. All were published on 2026-11-27. The website now reads posts from the WordPress REST API, so the `preview.mjs` stand-in below (made for the earlier GraphQL reader) no longer supplies articles. Articles live in WordPress (owner decision 2026-11-27, see `docs/PROJECT_CONTEXT.md`, decision 57). How to upload them: `docs/BACKEND_TASK_BLOG.md`.
 
 ## Files
 
