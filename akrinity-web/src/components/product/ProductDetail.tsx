@@ -183,9 +183,7 @@ export function ProductDetail({
       image: product.images?.[0],
       madeToOrder: !product.inStock,
     });
-    setStatus(
-      `${qty} ${qty === 1 ? 'item' : 'items'} (${MODE_LABEL[mode].toLowerCase()}) added to cart.`,
-    );
+    setStatus('');
   };
 
   const checkPincode = () => {

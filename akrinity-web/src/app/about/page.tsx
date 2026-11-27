@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { InfoPage } from '@/components/layout/InfoPage';
+import Link from 'next/link';
 import { StudioSlider } from '@/components/layout/StudioSlider';
 
 export const metadata: Metadata = {
@@ -8,98 +8,174 @@ export const metadata: Metadata = {
     'Who makes Akrinity prints in Mumbai, how each part is checked, and the materials we use.',
 };
 
+const FACTS = [
+  'Studio in Mumbai',
+  'Made layer by layer',
+  'Prices include GST',
+  'Checked before packing',
+];
+
+const MAKE = [
+  'Home decor and desk organisers',
+  'Display stands for die-cast cars',
+  'Jewellery and accessory stands',
+  'Gifts, keychains and personalised pieces',
+  'Spare parts and brackets',
+  'Custom work from your own file',
+];
+
+const STEPS = [
+  {
+    tone: 'lime',
+    name: 'Print',
+    text: 'Made-to-order parts are printed after you order. You see the lead time before you pay.',
+  },
+  { tone: 'violet', name: 'Check', text: 'Layer adhesion, size and surface finish are checked.' },
+  { tone: 'orange', name: 'Reprint', text: 'A part that fails is printed again, not sent.' },
+  { tone: 'ink', name: 'Ship', text: 'Ready-made parts ship from stock when they are in stock.' },
+];
+
+const MATERIALS = [
+  { tone: 'lime', name: 'PLA / PLA+', text: 'Detail and decor' },
+  { tone: 'violet', name: 'PETG', text: 'Tougher everyday parts' },
+  { tone: 'orange', name: 'ABS / ASA', text: 'Heat and outdoor use' },
+  { tone: 'ink', name: 'Resin', text: 'Very fine detail' },
+];
+
 export default function About() {
   return (
-    <InfoPage
-      title="About Akrinity"
-      intro="Akrinity is a 3D printing studio in Mumbai. We print ready-made products, custom parts from your own file, and designs we make from a sketch or an idea. Every part is made layer by layer, and checked before it leaves us."
-      heroImage={{
-        src: '/images/about/hero.png',
-        alt: 'Four printed objects in brand colours standing on a striped lime background',
-        caption: 'Illustration. Studio photos are coming.',
-      }}
-      afterSections={
-        <StudioSlider
-          slides={[
-            {
-              src: '/images/about/slide-printer.png',
-              alt: 'Illustration of a 3D printer building a part layer by layer',
-              caption: 'The printer: one thin layer at a time.',
-            },
-            {
-              src: '/images/about/slide-workshop.png',
-              alt: 'Illustration of the workshop bench where parts are finished',
-              caption: 'The workshop: where parts are finished.',
-            },
-            {
-              src: '/images/about/slide-packaging.png',
-              alt: 'Illustration of a box being packed for dispatch',
-              caption: 'Packing: checked, wrapped and boxed.',
-            },
-          ]}
-        />
-      }
-      sections={[
-        {
-          heading: 'Why we started',
-          image: {
-            src: '/images/about/story.png',
-            alt: 'A sketch on the left becomes a finished printed part on the right',
-            caption: 'From a sketch to a printed part.',
-          },
-          paragraphs: [
-            'Many of the problems we print for are small and specific: a shelf for a growing collection of die-cast cars, a mount that keeps rackets off the floor, a stand that holds two controllers and a headset in one place.',
-            'Those problems are hard to solve with a shop-bought object, and quick to solve with a 3D printer. That is what we do: make the part that fits your space, your collection or your idea.',
-          ],
-        },
-        {
-          heading: 'What we make',
-          paragraphs: [
-            'Ready-made products: home decor, desk and bedside organisers, sports holders, jewellery stands, figurines, gifts, and spare parts.',
-            'Custom prints from your own 3D file, and design-and-print from a sketch or a photo.',
-          ],
-          items: [
-            'Home decor and desk organisers',
-            'Display stands for die-cast cars',
-            'Jewellery and accessory stands',
-            'Gifts, keychains and personalised pieces',
-            'Spare parts and brackets',
-            'Custom work from your own file',
-          ],
-        },
-        {
-          heading: 'How we work',
-          image: {
-            src: '/images/about/process.png',
-            alt: 'Four steps from check to print to finish to ship',
-            caption: 'Check, print, finish, ship.',
-          },
-          paragraphs: [
-            'Every part is checked for layer adhesion, size and surface finish before packing. A part that fails is printed again, not sent.',
-            'Made-to-order parts are printed after you order, so we tell you the lead time before you pay. Ready-made parts ship from stock when they are in stock.',
-          ],
-        },
-        {
-          heading: 'Materials',
-          image: {
-            src: '/images/about/materials.png',
-            alt: 'Four material colours: PLA, PETG, ABS and ASA, and resin',
-            caption: 'PLA, PETG, ABS/ASA and resin.',
-          },
-          paragraphs: [
-            'We print in PLA and PLA+ for detail and decor, PETG for tougher everyday parts, ABS and ASA for heat and outdoor use, and resin for very fine detail.',
-            'The knowledge hub explains when to pick each one, with the trade-offs in plain language.',
-          ],
-        },
-        {
-          // VERIFY with the owner: the promise lines are drafts until the studio confirms them.
-          heading: 'Our promise',
-          paragraphs: [
-            'Prices include GST. Each product page shows the lead time before you pay. If a part cannot be made the way you asked, we tell you straight away, and we fix any part that is wrong.',
-            'Reply to any email from us. Our contact page shows the reply time.',
-          ],
-        },
-      ]}
-    />
+    <main id="main">
+      <nav className="crumbs" aria-label="Breadcrumb">
+        <Link href="/">Home</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">About</span>
+      </nav>
+
+      <div className="wrap ab">
+        <section className="ab-hero">
+          <div>
+            <h1 className="d">
+              About <span className="hl">Akrinity</span>
+            </h1>
+            <p>
+              A 3D printing studio in Mumbai. We print ready-made products, custom parts from your
+              own file, and designs we make from a sketch or an idea.
+            </p>
+            <div className="ab-btns">
+              <Link className="btn btn-primary btn-sm" href="/shop">
+                Shop ready-made
+              </Link>
+              <Link className="btn btn-sm" href="/quote">
+                Get a quote
+              </Link>
+            </div>
+            <ul className="ab-facts">
+              {FACTS.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+          </div>
+          <img
+            src="/images/about/hero.png"
+            alt="Illustration of four printed objects in brand colours"
+            width={1200}
+            height={900}
+          />
+        </section>
+
+        <section className="ab-card" aria-labelledby="ab-make">
+          <h2 id="ab-make">What we make</h2>
+          <ul className="ab-chips">
+            {MAKE.map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+          <p className="muted">Design-and-print from a sketch or a photo, too.</p>
+        </section>
+
+        <section aria-labelledby="ab-how">
+          <h2 className="ab-h" id="ab-how">
+            How we work
+          </h2>
+          <ol className="ab-grid4">
+            {STEPS.map((s, i) => (
+              <li key={s.name} className={`ab-tile tone-${s.tone}`}>
+                <span className="ab-num">0{i + 1}</span>
+                <b>{s.name}</b>
+                <span>{s.text}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section aria-labelledby="ab-mat">
+          <h2 className="ab-h" id="ab-mat">
+            Materials
+          </h2>
+          <ul className="ab-grid4">
+            {MATERIALS.map((m) => (
+              <li key={m.name} className="ab-mat">
+                <i className={`tone-${m.tone}`} aria-hidden="true" />
+                <div>
+                  <b>{m.name}</b>
+                  <span>{m.text}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <Link className="ab-more" href="/materials">
+            Compare the materials →
+          </Link>
+        </section>
+
+        <div className="ab-studio">
+          <StudioSlider
+            slides={[
+              {
+                src: '/images/about/slide-printer.png',
+                alt: 'Illustration of a 3D printer building a part layer by layer',
+                caption: 'The printer: one thin layer at a time.',
+              },
+              {
+                src: '/images/about/slide-workshop.png',
+                alt: 'Illustration of the workshop bench where parts are finished',
+                caption: 'The workshop: where parts are finished.',
+              },
+              {
+                src: '/images/about/slide-packaging.png',
+                alt: 'Illustration of a box being packed for dispatch',
+                caption: 'Packing: checked, wrapped and boxed.',
+              },
+            ]}
+          />
+          <div className="ab-stack">
+            <section className="ab-card" aria-labelledby="ab-why">
+              <h2 id="ab-why">Why we started</h2>
+              <p>
+                Many of the problems we print for are small and specific: a shelf for a growing car
+                collection, a mount that keeps rackets off the floor, a stand for two controllers
+                and a headset.
+              </p>
+              <p>
+                They are hard to solve with a shop-bought object and quick to solve with a 3D
+                printer. We make the part that fits your space, your collection or your idea.
+              </p>
+            </section>
+            {/* VERIFY with the owner: the promise lines are drafts until the studio confirms them. */}
+            <section className="ab-card ab-promise" aria-labelledby="ab-pro">
+              <h2 id="ab-pro">Our promise</h2>
+              <p>Prices include GST, and each product page shows the lead time before you pay.</p>
+              <p>
+                If a part cannot be made the way you asked, we tell you straight away. We fix any
+                part that is wrong.
+              </p>
+              <Link className="btn btn-primary btn-sm" href="/contact">
+                Contact us
+              </Link>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 }

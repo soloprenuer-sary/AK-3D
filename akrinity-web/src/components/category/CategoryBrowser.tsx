@@ -170,7 +170,6 @@ export function CategoryBrowser({ products: built, category, tone }: Props) {
     setJustAdded(p.id);
     if (addTimer.current) clearTimeout(addTimer.current);
     addTimer.current = setTimeout(() => setJustAdded(null), 1400);
-    notify(`${p.name} added to cart`);
   };
 
   const choose = useCallback((next: string) => {

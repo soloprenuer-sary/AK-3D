@@ -8,7 +8,7 @@ import { SiteFooter } from '@/components/layout/SiteFooter';
 import { CartProvider } from '@/lib/cart-store';
 import { buildMenu, getCategoryTree } from '@/lib/category-content';
 import { CategoryTreeProvider } from '@/components/layout/CategoryTree';
-import { CheckoutTray } from '@/components/layout/CheckoutTray';
+import { CartToast } from '@/components/cart/CartToast';
 import { WhatsAppButton } from '@/components/layout/WhatsAppButton';
 import { site } from '@/lib/site-config';
 
@@ -75,7 +75,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <SiteHeader menu={menu} />
             {children}
             <SiteFooter tree={tree} />
-            <CheckoutTray />
+            <CartToast />
             <WhatsAppButton />
           </CartProvider>
         </CategoryTreeProvider>

@@ -110,7 +110,6 @@ export function ShopBrowser({
     setJustAdded(p.id);
     if (addTimer.current) clearTimeout(addTimer.current);
     addTimer.current = setTimeout(() => setJustAdded(null), 1400);
-    notify(`${p.name} added to cart`);
   };
 
   const clearAll = () => {

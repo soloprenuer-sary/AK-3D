@@ -1,76 +1,120 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { InfoPage } from '@/components/layout/InfoPage';
+import Link from 'next/link';
 import { ContactForm } from '@/components/forms/ContactForm';
 import { MumbaiMap } from '@/components/layout/MumbaiMap';
 import { site } from '@/lib/site-config';
 
 export const metadata: Metadata = { title: 'Contact', description: 'Reach the Akrinity studio.' };
 
+const ANSWERS = [
+  { href: '/track-order', label: 'Track an order' },
+  { href: '/track-order', label: 'Cancel or return' },
+  { href: '/shipping', label: 'Shipping' },
+  { href: '/returns', label: 'Returns' },
+  { href: '/faq', label: 'FAQ' },
+  { href: '/materials', label: 'Materials' },
+];
+
+const TIPS = [
+  'Order number, if it is about an order',
+  'Product name or page link',
+  'Photos, if something arrived damaged',
+  'Size, colour or material for custom work',
+];
+
 export default function Contact() {
-  const sections = [
-    ...(site.whatsappText
-      ? [
-          {
-            heading: 'WhatsApp',
-            paragraphs: [
-              site.whatsappText,
-              ...(site.replyHours > 0
-                ? [`Usual reply time: within ${site.replyHours} hours, on working days.`]
-                : []),
-            ],
-          },
-        ]
-      : []),
-    ...(site.supportEmail ? [{ heading: 'Email', paragraphs: [site.supportEmail] }] : []),
-    { heading: 'Studio', paragraphs: ['Mumbai, India.'] },
-    {
-      heading: 'Custom work',
-      paragraphs: [
-        'For custom prints, use the quote form so we have your file and your details in one place.',
-      ],
-    },
-    {
-      heading: 'What to send with your message',
-      paragraphs: ['A short message is fastest. These details help us answer in one reply:'],
-      items: [
-        'Your order number, if the message is about an order',
-        'The product name or a link to the product page',
-        'Photos of the part, if something arrived damaged',
-        'The size, colour or material you want, for a custom request',
-      ],
-    },
-    {
-      heading: 'Common questions',
-      paragraphs: [
-        'Many answers are already on the site. Check these first, they open in a few seconds:',
-      ],
-      items: [
-        'Order status: Track an order, with your order number and email or phone',
-        'Cancel or return: from the order page, within the time shown on it',
-        'Shipping and delivery: the Shipping page explains dispatch and tracking',
-        'Materials: the knowledge hub explains PLA, PETG, ABS, ASA and resin',
-      ],
-    },
-  ];
   return (
-    <InfoPage
-      title="Contact"
-      heroImage={{
-        src: '/images/about/process.png',
-        alt: 'Four steps from check to print to finish to ship',
-        caption: 'Every message goes to the studio, which replies by email or WhatsApp.',
-      }}
-      intro={`Questions about an order, a custom print or a design? Send us a message below${site.whatsappText ? ', or reach the studio on WhatsApp' : ''}${site.supportEmail ? ' or by email' : ''}.`}
-      sections={sections}
-    >
-      <div className="info-card">
-        <h2>Send us a message</h2>
-        <Suspense fallback={null}>
-          <ContactForm />
-        </Suspense>
+    <main id="main">
+      <nav className="crumbs" aria-label="Breadcrumb">
+        <Link href="/">Home</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Contact</span>
+      </nav>
+
+      <div className="wrap ct-head">
+        <h1 className="d">
+          Talk to the <span className="hl">studio</span>
+        </h1>
+        <p>Questions about an order, a custom print or a design? Send us a message.</p>
       </div>
-      <MumbaiMap />
-    </InfoPage>
+
+      <div className="wrap ct-grid">
+        <section className="ct-card" aria-labelledby="ct-form-h">
+          <h2 id="ct-form-h">Send a message</h2>
+          <Suspense fallback={null}>
+            <ContactForm />
+          </Suspense>
+        </section>
+
+        <aside className="ct-side">
+          <section className="ct-card ct-dark" aria-labelledby="ct-reach-h">
+            <h2 id="ct-reach-h">Reach us</h2>
+            <dl className="ct-reach">
+              {site.whatsappText && (
+                <div>
+                  <dt>WhatsApp</dt>
+                  <dd>
+                    <a
+                      href={`https://wa.me/${site.whatsappDigits}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {site.whatsappText}
+                    </a>
+                  </dd>
+                </div>
+              )}
+              {site.supportEmail && (
+                <div>
+                  <dt>Email</dt>
+                  <dd>
+                    <a href={`mailto:${site.supportEmail}`}>{site.supportEmail}</a>
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt>Studio</dt>
+                <dd>{site.studioAddress || 'Mumbai, India'}</dd>
+              </div>
+              {site.replyHours > 0 && (
+                <div>
+                  <dt>Reply time</dt>
+                  <dd>Within {site.replyHours} hours, on working days</dd>
+                </div>
+              )}
+            </dl>
+            <div className="ct-tips">
+              <b>Helps us answer in one reply:</b>
+              <ul>
+                {TIPS.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+            <Link className="btn btn-primary btn-sm" href="/quote">
+              Have a 3D file? Get a quote
+            </Link>
+          </section>
+
+          <section className="ct-card" aria-labelledby="ct-ans-h">
+            <h2 id="ct-ans-h">Quick answers</h2>
+            <ul className="ct-links">
+              {ANSWERS.map((a) => (
+                <li key={a.label}>
+                  <Link href={a.href}>
+                    {a.label} <span aria-hidden="true">→</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </aside>
+      </div>
+
+      <div className="wrap ct-map">
+        <MumbaiMap />
+      </div>
+    </main>
   );
 }

@@ -105,7 +105,24 @@ function getServerSnapshot() {
   return EMPTY;
 }
 
+/** What the "added to cart" notification needs. */
+export interface CartAdded {
+  name: string;
+  image?: string;
+}
+
+const addListeners = new Set<(added: CartAdded) => void>();
+
+/** Calls the listener each time something is added to the cart. Returns a function that stops it. */
+export function onCartAdd(listener: (added: CartAdded) => void): () => void {
+  addListeners.add(listener);
+  return () => {
+    addListeners.delete(listener);
+  };
+}
+
 const add = (p: AddToCart) => {
+  addListeners.forEach((l) => l({ name: p.name, image: p.image }));
   const qty = p.qty ?? 1;
   const key = `${p.id}:${p.mode}:${p.detail ?? ''}`;
   const found = lines.find((l) => l.key === key);

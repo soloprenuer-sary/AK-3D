@@ -5,7 +5,7 @@ import { test, expect, type Page } from '@playwright/test';
  * in one go). Read-only: nothing is ordered, sent or saved on the store. See tests/README.md.
  */
 
-const PRODUCT = '/product/akrinity-164-scale-f1-diecast-car-display-stand';
+const PRODUCT = '/product/akrinity-dual-controller-headphone-stand';
 const isPhone = (page: Page) => (page.viewportSize()?.width ?? 1200) < 700;
 
 async function seedCart(page: Page, qty = 1) {
