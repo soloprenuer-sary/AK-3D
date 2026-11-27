@@ -7,7 +7,6 @@
  *   NEXT_PUBLIC_WHATSAPP           the WhatsApp number with country code, for example 919876543210
  *   NEXT_PUBLIC_SUPPORT_EMAIL      the support email address
  *   NEXT_PUBLIC_GSTIN              the shop's GSTIN
- *   NEXT_PUBLIC_FREE_SHIPPING_FROM free shipping from this cart value in rupees, for example 999
  *   NEXT_PUBLIC_STUDIO_ADDRESS     the studio address, shown with the map and used to centre it
  *   NEXT_PUBLIC_REPLY_HOURS        usual reply time in hours, for example 4
  *   NEXT_PUBLIC_PRINT_DAYS         working days to print and pack (default 2)
@@ -44,7 +43,6 @@ export const site = {
   whatsappLink: whatsappDigits ? `https://wa.me/${whatsappDigits}` : '',
   supportEmail: text(process.env.NEXT_PUBLIC_SUPPORT_EMAIL),
   gstin: text(process.env.NEXT_PUBLIC_GSTIN).toUpperCase(),
-  freeShippingFrom: num(process.env.NEXT_PUBLIC_FREE_SHIPPING_FROM, 0),
   studioAddress: text(process.env.NEXT_PUBLIC_STUDIO_ADDRESS),
   replyHours: num(process.env.NEXT_PUBLIC_REPLY_HOURS, 0),
   printDays: num(process.env.NEXT_PUBLIC_PRINT_DAYS, 2),

@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
 import { InfoPage } from '@/components/layout/InfoPage';
-import { site } from '@/lib/site-config';
+import { getDeals } from '@/lib/deals';
 
 export const metadata: Metadata = {
   title: 'Shipping',
   description: 'Shipping times, rates and tracking.',
 };
 
-export default function Shipping() {
+export default async function Shipping() {
+  const { freeshipMin } = await getDeals();
   return (
     <InfoPage
       title="Shipping"
@@ -19,12 +20,12 @@ export default function Shipping() {
             'Tracked delivery across India. Your tracking link is sent when the parcel leaves the studio.',
           ],
         },
-        ...(site.freeShippingFrom > 0
+        ...(freeshipMin > 0
           ? [
               {
-                heading: 'Free shipping',
+                heading: 'Free delivery',
                 paragraphs: [
-                  `Free shipping above ₹${site.freeShippingFrom.toLocaleString('en-IN')} in the cart.`,
+                  `Delivery is free when the products in your order come to ₹${freeshipMin.toLocaleString('en-IN')} or more, GST included.`,
                 ],
               },
             ]

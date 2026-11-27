@@ -4,6 +4,8 @@ import { useState, type CSSProperties, type PointerEvent } from 'react';
 import Link from 'next/link';
 import { Pic } from '@/components/ui/Pic';
 import { CompareButton, WishButton } from './ProductActions';
+import { bogoLabel, inBogo } from '@/lib/deals';
+import { useDeals } from '@/lib/live-catalogue';
 import {
   COLOURS,
   MODE_LABEL,
@@ -22,6 +24,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: ProductCardProps) {
   const [colour, setColour] = useState<ColourKey>(product.colours[0]);
+  const deals = useDeals();
+  const onOffer = inBogo(deals, product.id);
 
   // Tilt follows the pointer on desktop. Touch screens skip it (CSS hides the hover actions there).
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
@@ -57,7 +61,13 @@ export function ProductCard({ product, justAdded, onQuickView, onAdd, onSave }: 
         <span className={product.inStock ? 'tag accent' : 'tag'}>
           {product.inStock ? 'In stock' : 'Made to order'}
         </span>
-        <span className="tag mode-tag">{product.modes.map((m) => MODE_LABEL[m]).join(' · ')}</span>
+        {onOffer ? (
+          <span className="tag accent offer-tag">{bogoLabel(deals)}</span>
+        ) : (
+          <span className="tag mode-tag">
+            {product.modes.map((m) => MODE_LABEL[m]).join(' · ')}
+          </span>
+        )}
 
         <WishButton
           id={product.id}

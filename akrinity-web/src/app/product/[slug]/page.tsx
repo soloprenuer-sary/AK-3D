@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ProductDetail } from '@/components/product/ProductDetail';
 import { getProducts, slimProduct } from '@/lib/catalogue';
+import { getDeals } from '@/lib/deals';
 import { productSlug, type ShopProduct } from '@/lib/shop-data';
 import { site } from '@/lib/site-config';
 
@@ -18,26 +19,27 @@ const ROW_SIZE = 4;
 
 /**
  * The two rows under a product. WooCommerce's own "Cross-sells" and "Upsells" on the product are used
- * when they are set. Until then:
+ * when they are set; a product without upsells shows the ones picked in Marketing. Until then:
  *  - cross-sell row: products from other categories, a first guess at what goes well with it;
  *  - suggested row: more from the same category, then the rest.
  * A row shows as many products as exist (even one) and is hidden when there are none.
  */
-function rowsFor(products: ShopProduct[], product: ShopProduct) {
+function rowsFor(products: ShopProduct[], product: ShopProduct, marketingIds: string[]) {
   const others = products.filter((p) => p.id !== product.id);
   const byIds = (ids?: string[]) =>
     (ids ?? [])
       .map((id) => others.find((p) => p.id === id))
       .filter((p): p is ShopProduct => Boolean(p));
 
+  const upsells = byIds(product.upsellIds?.length ? product.upsellIds : marketingIds);
   let crossSells = byIds(product.crossSellIds).slice(0, ROW_SIZE);
   if (!crossSells.length)
-    crossSells = others.filter((p) => p.category !== product.category).slice(0, ROW_SIZE);
+    crossSells = others
+      .filter((p) => p.category !== product.category && !upsells.includes(p))
+      .slice(0, ROW_SIZE);
 
   const taken = new Set(crossSells.map((p) => p.id));
-  let suggested = byIds(product.upsellIds)
-    .filter((p) => !taken.has(p.id))
-    .slice(0, ROW_SIZE);
+  let suggested = upsells.filter((p) => !taken.has(p.id)).slice(0, ROW_SIZE);
   if (!suggested.length) {
     const pool = others.filter((p) => !taken.has(p.id));
     suggested = [
@@ -88,7 +90,8 @@ export default async function ProductPage({ params }: Params) {
   const products = await getProducts();
   const product = findProduct(products, slug);
   if (!product) notFound();
-  const { crossSells, suggested } = rowsFor(products, product);
+  const { upsellIds } = await getDeals();
+  const { crossSells, suggested } = rowsFor(products, product, upsellIds);
   const price = Number((product.price ?? '').replace(/[^\d.]/g, ''));
   // What Google reads to show price, stock and stars next to the result.
   const schema = {

@@ -342,6 +342,8 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .cat-card .arrow{position:absolute;right:16px;bottom:16px;width:40px;height:40px;border-radius:50%;background:var(--accent);border:1.5px solid var(--ink);display:grid;place-items:center;font-weight:700}
 .mode-tag{background:var(--white);font-size:10px}
 .pc-media .mode-tag{top:44px}
+.pc-media .offer-tag{top:44px;font-size:10px}
+.pd-offer{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0}
 @media (max-width:640px){.pc-media .mode-tag{display:none}}
 @media (hover:none){.pc-add{left:auto;right:8px;bottom:8px;min-height:34px;padding:0 12px;font-size:12px}}
 /* product photos inside cards, quick view, home grids */

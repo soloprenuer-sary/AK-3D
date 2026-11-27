@@ -4,6 +4,7 @@
  *
  *   GET /api/catalog/products   every product from the WooCommerce Store API
  *   GET /api/catalog/posts      published articles from WPGraphQL
+ *   GET /api/catalog/deals      cart offers and upsell products set in WooCommerce Marketing
  *
  * Replies are cached for a minute (Vercel data cache and CDN), so visitors never hammer
  * WordPress. Nothing here needs a login: it only repeats data WordPress already publishes.
@@ -96,6 +97,17 @@ async function posts(base: string): Promise<Response> {
   return reply(JSON.stringify(data.map(restToPost)));
 }
 
+async function deals(base: string): Promise<Response> {
+  const res = await fetch(`${base}/wp-json/akrinity/v1/deals`, {
+    next: { revalidate: CACHE_SECONDS },
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) return failure('The offers are unavailable.', 502);
+  return reply(JSON.stringify(await res.json()));
+}
+
+const KINDS = { products, posts, deals };
+
 export async function GET(
   _request: Request,
   ctx: { params: Promise<{ kind: string }> },
@@ -103,9 +115,9 @@ export async function GET(
   const { kind } = await ctx.params;
   const base = (process.env.WP_URL ?? '').replace(/\/$/, '');
   if (!base) return failure('The catalogue is not configured.', 503);
-  if (kind !== 'products' && kind !== 'posts') return failure('Not found.', 404);
+  if (!Object.hasOwn(KINDS, kind)) return failure('Not found.', 404);
   try {
-    return kind === 'products' ? await products(base) : await posts(base);
+    return await KINDS[kind as keyof typeof KINDS](base);
   } catch (e) {
     console.error('catalog: could not reach WordPress', String(e));
     return failure('The catalogue is temporarily unavailable.', 503);

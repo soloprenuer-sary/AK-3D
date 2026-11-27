@@ -1,14 +1,12 @@
-import { paymentLine, site } from '@/lib/site-config';
+import { getDeals, offerHeadline } from '@/lib/deals';
+import { paymentLine } from '@/lib/site-config';
 
-export function AnnouncementBar() {
+export async function AnnouncementBar() {
+  const offer = offerHeadline(await getDeals());
   return (
     <div className="announce">
       <div className="wrap">
-        <span>
-          {site.freeShippingFrom > 0
-            ? `Free shipping across India above ₹${site.freeShippingFrom.toLocaleString('en-IN')}`
-            : 'Made layer by layer in Mumbai'}
-        </span>
+        <span>{offer || 'Made layer by layer in Mumbai'}</span>
         <span>{paymentLine}</span>
       </div>
     </div>

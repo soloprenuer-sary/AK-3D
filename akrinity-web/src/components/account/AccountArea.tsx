@@ -294,7 +294,7 @@ function OrderView({
     let added = 0;
     const missing: string[] = [];
     for (const it of order.items) {
-      const p = catalogue.find((x) => String(x.id) === String(it.product_id ?? ''));
+      const p = catalogue.find((x) => x.id === `wc-${it.product_id}`);
       if (!p || !p.price) {
         missing.push(it.name);
         continue;

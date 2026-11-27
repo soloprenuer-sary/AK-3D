@@ -339,8 +339,16 @@ async function prepare(
   if (q.coupon) {
     const r = await wc(env, s, 'POST', '/cart/apply-coupon', { code: q.coupon });
     take(r);
+    // WooCommerce keeps the better of the coupon and the automatic offer, never both.
+    const kept = rows(cart.coupons).some(
+      (c) => String(c.code ?? '').toLowerCase() === q.coupon?.toLowerCase(),
+    );
     couponMessage =
-      r.status >= 400 ? wcMessage(r, 'This coupon cannot be used.') : 'Coupon applied.';
+      r.status >= 400
+        ? wcMessage(r, 'This coupon cannot be used.')
+        : kept
+          ? 'Coupon applied.'
+          : 'Your offer discount saves you more, so we kept it instead of this coupon.';
   }
 
   // 4. Shipping option, payment choice.

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { EmptyCart } from './CartView';
+import { DEAL_CODE } from '@/lib/deals';
 import { formatRupees, useCart } from '@/lib/cart-store';
 import { currentUser } from '@/lib/auth-client';
 import { placeOrder, quoteCart, syncCart, toLines } from '@/lib/shop-client';
@@ -461,21 +462,27 @@ export function CheckoutView() {
             </button>
           </div>
           {couponMessage && <p className="meta">{couponMessage}</p>}
-          {(view?.coupons ?? []).map((c) => (
-            <p key={c.code} className="meta">
-              Coupon {c.code} applied.{' '}
-              <button
-                type="button"
-                className="link-btn"
-                onClick={() => {
-                  setCouponInput('');
-                  void run({ removeCoupon: c.code });
-                }}
-              >
-                Remove
-              </button>
-            </p>
-          ))}
+          {(view?.coupons ?? []).map((c) =>
+            c.code === DEAL_CODE ? (
+              <p key={c.code} className="meta">
+                Offer discount applied automatically.
+              </p>
+            ) : (
+              <p key={c.code} className="meta">
+                Coupon {c.code} applied.{' '}
+                <button
+                  type="button"
+                  className="link-btn"
+                  onClick={() => {
+                    setCouponInput('');
+                    void run({ removeCoupon: c.code });
+                  }}
+                >
+                  Remove
+                </button>
+              </p>
+            ),
+          )}
 
           <dl className="sum-rows">
             <div>
@@ -484,7 +491,9 @@ export function CheckoutView() {
             </div>
             {view && view.discount > 0 && (
               <div>
-                <dt>Discount</dt>
+                <dt>
+                  {view.coupons.every((c) => c.code === DEAL_CODE) ? 'Offer discount' : 'Discount'}
+                </dt>
                 <dd>−{money(view.discount)}</dd>
               </div>
             )}

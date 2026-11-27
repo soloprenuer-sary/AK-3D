@@ -1,6 +1,7 @@
 'use client';
 
-import { useLiveProducts } from '@/lib/live-catalogue';
+import { useDeals, useLiveProducts } from '@/lib/live-catalogue';
+import { bogoLabel, inBogo } from '@/lib/deals';
 import { Pic } from '@/components/ui/Pic';
 import { useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
@@ -88,6 +89,7 @@ export function ProductDetail({
   preview,
 }: ProductDetailProps) {
   // Fresh data from WooCommerce replaces the built copy once it arrives (price, stock, photos, text).
+  const deals = useDeals();
   const live = useLiveProducts([builtProduct, ...builtCross, ...builtRelated]);
   const product = preview
     ? builtProduct
@@ -302,6 +304,15 @@ export function ProductDetail({
               incl. GST
             </span>
           </div>
+
+          {inBogo(deals, product.id) && (
+            <p className="pd-offer">
+              <span className="tag accent">{bogoLabel(deals)}</span>
+              <span className="meta">
+                Mix any offer items; the cheapest are free. Applied at checkout.
+              </span>
+            </p>
+          )}
 
           {modeList.length > 0 && (
             <fieldset className="opt">

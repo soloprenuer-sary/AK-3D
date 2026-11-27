@@ -6,7 +6,7 @@ import { restoreCart } from '@/lib/shop-client';
 import type { ColourMode } from '@/lib/shop-data';
 import { CartThumb } from './CartThumb';
 import { OrderSummary } from './OrderSummary';
-import { FreeShippingNote } from './FreeShippingNote';
+import { OfferNote } from './OfferNote';
 import { CartUpsell } from './CartUpsell';
 import { formatRupees, parsePrice, useCart } from '@/lib/cart-store';
 import { useWishlist } from '@/lib/lists-store';
@@ -167,11 +167,11 @@ export function CartView() {
               Clear cart
             </button>
           </div>
-          <FreeShippingNote />
         </section>
 
         <div className="cart-side">
           <OrderSummary />
+          <OfferNote />
           {hasMadeToOrder && (
             <div className="notice">
               <span className="label">Made to order</span>

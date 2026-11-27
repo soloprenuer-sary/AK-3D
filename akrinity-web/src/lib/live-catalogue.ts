@@ -5,6 +5,7 @@ import { useCategoryTree } from '@/components/layout/CategoryTree';
 import { mapPosts, mapStoreProduct, type GqlPost, type StoreProduct } from './wp';
 import type { Guide } from './guides-data';
 import type { ShopProduct } from './shop-data';
+import { mapDeals, NO_DEALS, type Deals } from './deals';
 
 /**
  * Fresh catalogue from WordPress, loaded in the browser through /api/catalog/*. Pages are built
@@ -15,7 +16,9 @@ import type { ShopProduct } from './shop-data';
 
 const cache = new Map<string, Promise<unknown>>();
 
-function load<T>(kind: 'products' | 'posts', map: (raw: never) => T): Promise<T> {
+type Kind = 'products' | 'posts' | 'deals';
+
+function load<T>(kind: Kind, map: (raw: never) => T): Promise<T> {
   let p = cache.get(kind) as Promise<T> | undefined;
   if (!p) {
     p = fetch(`/api/catalog/${kind}`, { cache: 'no-store' }).then(async (res) => {
@@ -29,12 +32,7 @@ function load<T>(kind: 'products' | 'posts', map: (raw: never) => T): Promise<T>
   return p;
 }
 
-function useLive<T>(
-  initial: T,
-  kind: 'products' | 'posts',
-  map: (raw: never) => T,
-  enabled = true,
-): T {
+function useLive<T>(initial: T, kind: Kind, map: (raw: never) => T, enabled = true): T {
   const [value, setValue] = useState<T>(initial);
   useEffect(() => {
     if (!enabled) return;
@@ -75,4 +73,9 @@ export function useLiveProducts(initial: ShopProduct[]): ShopProduct[] {
 /** The article list, refreshed from WordPress after the page opens. */
 export function useLiveGuides(initial: Guide[]): Guide[] {
   return useLive(initial, 'posts', mapArticles as (raw: never) => Guide[], initial.length === 0);
+}
+
+/** The offers and upsell products set in WooCommerce; empty until they arrive. */
+export function useDeals(): Deals {
+  return useLive(NO_DEALS, 'deals', mapDeals as (raw: never) => Deals);
 }

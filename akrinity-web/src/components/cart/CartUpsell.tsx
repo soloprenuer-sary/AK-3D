@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Pic } from '@/components/ui/Pic';
-import { useLiveProducts } from '@/lib/live-catalogue';
+import { useDeals, useLiveProducts } from '@/lib/live-catalogue';
 import { useCart, type CartLine } from '@/lib/cart-store';
 import { productSlug, type ShopProduct } from '@/lib/shop-data';
 
@@ -16,19 +16,23 @@ const priceOf = (p: ShopProduct): number => {
 };
 
 /**
- * "Goes with your cart": products from the same categories as the cart, that are not in it yet.
- * Stocked items come first, then the cheapest, so the row is easy to add to.
+ * "Goes with your cart": the upsell products picked in WooCommerce Marketing, then products from the
+ * same categories as the cart, none already in it. In the fill, stocked items come first.
  */
 export function CartUpsell({ lines }: { lines: CartLine[] }) {
   const all = useLiveProducts([]);
   const cart = useCart();
+  const { upsellIds } = useDeals();
   const [added, setAdded] = useState<string | null>(null);
 
   const inCart = new Set(lines.map((l) => l.id));
   const cartProducts = all.filter((p) => inCart.has(p.id));
   const categories = new Set(cartProducts.map((p) => p.category).filter(Boolean));
 
-  const picks = all
+  const chosen = upsellIds.flatMap((id) =>
+    all.filter((p) => p.id === id && !inCart.has(id) && p.images?.[0]),
+  );
+  const related = all
     .filter((p) => !inCart.has(p.id) && p.images?.[0])
     .map((p) => ({ p, same: categories.has(p.category) ? 1 : 0 }))
     .filter((x) => x.same === 1 || categories.size === 0)
@@ -38,8 +42,9 @@ export function CartUpsell({ lines }: { lines: CartLine[] }) {
         a.p.name.localeCompare(b.p.name) ||
         priceOf(a.p) - priceOf(b.p),
     )
-    .slice(0, SHOW)
-    .map((x) => x.p);
+    .map((x) => x.p)
+    .filter((p) => !chosen.includes(p));
+  const picks = [...chosen, ...related].slice(0, SHOW);
 
   if (picks.length === 0) return null;
 
