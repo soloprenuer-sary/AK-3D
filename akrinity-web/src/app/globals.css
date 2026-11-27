@@ -368,7 +368,6 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 @media (max-width:1000px){.menu-btn{display:grid}}
 .cart-dialog{border:1.5px solid var(--ink);border-radius:24px;padding:0;width:min(440px,calc(100% - 32px));background:var(--paper);color:var(--ink);box-shadow:8px 8px 0 var(--ink)}
 .cart-dialog::backdrop{background:rgba(11,11,12,.55)}
-.cart-body{padding:24px}
 .cart-lines{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column}
 .cart-lines li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid #DCD8CE}
 .search-form input{width:100%;min-height:56px;border:1.5px solid var(--ink);border-radius:999px;padding:0 22px;font:17px var(--body);background:var(--white)}
@@ -929,7 +928,9 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 .pdp-heart[aria-pressed="true"]{background:var(--accent)}
 .cmp-btn--pdp{min-height:56px;padding:0 6px}
 .checkout-tray{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:18px;padding:10px 12px 10px 20px;border:1.5px solid var(--ink);border-radius:999px;background:var(--white);box-shadow:5px 5px 0 var(--ink);font-size:14px;max-width:calc(100% - 24px)}
-.checkout-tray-actions{display:flex;align-items:center;gap:12px}
+.checkout-tray-actions{display:flex;align-items:center;gap:10px}
+.checkout-tray-close{flex:none;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:var(--white);font-size:22px;line-height:1;cursor:pointer;transition:background-color .2s var(--ease)}
+.checkout-tray-close:hover{background:var(--accent)}
 @media (max-width:640px){.checkout-tray{gap:10px;padding:8px 8px 8px 14px;font-size:13px;bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
 .cmp-wrap{overflow-x:auto;border:1.5px solid var(--ink);border-radius:24px;background:var(--white);-webkit-overflow-scrolling:touch}
 .cmp{width:100%;border-collapse:separate;border-spacing:0;min-width:640px;table-layout:fixed}
@@ -1513,12 +1514,17 @@ dialog:has(.qv-body){overflow:hidden}
 }
 
 /* ===== Cart popup ===== */
-.cdlg-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:16px;border-bottom:1.5px solid var(--ink)}
-.cdlg-title{font-size:44px;line-height:1}
+/* The popup never grows past the screen: the title stays on top, the total and Checkout stay at the
+   bottom, and the items between them scroll. On a very short screen the whole popup scrolls. */
+.cart-dialog{max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:hidden}
+.cart-dialog[open]{display:flex;flex-direction:column}
+.cart-body{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain}
+.cdlg-head{flex:none;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:0 24px;padding:20px 0 14px;border-bottom:1.5px solid var(--ink)}
+.cart-dialog h2.cdlg-title{font-size:clamp(28px,5.5vh,40px);line-height:1}
 .cdlg-count{margin:8px 0 0;font-size:14px;font-weight:600;color:var(--muted)}
 .cdlg-close{flex:none;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:var(--white);font-size:24px;line-height:1;cursor:pointer;transition:background-color .2s var(--ease)}
 .cdlg-close:hover{background:var(--accent)}
-.cdlg-items{list-style:none;margin:0;padding:0}
+.cdlg-items{list-style:none;flex:1 1 auto;min-height:132px;overflow-y:auto;overscroll-behavior:contain;margin:0;padding:0 24px}
 .cdlg-item{display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px;padding:16px 0;border-bottom:1px solid #DCD8CE;align-items:start}
 .cdlg-item .cart-thumb{width:84px;height:84px;border-radius:18px;border:1.5px solid var(--ink);overflow:hidden;display:block;background:var(--white)}
 .cdlg-name{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
@@ -1533,15 +1539,30 @@ dialog:has(.qv-body){overflow:hidden}
 .cdlg-qty button:hover{background:var(--accent)}
 .cdlg-qty span{min-width:28px;text-align:center;font-weight:700}
 .cdlg-price{font:400 22px/1 var(--display)}
-.cdlg-sum{margin-top:18px;padding:14px 16px;border:1.5px solid var(--ink);border-radius:18px;background:var(--white)}
+.cdlg-foot{flex:none;padding:12px 24px 10px;border-top:1.5px solid var(--ink)}
+.cdlg-sum{padding:12px 16px;border:1.5px solid var(--ink);border-radius:18px;background:var(--white)}
 .cdlg-sum div{display:flex;justify-content:space-between;align-items:baseline;font-size:16px}
 .cdlg-sum b{font:400 26px/1 var(--display)}
 .cdlg-sum p{margin:6px 0 0;font-size:13px;color:var(--muted)}
-.cdlg-checkout{width:100%;justify-content:center;margin-top:16px;min-height:52px}
-.cdlg-secondary{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
+.cdlg-checkout{width:100%;justify-content:center;margin-top:12px;min-height:52px}
+.cdlg-secondary{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:10px}
 .cdlg-clear{border:0;background:none;font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;color:var(--ink);min-height:44px;cursor:pointer;padding:0 4px}
-.cdlg-empty{padding:28px 0 12px;display:grid;gap:16px;justify-items:center;text-align:center}
+.cdlg-empty{padding:28px 24px;display:grid;gap:16px;justify-items:center;text-align:center}
 .cdlg-empty p{margin:0;font-size:17px;color:var(--muted)}
+@media (max-height:700px){
+  .cdlg-head{padding:14px 0 10px}
+  .cdlg-count{margin-top:4px}
+  .cdlg-item{grid-template-columns:64px minmax(0,1fr);gap:12px;padding:10px 0}
+  .cdlg-item .cart-thumb{width:64px;height:64px;border-radius:14px}
+  .cdlg-chips{margin-top:4px}
+  .cdlg-row{margin-top:6px}
+  .cdlg-foot{padding:10px 24px 6px}
+  .cdlg-sum{padding:8px 14px}
+  .cdlg-sum p{display:none}
+  .cdlg-checkout{margin-top:8px;min-height:46px}
+  .cdlg-secondary{margin-top:4px}
+  .cdlg-secondary .btn{min-height:44px}
+}
 
 /* Shop page categories: one swipeable row on phones */
 @media (max-width:760px){

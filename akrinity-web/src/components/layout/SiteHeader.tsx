@@ -220,28 +220,30 @@ export function SiteHeader({ menu }: { menu: MenuCategory[] }) {
                 ))}
               </ul>
 
-              <div className="cdlg-sum">
-                <div>
-                  <span>Subtotal</span>
-                  <b>{subtotal === null ? '₹[price]' : formatRupees(subtotal)}</b>
+              <div className="cdlg-foot">
+                <div className="cdlg-sum">
+                  <div>
+                    <span>Subtotal</span>
+                    <b>{subtotal === null ? '₹[price]' : formatRupees(subtotal)}</b>
+                  </div>
+                  <p>Shipping and tax are shown at checkout.</p>
                 </div>
-                <p>Shipping and tax are shown at checkout.</p>
-              </div>
 
-              <Link
-                className="btn btn-primary btn-wide cdlg-checkout"
-                href="/checkout"
-                onClick={() => cartDialog.current?.close()}
-              >
-                Checkout
-              </Link>
-              <div className="cdlg-secondary">
-                <Link className="btn" href="/cart" onClick={() => cartDialog.current?.close()}>
-                  View cart
+                <Link
+                  className="btn btn-primary btn-wide cdlg-checkout"
+                  href="/checkout"
+                  onClick={() => cartDialog.current?.close()}
+                >
+                  Checkout
                 </Link>
-                <button className="cdlg-clear" type="button" onClick={clear}>
-                  Clear cart
-                </button>
+                <div className="cdlg-secondary">
+                  <Link className="btn" href="/cart" onClick={() => cartDialog.current?.close()}>
+                    View cart
+                  </Link>
+                  <button className="cdlg-clear" type="button" onClick={clear}>
+                    Clear cart
+                  </button>
+                </div>
               </div>
             </>
           )}
