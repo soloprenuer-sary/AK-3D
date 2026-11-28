@@ -13,6 +13,7 @@ export default function MaterialsIndex() {
     <InfoPage
       title="Materials"
       intro="Each material behaves differently. Pick by where the part will live: indoors, in the sun, under load, or where fine detail matters."
+      image={{ src: '/images/about/materials.png', alt: 'Akrinity print materials: PLA, PETG, ABS/ASA and resin' }}
       sections={[
         {
           heading: 'Not sure? Start here',

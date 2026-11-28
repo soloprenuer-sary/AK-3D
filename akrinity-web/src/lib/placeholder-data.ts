@@ -10,7 +10,7 @@ export const stats = [
   { value: 'GST', label: 'Included in every price' },
   site.replyHours > 0
     ? { value: `${site.replyHours} hrs`, label: 'Quote reply time' }
-    : { value: 'Mumbai', label: 'Printed in our own studio' },
+    : { value: 'Bhiwandi', label: 'Printed in our own studio' },
 ];
 
 export const categories = [

@@ -193,7 +193,7 @@ function akr_send_welcome( int $id ): void {
 					'title'  => 'Welcome to ' . akr_em_hl( 'Akrinity.' ),
 					'head'   => 'Account created',
 					'pre'    => 'Your account is ready.',
-					'intro'  => 'Your account is ready. Made layer by layer in Mumbai, for your desk, home and collection.',
+					'intro'  => 'Your account is ready. Made layer by layer in Bhiwandi, for your desk, home and collection.',
 					'blocks' => array_values( array_filter( $blocks ) ),
 					'help'   => 'If you did not create this account, reply to this email.',
 				)

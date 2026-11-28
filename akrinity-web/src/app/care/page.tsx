@@ -12,6 +12,7 @@ export default function CarePage() {
       title="Care and safety"
       intro="A few simple steps keep your print looking good. Read the safety notes before you use a piece."
       note="DRAFT. Final wording needs review before the site goes live."
+      image={{ src: '/images/about/materials.png', alt: 'Akrinity print materials: PLA, PETG, ABS/ASA and resin' }}
       sections={[
         {
           heading: 'Cleaning',

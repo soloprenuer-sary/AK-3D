@@ -3,16 +3,16 @@
 import { useState } from 'react';
 import { site } from '@/lib/site-config';
 
-/** Google Maps search for Mumbai. Change the query to the studio's exact address once it is confirmed. */
-const QUERY = site.studioAddress || 'Mumbai, Maharashtra, India';
+/** Google Maps search for Bhiwandi. Change the query to the studio's exact address once it is confirmed. */
+const QUERY = site.studioAddress || 'Bhiwandi, Maharashtra, India';
 const OPEN_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(QUERY)}`;
 const EMBED_URL = `https://www.google.com/maps?q=${encodeURIComponent(QUERY)}&output=embed`;
 
 /**
- * An illustrated map of the Mumbai peninsula with a pin on the studio, a button that opens Google
+ * An illustrated map of the Bhiwandi peninsula with a pin on the studio, a button that opens Google
  * Maps, and a button that swaps the picture for the live map (the Google frame loads only on request).
  */
-export function MumbaiMap() {
+export function BhiwandiMap() {
   const [live, setLive] = useState(false);
   return (
     <section className="wrap mapsec" aria-labelledby="map-h">
@@ -20,10 +20,10 @@ export function MumbaiMap() {
         <div className="map-copy">
           <span className="tag accent">Find the studio</span>
           <h2 className="d" id="map-h">
-            Printed in <span className="hl">Mumbai</span>
+            Printed in <span className="hl">Bhiwandi</span>
           </h2>
           <p>
-            The studio is in Mumbai, Maharashtra. Orders ship from here across India. Visits are by
+            The studio is in Bhiwandi, Maharashtra. Orders ship from here across India. Visits are by
             appointment, so please message us first.
             {site.studioAddress ? <b> {site.studioAddress}</b> : null}
           </p>
@@ -53,7 +53,7 @@ export function MumbaiMap() {
         <div className="map-art">
           {live ? (
             <iframe
-              title="Map of Mumbai"
+              title="Map of Bhiwandi"
               src={EMBED_URL}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
@@ -63,7 +63,7 @@ export function MumbaiMap() {
             <svg
               viewBox="0 0 520 420"
               role="img"
-              aria-label="Illustrated map of Mumbai with a pin on the studio"
+              aria-label="Illustrated map of Bhiwandi with a pin on the studio"
             >
               <rect width="520" height="420" fill="#5B2BE0" />
               <g fill="#7A52EC" opacity="0.7">

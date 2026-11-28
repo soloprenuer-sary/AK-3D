@@ -6,7 +6,7 @@ export function Hero() {
     <section className="hero" id="top">
       <div className="wrap hero-grid">
         <div className="hero-copy">
-          <span className="tag accent rise">3D printing studio, Mumbai</span>
+          <span className="tag accent rise">3D printing studio, Bhiwandi</span>
           <h1 className="d rise" style={{ marginTop: 20, animationDelay: '0.05s' }}>
             We print <span className="hl">anything.</span>
           </h1>

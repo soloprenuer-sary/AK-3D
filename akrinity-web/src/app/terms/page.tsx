@@ -26,7 +26,7 @@ const SECTIONS: LegalSection[] = [
     heading: 'About these terms',
     body: [
       'These terms apply to everything you buy from [[LEGAL ENTITY NAME]] ("Akrinity", "we", "us") through akrinity.in. By placing an order or creating an account you agree to them. If you do not agree, please do not order.',
-      'Our registered address is [[REGISTERED ADDRESS]], Mumbai, India. GSTIN: [[GSTIN]].',
+      'Our registered address is [[REGISTERED ADDRESS]], Bhiwandi, India. GSTIN: [[GSTIN]].',
     ],
   },
   {

@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!cat || !name) return { title: 'Shop' };
   return {
     title: `${name} · ${cat.name}`,
-    description: `${name} from the ${cat.name} range, 3D printed in Mumbai.`,
+    description: `${name} from the ${cat.name} range, 3D printed in Bhiwandi.`,
   };
 }
 
@@ -52,7 +52,7 @@ export default async function SubCategoryPage({ params }: Params) {
           {name} <span className="hl">{cat.name.toLowerCase()}</span>
         </h1>
         <p>
-          Only {name.toLowerCase()} from the {cat.name} range. Printed in Mumbai, in stock and made to
+          Only {name.toLowerCase()} from the {cat.name} range. Printed in Bhiwandi, in stock and made to
           order.
         </p>
       </div>

@@ -1,0 +1,17 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A parcel with a return arrow and a check mark: damaged or faulty, we make it right">
+  <rect width="1200" height="900" fill="#F3F0E8"/>
+  <!-- parcel -->
+  <rect x="250" y="330" width="330" height="290" rx="12" fill="#FF6B1F" stroke="#0B0B0B" stroke-width="7"/>
+  <rect x="395" y="330" width="40" height="290" fill="#FFFFFF" stroke="#0B0B0B" stroke-width="7"/>
+  <path d="M250 330 L415 230 L580 330" fill="#FFFFFF" stroke="#0B0B0B" stroke-width="7" stroke-linejoin="round"/>
+  <!-- return arrow badge -->
+  <circle cx="790" cy="330" r="120" fill="#5B2BE0" stroke="#0B0B0B" stroke-width="7"/>
+  <path d="M735 350 C735 290 780 262 830 262 C880 262 912 296 912 340" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M712 318 L738 368 L782 330 Z" fill="#FFFFFF"/>
+  <!-- check badge -->
+  <circle cx="860" cy="560" r="78" fill="#D8FF2A" stroke="#0B0B0B" stroke-width="7"/>
+  <path d="M820 562 L848 590 L902 530" stroke="#0B0B0B" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- label -->
+  <rect x="60" y="720" width="1080" height="110" rx="55" fill="#FFFFFF" stroke="#0B0B0B" stroke-width="7"/>
+  <text x="600" y="790" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-size="46" font-weight="600" fill="#0B0B0B">Damaged or faulty? We make it right.</text>
+</svg>

@@ -10,8 +10,9 @@ export default function HowWePrint() {
   return (
     <InfoPage
       title="How we print"
-      intro="Every part is printed in the studio in Mumbai, checked by hand and packed to arrive in one piece."
+      intro="Every part is printed in the studio in Bhiwandi, checked by hand and packed to arrive in one piece."
       note="Process details are a draft until the studio confirms them."
+      image={{ src: '/images/about/process.png', alt: 'The four steps of an Akrinity print: check, print, finish and ship' }}
       sections={[
         { heading: 'FDM, single colour', paragraphs: ['Filament is melted and laid down one thin layer at a time. The quickest and most economical option, in PLA+, PETG or ABS and ASA.'] },
         { heading: 'FDM, multi-colour', paragraphs: ['Several filaments in one print, for names, logos and colour blocks. It takes longer and may cost more; we confirm both before you pay.'] },

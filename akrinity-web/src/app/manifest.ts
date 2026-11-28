@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Akrinity',
     short_name: 'Akrinity',
-    description: '3D printed products, custom prints and design-and-print from Mumbai.',
+    description: '3D printed products, custom prints and design-and-print from Bhiwandi.',
     start_url: '/',
     display: 'standalone',
     background_color: '#F3F1EA',

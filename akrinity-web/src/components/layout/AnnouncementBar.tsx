@@ -6,7 +6,7 @@ export async function AnnouncementBar() {
   return (
     <div className="announce">
       <div className="wrap">
-        <span>{offer || 'Made layer by layer in Mumbai'}</span>
+        <span>{offer || 'Made layer by layer in Bhiwandi'}</span>
         <span>{paymentLine}</span>
       </div>
     </div>

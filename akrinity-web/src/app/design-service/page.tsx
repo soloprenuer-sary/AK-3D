@@ -13,6 +13,7 @@ export default function DesignService() {
       title="Design service"
       intro="Have a sketch, a photo or just an idea? We model it as an original 3D design, check it prints well, and only then quote the print."
       note="Original designs only. We do not model licensed characters or copy someone else's work."
+      image={{ src: '/images/about/story.png', alt: 'From idea to part: a sketch becomes a 3D design ready to print' }}
       sections={[
         {
           heading: '1. Tell us the idea',

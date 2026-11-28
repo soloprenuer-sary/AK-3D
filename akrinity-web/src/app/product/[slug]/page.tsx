@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     product.seoDescription ||
     (text.length > 20
       ? text.slice(0, 155)
-      : `${product.name}. 3D printed in Mumbai, shipped across India. Prices include GST.`);
+      : `${product.name}. 3D printed in Bhiwandi, shipped across India. Prices include GST.`);
   const title = product.seoTitle || product.name;
   const image = product.images?.[0];
   return {

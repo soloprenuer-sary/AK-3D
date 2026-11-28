@@ -5,11 +5,11 @@ import { StudioSlider } from '@/components/layout/StudioSlider';
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'Who makes Akrinity prints in Mumbai, how each part is checked, and the materials we use.',
+    'Who makes Akrinity prints in Bhiwandi, how each part is checked, and the materials we use.',
 };
 
 const FACTS = [
-  'Studio in Mumbai',
+  'Studio in Bhiwandi',
   'Made layer by layer',
   'Prices include GST',
   'Checked before packing',
@@ -64,7 +64,7 @@ export default function About() {
               About <span className="hl">Akrinity</span>
             </h1>
             <p>
-              A 3D printing studio in Mumbai. We print ready-made products, custom parts from your
+              A 3D printing studio in Bhiwandi. We print ready-made products, custom parts from your
               own file, and designs we make from a sketch or an idea.
             </p>
             <div className="ab-btns">

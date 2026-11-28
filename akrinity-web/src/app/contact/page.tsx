@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ContactForm } from '@/components/forms/ContactForm';
-import { MumbaiMap } from '@/components/layout/MumbaiMap';
+import { BhiwandiMap } from '@/components/layout/BhiwandiMap';
 import { site } from '@/lib/site-config';
 
 export const metadata: Metadata = { title: 'Contact', description: 'Reach the Akrinity studio.' };
@@ -75,7 +75,7 @@ export default function Contact() {
               )}
               <div>
                 <dt>Studio</dt>
-                <dd>{site.studioAddress || 'Mumbai, India'}</dd>
+                <dd>{site.studioAddress || 'Bhiwandi, India'}</dd>
               </div>
               {site.replyHours > 0 && (
                 <div>
@@ -113,7 +113,7 @@ export default function Contact() {
       </div>
 
       <div className="wrap ct-map">
-        <MumbaiMap />
+        <BhiwandiMap />
       </div>
     </main>
   );

@@ -23,6 +23,7 @@ export default async function MaterialPage({ params }: Params) {
     <InfoPage
       title={m.name}
       intro={m.intro}
+      image={{ src: '/images/about/materials.png', alt: `${m.name} and the other Akrinity print materials` }}
       sections={[
         { heading: 'Good for', paragraphs: m.goodFor },
         { heading: 'Less suited to', paragraphs: m.lessSuited },

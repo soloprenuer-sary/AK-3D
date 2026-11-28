@@ -26,7 +26,7 @@ const SECTIONS: LegalSection[] = [
     id: 'who',
     heading: 'Who we are',
     body: [
-      '[[LEGAL ENTITY NAME]] ("Akrinity", "we", "us") runs this website and the 3D printing studio behind it. Our registered address is [[REGISTERED ADDRESS]], Mumbai, India.',
+      '[[LEGAL ENTITY NAME]] ("Akrinity", "we", "us") runs this website and the 3D printing studio behind it. Our registered address is [[REGISTERED ADDRESS]], Bhiwandi, India.',
       'This policy explains what personal information we collect when you use akrinity.in, why we collect it, who we share it with, and the choices you have. It follows the Digital Personal Data Protection Act, 2023 and other Indian law that applies to us.',
     ],
   },

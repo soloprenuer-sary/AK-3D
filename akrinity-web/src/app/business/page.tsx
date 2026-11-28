@@ -18,6 +18,7 @@ export default async function Business() {
       title="Business and bulk orders"
       intro="Repeat batches, branded pieces, gifts and spare parts for your business, with a GST invoice for every order."
       note="Bulk prices are confirmed in your quote."
+      image={{ src: '/images/about/slide-printer.png', alt: 'An Akrinity printer building a part one thin layer at a time' }}
       sections={[
         {
           heading: 'Bulk of ready-made items',

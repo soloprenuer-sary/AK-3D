@@ -6,7 +6,7 @@
  * Install: copy this file AND the folder akrinity-invoices/ (vendor, fonts, invoice-html.php) to wp-content/mu-plugins/.
  * Seller details and numbering in wp-config.php (all optional, with temporary defaults):
  *   define( 'AKRINITY_LEGAL_NAME', 'Your registered business name' );
- *   define( 'AKRINITY_ADDRESS', "Street, Area\nMumbai 400001, Maharashtra" );
+ *   define( 'AKRINITY_ADDRESS', "Street, Area\nBhiwandi 421302, Maharashtra" );
  *   define( 'AKRINITY_GSTIN', '27ABCDE1234F1Z5' );        // also shown in the email footers
  *   define( 'AKRINITY_HSN', '3926' );                      // default HSN code of the products (a product can override it with the custom field _akr_hsn)
  *   define( 'AKRINITY_SERVICE_SAC', '996812' );            // SAC code printed on the delivery and cash on delivery fee lines
@@ -158,7 +158,7 @@ function akrinv_data( WC_Order $o ): array {
 	return array(
 		'seller'  => array(
 			'name'    => akrinv_const( 'AKRINITY_LEGAL_NAME', 'Akrinity' ),
-			'address' => akrinv_const( 'AKRINITY_ADDRESS', "Mumbai, Maharashtra\nIndia" ),
+			'address' => akrinv_const( 'AKRINITY_ADDRESS', "Bhiwandi, Maharashtra\nIndia" ),
 			'gstin'   => akrinv_const( 'AKRINITY_GSTIN', '' ),
 			'state'   => akrinv_state_label( $seller_state ),
 			'phone'   => akrinv_const( 'AKRINITY_WHATSAPP', '' ),

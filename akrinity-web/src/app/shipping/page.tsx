@@ -13,6 +13,7 @@ export default async function Shipping() {
     <InfoPage
       title="Shipping"
       intro="We ship across India with tracked delivery. Rates are shown at checkout after you enter your pincode."
+      image={{ src: '/images/about/slide-packaging.png', alt: 'A packed Akrinity parcel ready for tracked delivery' }}
       sections={[
         {
           heading: 'Delivery',

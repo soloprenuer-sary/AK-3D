@@ -11,7 +11,7 @@ export default function RefundsPage() {
     <InfoPage
       title="Refund and cancellation"
       intro="Cancelling is simple before we start printing. After printing starts, the rules depend on what was made."
-      note="DRAFT. Refund amounts and timings need confirming. [LAWYER/CA]"
+      image={{ src: '/images/about/slide-workshop.png', alt: 'The Akrinity workshop, where parts are made and finished' }}
       sections={[
         {
           heading: 'Before printing starts',
@@ -27,7 +27,7 @@ export default function RefundsPage() {
         },
         {
           heading: 'Ready-made items',
-          paragraphs: ['Unused items in original packing can be returned within [X] days. See the returns page for the steps.'],
+          paragraphs: ['Unused items in original packing can be returned within 2 days. See the returns page for the steps.'],
         },
         {
           heading: 'How refunds are paid',
@@ -37,7 +37,7 @@ export default function RefundsPage() {
         },
         {
           heading: 'When you will see it',
-          paragraphs: ['Refunds are processed within [X] working days of approval. Your bank may take additional time to show it.'],
+          paragraphs: ['Refunds are processed within 7 working days of approval. Your bank may take additional time to show it.'],
         },
       ]}
     />

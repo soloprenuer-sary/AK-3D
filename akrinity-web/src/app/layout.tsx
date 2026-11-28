@@ -13,12 +13,12 @@ import { WhatsAppButton } from '@/components/layout/WhatsAppButton';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { site } from '@/lib/site-config';
 
-const DESCRIPTION = '3D printed products, custom prints and design-and-print from Mumbai.';
+const DESCRIPTION = '3D printed products, custom prints and design-and-print from Bhiwandi.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: 'Akrinity: 3D printed products and custom prints from Mumbai',
+    default: 'Akrinity: 3D printed products and custom prints from Bhiwandi',
     template: '%s · Akrinity',
   },
   description: DESCRIPTION,
@@ -45,7 +45,7 @@ const ORGANISATION = {
   url: site.url,
   logo: `${site.url}/icon.svg`,
   description: DESCRIPTION,
-  address: { '@type': 'PostalAddress', addressLocality: 'Mumbai', addressCountry: 'IN' },
+  address: { '@type': 'PostalAddress', addressLocality: 'Bhiwandi', addressCountry: 'IN' },
   ...(site.supportEmail ? { email: site.supportEmail } : {}),
 };
 

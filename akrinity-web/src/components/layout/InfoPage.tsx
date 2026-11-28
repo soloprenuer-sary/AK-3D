@@ -12,12 +12,15 @@ export function InfoPage({
   intro,
   sections,
   note,
+  image,
   children,
 }: {
   title: string;
   intro: string;
   sections: InfoSection[];
   note?: string;
+  /** Photo for the hero. Without it, the page shows the image placeholder. */
+  image?: { src: string; alt: string };
   /** Extra content shown after the sections, for example a form. */
   children?: ReactNode;
 }) {
@@ -43,9 +46,14 @@ export function InfoPage({
               </p>
             )}
           </div>
-          <div className="img-ph" role="img" aria-label="Page image placeholder" style={{ aspectRatio: '4 / 3' }}>
-            <span>Image · 4 : 3</span>
-          </div>
+          {image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="info-img" src={image.src} alt={image.alt} />
+          ) : (
+            <div className="img-ph" role="img" aria-label="Page image placeholder" style={{ aspectRatio: '4 / 3' }}>
+              <span>Image · 4 : 3</span>
+            </div>
+          )}
         </div>
       </section>
 

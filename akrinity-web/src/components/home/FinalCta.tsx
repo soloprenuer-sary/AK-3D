@@ -41,7 +41,7 @@ export function FinalCta() {
           )}
           <div>
             <span>Studio</span>
-            <p>Mumbai, India</p>
+            <p>Bhiwandi, India</p>
           </div>
           {site.replyHours > 0 && (
             <div>

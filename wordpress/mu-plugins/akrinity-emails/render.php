@@ -482,7 +482,7 @@ function akr_em_shell( array $o ): string {
 	$parts[]  = '<tr><td bgcolor="' . $c['ink'] . '" class="pad" style="padding:28px 32px;border-radius:0 0 18px 18px;">' .
 		'<div style="font-family:' . $c['body'] . ';font-size:15px;line-height:1.55;color:#F3F1EA;">' . $help . '</div>' .
 		'<div style="padding-top:14px;font-family:' . $c['body'] . ';font-size:13px;line-height:1.9;">' . implode( ' &nbsp;·&nbsp; ', $nav ) . '</div>' .
-		'<div style="padding-top:16px;border-top:1px solid #34343A;margin-top:16px;font-family:' . $c['body'] . ';font-size:12px;line-height:1.6;color:#B8B4A8;">Akrinity Mumbai, India · GSTIN ' . $gstin . '<br>Prices include GST. You are getting this because of your activity on ' . esc_html( $site ) . '.' . akr_em_optout_footer() . '</div></td></tr>';
+		'<div style="padding-top:16px;border-top:1px solid #34343A;margin-top:16px;font-family:' . $c['body'] . ';font-size:12px;line-height:1.6;color:#B8B4A8;">Akrinity Bhiwandi, India · GSTIN ' . $gstin . '<br>Prices include GST. You are getting this because of your activity on ' . esc_html( $site ) . '.' . akr_em_optout_footer() . '</div></td></tr>';
 
 	return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only">' .
 		'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap">' .
