@@ -11,7 +11,7 @@ export function SiteFooter({ tree }: { tree: ShopCategory[] }) {
           <div>
             <Link className="fbrand" href="/" aria-label="Akrinity home">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/akrinity-logo.svg" alt="Akrinity" width={551} height={450} />
+              <img src="/images/akrinity-logo-lime.svg" alt="Akrinity" width={551} height={450} />
             </Link>
             <p style={{ color: 'var(--muted-dark)', fontSize: 14, marginTop: 10 }}>
               Get new drops and offers by email.
