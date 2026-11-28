@@ -153,6 +153,22 @@ const LOCAL_IMAGES = new Set([
   'spare-parts_knobs-and-clips',
 ]);
 
+/** Illustrations in public/category-images/main, named "<category slug>.svg". */
+const LOCAL_MAIN_IMAGES = new Set([
+  'anime-gaming-cosplay',
+  'desk',
+  'figurines-miniatures',
+  'hot-wheels-diecast',
+  'jewellery',
+  'keychains-gifts',
+  'sports-holders',
+]);
+
+/** Stand-in for a main category with no picture in WordPress. */
+export function localMainImage(slug: string): string | undefined {
+  return LOCAL_MAIN_IMAGES.has(slug) ? `/category-images/main/${slug}.svg` : undefined;
+}
+
 export function localSubImage(categorySlugValue: string, subSlugValue: string): string | undefined {
   const key = `${categorySlugValue}_${subSlugValue}`;
   return LOCAL_IMAGES.has(key) ? `/category-images/${key}.png` : undefined;

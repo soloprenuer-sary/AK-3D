@@ -17,7 +17,7 @@ export default function HowWePrint() {
         { heading: 'FDM, single colour', paragraphs: ['Filament is melted and laid down one thin layer at a time. The quickest and most economical option, in PLA+, PETG or ABS and ASA.'] },
         { heading: 'FDM, multi-colour', paragraphs: ['Several filaments in one print, for names, logos and colour blocks. It takes longer and may cost more; we confirm both before you pay.'] },
         { heading: 'Resin', paragraphs: ['Liquid resin cured by light, for fine detail: miniatures, busts and small precise parts. Made to order.'] },
-        { heading: 'Finishing and painting', paragraphs: ['Supports are removed and surfaces cleaned. Painting is quoted separately and made to order. [DECIDE: is painting offered at launch]'] },
+        { heading: 'Finishing and painting', paragraphs: ['Supports are removed and surfaces cleaned. Painting is quoted separately and made to order. [Currently painting is not launch]'] },
         { heading: 'Quality check', paragraphs: ['Each part is checked for layer adhesion, dimensions and surface finish before packing. Failed prints are reprinted, not sent.'] },
         { heading: 'Original designs only', paragraphs: ['We print our own designs and files you own. Parts from other designers need proof of licence, and we do not print licensed characters without written permission.'] },
       ]}
