@@ -51,6 +51,8 @@ export interface ShopCategory {
   menuLabel?: string;
   /** Tile colour on the home page and category header. */
   tone: string;
+  /** Category picture from WooCommerce, when one is uploaded. */
+  image?: string;
 }
 
 type BuiltIn = Pick<ShopCategory, 'name' | 'description' | 'subs' | 'tone'>;

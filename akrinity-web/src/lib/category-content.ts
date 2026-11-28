@@ -189,6 +189,7 @@ export async function getCategoryTree(): Promise<ShopCategory[]> {
       description: stripTags(m.description ?? '') || builtIn?.description || '',
       menuLabel: copy.get(m.id)?.menuLabel,
       tone: TONES[i % TONES.length],
+      image: m.image?.src || undefined,
       subs: subs.map((s) => decode(s.name)),
       subInfo: subs.map((s, j) => ({
         name: decode(s.name),
