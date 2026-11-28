@@ -1,6 +1,11 @@
 {
-  "date": "27 Nov 2026 (after the account, email and courier work)",
+  "date": "28 Nov 2026",
   "tests": [
+    {
+      "name": "Phone and cart checks (28 Nov)",
+      "result": "Local build at 375px and 1440px: header with logo and cart badge; product page (photo slider, About text collapse, short description, Add to cart bar above the footer); cart popup; shop list one per row with 15 then 10 more (22 products loaded); category page slider and no sideways scroll; Help & support button above the bottom bar; About team section; quick-links bar. No sideways scroll on the pages tested. Typecheck and lint pass. Not yet checked on a real phone or on the live site after the push",
+      "where": "Local build (headless Chrome), not the live site"
+    },
     {
       "name": "Quote, approve and pay (live)",
       "result": "QR-350: quote sent, wrong pincode blocked, approved with address (Awaiting payment, order made), Cashfree test checkout opened from the website, test wallet payment SUCCESS, back on the website \"Payment received\", quote and order Paid. QR-330: request with a 3D file, then every status to Completed with an email logged for each. Not run: failed or cancelled payment, live Cashfree",
@@ -106,9 +111,16 @@
         {
           "step": "Clear home page",
           "ideal": "Says what you make and how to order",
-          "site": "Home page, printing, categories, best sellers (view-all beside the heading, arrows under the cards on phones), process, knowledge hub (same layout)",
+          "site": "Home page, printing, categories, best sellers, process, knowledge hub. The header shows the Akrinity logo file (replacing the text logo) and a cart icon with a small item-count badge",
           "status": "done",
-          "test": "Pass (phone and desktop widths)"
+          "test": "Pass (local build, phone and desktop widths)"
+        },
+        {
+          "step": "About page with the team",
+          "ideal": "Shows who runs the studio",
+          "site": "\"Meet the team\" section: Satyam Chaudhary (Founder) and Sujit Prajapati (Co-Founder). Photos and short bios are still to come, so the cards show initials",
+          "status": "part",
+          "test": "Checked at 375px (local build)"
         }
       ]
     },
@@ -143,7 +155,14 @@
           "ideal": "Filters plus sort by price",
           "site": "Filters plus sort by price on the shop page; the black box on the filter list when hovering is fixed",
           "status": "done",
-          "test": "Pass"
+          "test": "Pass (live and local build)"
+        },
+        {
+          "step": "Load more products",
+          "ideal": "Fast lists that load more as you scroll",
+          "site": "Shop list: one product per row on phones, the first 15 products then 10 more as you scroll (22 in the test store). Category pages use the same loading; no sub-category has more than 15 products yet, so that was not tested",
+          "status": "done",
+          "test": "Tested on the shop page (local build); category pages not tested with more than 15 products"
         },
         {
           "step": "Save and compare",
@@ -167,18 +186,25 @@
       "goal": "Be sure it is the right one, then pick options.",
       "steps": [
         {
-          "step": "Photos and 3D view",
+          "step": "Photos and gallery",
           "ideal": "Photos, and a 3D preview for printed items",
-          "site": "The 3D view tab is back on every product. With a 3D file it shows the model; without one it shows a sample preview and a note that the real model is coming soon. The product quick view no longer overflows (short text with an ellipsis, link to full details)",
+          "site": "Every product photo is in a swipeable slider with arrows over the photo. The Photos and 3D view tabs were removed on 28 Nov (owner request); the 3D viewer code stays in the repo for later",
           "status": "done",
-          "test": "Owner checked; quick view overflow fixed"
+          "test": "Checked on a phone at 375px (local build); the 3D tab was re-added by a later commit and removed again on 28 Nov"
         },
         {
           "step": "Description, features, specs",
           "ideal": "Intro, key features, A+ pictures, specs table",
-          "site": "Done (intro and features on the text side; full width without A+ pictures)",
+          "site": "Intro and features on the text side; on phones the About text stops at about 370 words with a Read more button; full text stays in the page. Specs table below. Short description under the price (no character limit), no bullet list",
           "status": "done",
-          "test": "Pass"
+          "test": "Pass (local build, phone and desktop)"
+        },
+        {
+          "step": "Quick links on phones",
+          "ideal": "Easy access to shop, cart, account and custom printing from any page",
+          "site": "A fixed bottom bar on phones: Shop, Cart (with item count), Account and Custom printing. Hidden on product pages, where Add to cart sits at the bottom",
+          "status": "done",
+          "test": "Checked on a phone at 375px (local build); not yet checked on a real phone"
         },
         {
           "step": "Options and personalised text",
@@ -239,9 +265,9 @@
         {
           "step": "Upsell in the cart",
           "ideal": "Products that go with the cart",
-          "site": "A \"Goes well with your order\" row is in the cart; not yet checked by eye with a live cart",
+          "site": "Cart popup redesigned: item count, quantity stepper, remove, subtotal box, Checkout button. Cart offers and upsell from WooCommerce Marketing are shown in the cart (pushed 28 Nov); not yet checked by eye on the live cart",
           "status": "unverified",
-          "test": "Cart tests pass"
+          "test": "Cart popup checked at 375px (local build)"
         },
         {
           "step": "Coupon",
@@ -249,6 +275,13 @@
           "site": "At checkout; the coupon box layout is fixed; a bad code shows the store's message",
           "status": "done",
           "test": "Pass (stand-in)"
+        },
+        {
+          "step": "Checkout bar on the site",
+          "ideal": "See the cart total and go to checkout from any page",
+          "site": "Checkout bar at the bottom shows the item count and subtotal; hidden on the cart and checkout pages and on product pages on phones",
+          "status": "done",
+          "test": "Checked at 375px (local build)"
         }
       ]
     },
@@ -414,9 +447,9 @@
         {
           "step": "Quick chat",
           "ideal": "WhatsApp button on every page",
-          "site": "WhatsApp button on every page, shown once you set the number",
-          "status": "part",
-          "test": "Pass (set and not set)"
+          "site": "A \"Help & support\" button sits at the bottom of every page and opens WhatsApp on +91 84596 25396 with a pre-filled message. The number can be changed in Vercel (NEXT_PUBLIC_WHATSAPP)",
+          "status": "done",
+          "test": "Checked at 375px and on the product page (local build)"
         }
       ]
     },
@@ -536,6 +569,13 @@
           "site": "Works; welcome email now in the lime design",
           "status": "done",
           "test": "Earlier test"
+        },
+        {
+          "step": "Stop marketing emails",
+          "ideal": "Customers can opt out of marketing emails, and the opt-out is respected",
+          "site": "Customer emails end with a \"Stop marketing emails\" link, signed per address. It opens /stop-marketing on the site, which records the opt-out in WordPress. Order and account emails still come. Shop-owner emails get no link. The WordPress files are not yet uploaded to the live site, and the wording needs a lawyer check",
+          "status": "unverified",
+          "test": "Storefront page built (local build); WordPress code not run in this workspace (PHP not installed)"
         },
         {
           "step": "Abandoned cart, back in stock, review request",
@@ -670,6 +710,8 @@
   ],
   "pending": {
     "you": [
+      "Upload the WordPress email files to the live site: wordpress/mu-plugins/akrinity-emails.php and wordpress/mu-plugins/akrinity-emails/render.php (1.1.0). Keep a backup of the old files first. Then send a test order to check the footer and the \"Stop marketing emails\" link.",
+      "In wp-config.php on the live site, set AKRINITY_GSTIN to 27CIGPC2824L1Z9. This also changes the GST invoices.",
       "Give the real WhatsApp number; the \"Chat on WhatsApp\" button in the quote email appears once it replaces the placeholder.",
       "Check the test inbox for the quote emails of QR-330 and QR-350, including the invoice on the Shipped one.",
       "Decide when to take real payments: Cashfree is in test mode; live keys go into WooCommerce, Payments, Cashfree.",

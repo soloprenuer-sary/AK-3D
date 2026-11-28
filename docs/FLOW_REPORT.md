@@ -1,13 +1,14 @@
-# Website flow report (27 Nov 2026 (after the account, email and courier work))
+# Website flow report (28 Nov 2026)
 
-What a shop like Akrinity needs, step by step, what the site does today, and what the tests found. 64 steps in 12 flows.
+What a shop like Akrinity needs, step by step, what the site does today, and what the tests found. 69 steps in 12 flows.
 
-**Score:** Done 37 · Built, not confirmed 9 · Partly done 15 · On hold 0 · Not done 3
+**Score:** Done 41 · Built, not confirmed 10 · Partly done 15 · On hold 0 · Not done 3
 
 ## Tests run
 
 | Test | Result | Where |
 |---|---|---|
+| Phone and cart checks (28 Nov) | Local build at 375px and 1440px: header with logo and cart badge; product page (photo slider, About text collapse, short description, Add to cart bar above the footer); cart popup; shop list one per row with 15 then 10 more (22 products loaded); category page slider and no sideways scroll; Help & support button above the bottom bar; About team section; quick-links bar. No sideways scroll on the pages tested. Typecheck and lint pass. Not yet checked on a real phone or on the live site after the push | Local build (headless Chrome), not the live site |
 | Quote, approve and pay (live) | QR-350: quote sent, wrong pincode blocked, approved with address (Awaiting payment, order made), Cashfree test checkout opened from the website, test wallet payment SUCCESS, back on the website "Payment received", quote and order Paid. QR-330: request with a 3D file, then every status to Completed with an email logged for each. Not run: failed or cancelled payment, live Cashfree | Live website and server, test records |
 | Phone view changes (27 Nov) | Live site, 375px: menu opens with quick links and category blocks, Get a quote fixed at the bottom, tapping a block opens its category, page does not scroll behind the menu, links close it; no page errors. Shop in 2 columns, product page opens at the top, photo previews and named colour options, Best sellers and Knowledge hub controls. Browser suite before the push: 72 passed, 6 skipped. Owner to confirm on a real phone | Live website at 375px and 1280px |
 | Whole-trip browser test + single-flow tests (all 78 checks) | Latest run on the clean-up build: 72 passed, 6 skipped (2 place-order steps off by default, 2 device-specific, 2 policy-text checks parked until the lawyer text exists), 0 failed. Type check and lint are clean. One earlier run showed a forgot-password failure caused by my own repeated runs hitting the rate limit; it passed on a fresh server | Local build (not yet deployed; the changes are not committed) |
@@ -32,7 +33,8 @@ _A stranger finds Akrinity on Google, Instagram or WhatsApp and lands on a page 
 | Link previews on WhatsApp and Instagram | Share picture, title and price when a link is pasted | Share tags and a branded share picture added | Done | Pass (live after deploy) |
 | Rich results on Google | Product structured data: price, stock, rating | Product data (price, stock, rating) added to every product page, plus Organisation data | Done | Pass (live after deploy) |
 | Know where visitors come from | Analytics, Search Console, Merchant Center | Nothing installed (and no cookie notice yet) | Not done | - |
-| Clear home page | Says what you make and how to order | Home page, printing, categories, best sellers (view-all beside the heading, arrows under the cards on phones), process, knowledge hub (same layout) | Done | Pass (phone and desktop widths) |
+| Clear home page | Says what you make and how to order | Home page, printing, categories, best sellers, process, knowledge hub. The header shows the Akrinity logo file (replacing the text logo) and a cart icon with a small item-count badge | Done | Pass (local build, phone and desktop widths) |
+| About page with the team | Shows who runs the studio | "Meet the team" section: Satyam Chaudhary (Founder) and Sujit Prajapati (Co-Founder). Photos and short bios are still to come, so the cards show initials | Partly done | Checked at 375px (local build) |
 
 ## 2. Browse and search
 
@@ -43,7 +45,8 @@ _Find the right product in a few taps._
 | Category menu | Main and sub-categories, popular picks | Eight main categories in menu order (Decor, Desk, Hot Wheels & diecast, Sports holders, Figurines & miniatures, Anime/gaming/cosplay, Jewellery, Keychains & gifts), driven from WordPress. Live since 25 Nov; owner approved the new pictures and banners on 27 Nov | Done | Pass (live menu check) |
 | Products in the right category | Every product belongs to a category | Every product is placed in its category | Done | Owner checked |
 | Search | Live results and a clear no-results message | Search overlay with live results | Done | Pass |
-| Filter and sort | Filters plus sort by price | Filters plus sort by price on the shop page; the black box on the filter list when hovering is fixed | Done | Pass |
+| Filter and sort | Filters plus sort by price | Filters plus sort by price on the shop page; the black box on the filter list when hovering is fixed | Done | Pass (live and local build) |
+| Load more products | Fast lists that load more as you scroll | Shop list: one product per row on phones, the first 15 products then 10 more as you scroll (22 in the test store). Category pages use the same loading; no sub-category has more than 15 products yet, so that was not tested | Done | Tested on the shop page (local build); category pages not tested with more than 15 products |
 | Save and compare | Wishlist and compare | Wishlist and compare both work and survive a reload (kept in the browser, not synced to the account). Compare page rebuilt: sticky header with Add to cart, "show only differences", lowest price and best rating marked, size and weight rows, bulk prices | Done | Pass |
 | Wrong address | Friendly 404 with a way home | Yes | Done | Pass |
 
@@ -53,8 +56,9 @@ _Be sure it is the right one, then pick options._
 
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
-| Photos and 3D view | Photos, and a 3D preview for printed items | The 3D view tab is back on every product. With a 3D file it shows the model; without one it shows a sample preview and a note that the real model is coming soon. The product quick view no longer overflows (short text with an ellipsis, link to full details) | Done | Owner checked; quick view overflow fixed |
-| Description, features, specs | Intro, key features, A+ pictures, specs table | Done (intro and features on the text side; full width without A+ pictures) | Done | Pass |
+| Photos and gallery | Photos, and a 3D preview for printed items | Every product photo is in a swipeable slider with arrows over the photo. The Photos and 3D view tabs were removed on 28 Nov (owner request); the 3D viewer code stays in the repo for later | Done | Checked on a phone at 375px (local build); the 3D tab was re-added by a later commit and removed again on 28 Nov |
+| Description, features, specs | Intro, key features, A+ pictures, specs table | Intro and features on the text side; on phones the About text stops at about 370 words with a Read more button; full text stays in the page. Specs table below. Short description under the price (no character limit), no bullet list | Done | Pass (local build, phone and desktop) |
+| Quick links on phones | Easy access to shop, cart, account and custom printing from any page | A fixed bottom bar on phones: Shop, Cart (with item count), Account and Custom printing. Hidden on product pages, where Add to cart sits at the bottom | Done | Checked on a phone at 375px (local build); not yet checked on a real phone |
 | Options and personalised text | Material, colour, size, name text with checks | Yes, odd characters refused | Done | Pass |
 | Bulk prices | Price ranges by quantity | Shown where the ranges are filled in | Done | Pass |
 | Delivery estimate for my pincode | Gives a delivery date | Rule to build: printing time of the product + 7 business days (same rule as above) | Partly done | - |
@@ -69,8 +73,9 @@ _Review and change the order without friction._
 |---|---|---|---|---|
 | Add, change quantity, remove | Works, with a drawer and a cart page | Yes | Done | Pass |
 | Cart is kept | Survives a reload; follows the customer to another device | Survives a reload; stays on this device only | Done | Pass (owner checked) |
-| Upsell in the cart | Products that go with the cart | A "Goes well with your order" row is in the cart; not yet checked by eye with a live cart | Built, not confirmed | Cart tests pass |
+| Upsell in the cart | Products that go with the cart | Cart popup redesigned: item count, quantity stepper, remove, subtotal box, Checkout button. Cart offers and upsell from WooCommerce Marketing are shown in the cart (pushed 28 Nov); not yet checked by eye on the live cart | Built, not confirmed | Cart popup checked at 375px (local build) |
 | Coupon | Coupon box with clear messages | At checkout; the coupon box layout is fixed; a bad code shows the store's message | Done | Pass (stand-in) |
+| Checkout bar on the site | See the cart total and go to checkout from any page | Checkout bar at the bottom shows the item count and subtotal; hidden on the cart and checkout pages and on product pages on phones | Done | Checked at 375px (local build) |
 
 ## 5. Checkout and payment
 
@@ -112,7 +117,7 @@ _Problems get solved without a phone call._
 | Policies | Shipping, returns, refunds, privacy, terms reviewed by a lawyer | Policy pages still hold placeholders and sample text until the owner and the lawyer give the real text | Partly done | Parked (waiting for text) |
 | Cancel or return from the order page | A request button on the order | A cancel or return form is on the order page. The request is kept on the order itself (no separate record), you approve it there, and the order page shows its state | Built, not confirmed | Server run on test orders; website form not run by me |
 | Refund email | Branded refund email | Cancelled, return and refund emails share one design with a "Continue shopping" button; an order cancelled by hand sends it too | Built, not confirmed | Server run on test orders; inbox not checked |
-| Quick chat | WhatsApp button on every page | WhatsApp button on every page, shown once you set the number | Partly done | Pass (set and not set) |
+| Quick chat | WhatsApp button on every page | A "Help & support" button sits at the bottom of every page and opens WhatsApp on +91 84596 25396 with a pre-filled message. The number can be changed in Vercel (NEXT_PUBLIC_WHATSAPP) | Done | Checked at 375px and on the product page (local build) |
 
 ## 8. Account
 
@@ -154,6 +159,7 @@ _Turn one order into the next._
 | Step | A good shop | Akrinity today | Status | Test |
 |---|---|---|---|---|
 | Newsletter | Sign-up with a welcome email | Works; welcome email now in the lime design | Done | Earlier test |
+| Stop marketing emails | Customers can opt out of marketing emails, and the opt-out is respected | Customer emails end with a "Stop marketing emails" link, signed per address. It opens /stop-marketing on the site, which records the opt-out in WordPress. Order and account emails still come. Shop-owner emails get no link. The WordPress files are not yet uploaded to the live site, and the wording needs a lawyer check | Built, not confirmed | Storefront page built (local build); WordPress code not run in this workspace (PHP not installed) |
 | Abandoned cart, back in stock, review request | Automatic reminder emails | Review request is built. Abandoned cart needs the storefront to send carts (not built); back in stock not built | Partly done | - |
 | Offers and referral | Coupon campaigns, share-and-earn | Thank-you offer email with a code and share button, after each order; OFF until the owner sets the code and switches it on (referral logic on hold) | Partly done | Test render only |
 
@@ -191,6 +197,8 @@ _An order arrives, gets printed, shipped and closed without mistakes._
 ## Still to do
 
 ### You (the owner)
+- [ ] Upload the WordPress email files to the live site: wordpress/mu-plugins/akrinity-emails.php and wordpress/mu-plugins/akrinity-emails/render.php (1.1.0). Keep a backup of the old files first. Then send a test order to check the footer and the "Stop marketing emails" link.
+- [ ] In wp-config.php on the live site, set AKRINITY_GSTIN to 27CIGPC2824L1Z9. This also changes the GST invoices.
 - [ ] Give the real WhatsApp number; the "Chat on WhatsApp" button in the quote email appears once it replaces the placeholder.
 - [ ] Check the test inbox for the quote emails of QR-330 and QR-350, including the invoice on the Shipped one.
 - [ ] Decide when to take real payments: Cashfree is in test mode; live keys go into WooCommerce, Payments, Cashfree.
