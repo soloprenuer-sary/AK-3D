@@ -1770,3 +1770,19 @@ header.site:has(.mobile-menu){z-index:45}
   .dg-more-btn{display:inline-flex;align-items:center;margin-top:4px;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--ink);background:var(--white);font-weight:700;font-size:14px;cursor:pointer}
   .dg-more-btn:hover{background:var(--accent)}
 }
+
+/* Phone bottom bar: Shop, Cart, Account, Custom printing */
+.bnav{display:none}
+@media (max-width:760px){
+  .bnav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));position:fixed;left:0;right:0;bottom:0;z-index:35;background:var(--paper);border-top:1.5px solid var(--ink);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  .bnav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;font-size:11px;font-weight:700;color:var(--ink);text-decoration:none;border-radius:14px}
+  .bnav-item[aria-current="page"]{background:var(--accent);border:1.5px solid var(--ink)}
+  .bnav-ico{position:relative;display:grid;place-items:center}
+  .bnav-badge{position:absolute;top:-6px;right:-10px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:var(--accent);border:1.5px solid var(--ink);font-size:10px;font-weight:800;line-height:15px;text-align:center}
+  .bnav-item[aria-current="page"] .bnav-badge{background:var(--white)}
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+  .wa-help{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  body:has(.buyrow) .bnav{display:none}
+  body:has(.buyrow){padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+  body:has(.buyrow) .wa-help{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+}

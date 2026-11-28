@@ -10,6 +10,7 @@ import { buildMenu, getCategoryTree } from '@/lib/category-content';
 import { CategoryTreeProvider } from '@/components/layout/CategoryTree';
 import { CartToast } from '@/components/cart/CartToast';
 import { WhatsAppButton } from '@/components/layout/WhatsAppButton';
+import { BottomNav } from '@/components/layout/BottomNav';
 import { site } from '@/lib/site-config';
 
 const DESCRIPTION = '3D printed products, custom prints and design-and-print from Mumbai.';
@@ -77,6 +78,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <SiteFooter tree={tree} />
             <CartToast />
             <WhatsAppButton />
+            <BottomNav />
           </CartProvider>
         </CategoryTreeProvider>
       </body>
