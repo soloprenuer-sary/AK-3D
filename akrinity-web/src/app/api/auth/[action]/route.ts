@@ -70,18 +70,32 @@ function upstash(url: string, token: string): KV {
   };
 }
 
+let setupWarned = false;
+
 function readEnv(): Env {
   const e = process.env;
+  // Written once per server instance so the logs show a missing protection without flooding them.
+  if (!setupWarned && process.env.NODE_ENV === 'production') {
+    setupWarned = true;
+    if (!e.TURNSTILE_SECRET_KEY) console.warn('security: bot check (Turnstile) is not configured');
+    if (!(e.UPSTASH_REDIS_REST_URL && e.UPSTASH_REDIS_REST_TOKEN))
+      console.warn(
+        'security: rate limits are per server instance (Upstash Redis is not configured)',
+      );
+    if (e.AUTH_STATUS === '1')
+      console.warn('security: AUTH_STATUS=1 is set; turn it off in production');
+  }
+  const kv =
+    e.UPSTASH_REDIS_REST_URL && e.UPSTASH_REDIS_REST_TOKEN
+      ? upstash(e.UPSTASH_REDIS_REST_URL, e.UPSTASH_REDIS_REST_TOKEN)
+      : undefined;
   return {
     WP_URL: e.WP_URL ?? '',
     AKRINITY_SHARED_SECRET: e.AKRINITY_SHARED_SECRET,
     TURNSTILE_SECRET_KEY: e.TURNSTILE_SECRET_KEY,
     ALLOWED_ORIGINS: e.ALLOWED_ORIGINS,
     AUTH_STATUS: e.AUTH_STATUS,
-    AUTH_KV:
-      e.UPSTASH_REDIS_REST_URL && e.UPSTASH_REDIS_REST_TOKEN
-        ? upstash(e.UPSTASH_REDIS_REST_URL, e.UPSTASH_REDIS_REST_TOKEN)
-        : undefined,
+    AUTH_KV: kv,
   };
 }
 
@@ -152,7 +166,10 @@ async function limitIp(
   limit: { max: number; window: number },
 ): Promise<Response | null> {
   const key = `${name}:ip:${await sha(clientIp(request))}`;
-  if ((await readCount(env, key)) >= limit.max) return tooMany(limit.window);
+  if ((await readCount(env, key)) >= limit.max) {
+    await logSecurity('rate_limited', request, { limit: name });
+    return tooMany(limit.window);
+  }
   await bump(env, key, limit.window);
   return null;
 }
@@ -233,6 +250,29 @@ async function readJson(request: Request): Promise<Record<string, unknown> | nul
 
 const str = (v: unknown, max: number): string =>
   typeof v === 'string' ? v.trim().slice(0, max) : '';
+
+/** Compares two secrets in the same time whatever they contain. */
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/**
+ * One line per security event in the Vercel logs (type, hashed address, which limit). Never logs
+ * passwords, email addresses or tokens.
+ */
+async function logSecurity(
+  event: string,
+  request: Request,
+  extra: Record<string, string> = {},
+): Promise<void> {
+  const ipHash = await sha(clientIp(request));
+  console.warn(
+    JSON.stringify({ security: event, ip: ipHash, at: new Date().toISOString(), ...extra }),
+  );
+}
 
 /** Cross-site requests are refused: the Origin header must match this site. */
 function sameOrigin(request: Request, env: Env): boolean {
@@ -393,12 +433,18 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
   const ipKey = `login:ip:${await sha(ip)}`;
   const mailKey = `login:fail:${await sha(email)}`;
 
-  if ((await readCount(env, ipKey)) >= LIMITS.loginIp.max) return tooMany(LIMITS.loginIp.window);
-  if ((await readCount(env, mailKey)) >= LIMITS.loginEmailFail.max)
+  if ((await readCount(env, ipKey)) >= LIMITS.loginIp.max) {
+    await logSecurity('rate_limited', request, { limit: 'login-ip' });
+    return tooMany(LIMITS.loginIp.window);
+  }
+  if ((await readCount(env, mailKey)) >= LIMITS.loginEmailFail.max) {
+    await logSecurity('rate_limited', request, { limit: 'login-account' });
     return tooMany(LIMITS.loginEmailFail.window);
+  }
   await bump(env, ipKey, LIMITS.loginIp.window);
 
   if (!(await verifyTurnstile(env, str(body.turnstileToken, 2048), ip))) {
+    await logSecurity('bot_check_failed', request, { action: 'login' });
     return json({ error: 'Bot check failed. Please try again.' }, 400);
   }
 
@@ -415,6 +461,7 @@ async function handleLogin(request: Request, env: Env): Promise<Response> {
     );
   }
   if (!jwt) {
+    await logSecurity('login_failed', request);
     await bump(env, mailKey, LIMITS.loginEmailFail.window);
     await new Promise((r) => setTimeout(r, 400)); // slows guessing a little
     return json({ error: BAD_LOGIN }, 401);
@@ -1258,7 +1305,15 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   if (!env.WP_URL) return json({ error: 'Accounts are not configured.' }, 503);
 
   if (request.method === 'GET') {
-    if (action === 'status' && env.AUTH_STATUS === '1') return handleStatus(env);
+    if (action === 'status' && env.AUTH_STATUS === '1') {
+      // The setup report names which protections are missing, so only the owner may read it.
+      if (
+        !env.AKRINITY_SHARED_SECRET ||
+        !safeEqual(request.headers.get('X-Akrinity-Key') ?? '', env.AKRINITY_SHARED_SECRET)
+      )
+        return json({ error: 'Not found.' }, 404);
+      return handleStatus(env);
+    }
     if (action === 'me') return handleMe(request, env);
     if (action === 'orders') return handleOrders(request, env);
     if (action === 'order') return handleOrder(request, env);
@@ -1274,6 +1329,10 @@ async function handle({ request, env, params }: Ctx): Promise<Response> {
   if (request.method !== 'POST')
     return json({ error: 'Method not allowed.' }, 405, { Allow: 'POST' });
   if (!sameOrigin(request, env)) {
+    await logSecurity('origin_blocked', request, {
+      action: String(action ?? ''),
+      origin: (request.headers.get('Origin') ?? 'none').slice(0, 120),
+    });
     return json(
       {
         error: 'This request was blocked for your safety. Reload the page and try again.',
