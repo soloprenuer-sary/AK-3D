@@ -7,7 +7,7 @@
  * When WordPress is unreachable, or has no main category with sub-categories yet, the built-in list in
  * shop-data.ts is used, so the site never breaks. Nothing here throws.
  */
-import { CATEGORIES, localMainImage, localSubImage, type ShopCategory } from './shop-data';
+import { CATEGORIES, mainCategoryImage, subCategoryImage, type ShopCategory } from './shop-data';
 
 const STORE_API = process.env.NEXT_PUBLIC_WC_STORE_API_URL ?? '';
 const REVALIDATE = 60;
@@ -189,13 +189,13 @@ export async function getCategoryTree(): Promise<ShopCategory[]> {
       description: stripTags(m.description ?? '') || builtIn?.description || '',
       menuLabel: copy.get(m.id)?.menuLabel,
       tone: TONES[i % TONES.length],
-      image: m.image?.src || localMainImage(m.slug),
+      image: mainCategoryImage(m.slug, m.image?.src),
       subs: subs.map((s) => decode(s.name)),
       subInfo: subs.map((s, j) => ({
         name: decode(s.name),
         slug: s.slug,
         id: s.id,
-        image: s.image?.src || localSubImage(m.slug, s.slug),
+        image: subCategoryImage(m.slug, s.slug, s.image?.src),
         group: copy.get(s.id)?.menuGroup,
         // Ticked "popular" ones, or the first four when none is ticked.
         popular: picked.length ? picked.includes(s) : j < 4,

@@ -807,7 +807,7 @@ dialog::backdrop{background:rgba(11,11,12,.55)}
 }
 /* v2 tuning */
 .cb-tiles{grid-template-columns:repeat(auto-fit,minmax(140px,210px));gap:12px}
-.cb-tile-img{aspect-ratio:16/10}
+.cb-tile-img{aspect-ratio:4/3}
 .cb-tile-img b{font-size:44px}
 .mm-tile-img{aspect-ratio:4/3}
 .mm-tiles{grid-template-columns:repeat(auto-fit,minmax(140px,190px))}

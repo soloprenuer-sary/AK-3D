@@ -156,6 +156,7 @@ const LOCAL_IMAGES = new Set([
 /** Illustrations in public/category-images/main, named "<category slug>.svg". */
 const LOCAL_MAIN_IMAGES = new Set([
   'anime-gaming-cosplay',
+  'decor',
   'desk',
   'figurines-miniatures',
   'hot-wheels-diecast',
@@ -164,9 +165,44 @@ const LOCAL_MAIN_IMAGES = new Set([
   'sports-holders',
 ]);
 
-/** Stand-in for a main category with no picture in WordPress. */
-export function localMainImage(slug: string): string | undefined {
+/**
+ * Old stand-in pictures uploaded to WordPress that the site no longer shows (matched by file name).
+ * A new upload in WordPress has a different name, so it still wins.
+ */
+const RETIRED_WP_IMAGES: Record<string, string> = { decor: '/figurines-miniatures_busts.' };
+
+/** A main category's picture: the WordPress one, else the illustration shipped with the site. */
+export function mainCategoryImage(slug: string, wpImage?: string): string | undefined {
+  const retired = RETIRED_WP_IMAGES[slug];
+  if (wpImage && !(retired && wpImage.includes(retired))) return wpImage;
   return LOCAL_MAIN_IMAGES.has(slug) ? `/category-images/main/${slug}.svg` : undefined;
+}
+
+/** Sub-category illustrations in public/category-images/sub, named "<category slug>_<sub slug>.svg". */
+const LOCAL_SUB_SVGS = new Set([
+  'anime-gaming-cosplay_cosplay-masks',
+  'decor_showpieces',
+  'jewellery_bangles-stand',
+  'jewellery_earrings-holder',
+]);
+
+/** Sub-category uploads that do not match their name (matched by file name; a new upload still wins). */
+const RETIRED_SUB_IMAGES: Record<string, string> = {
+  'anime-gaming-cosplay_cosplay-masks': '/hobby-cosplay_cosplay-badges.',
+  decor_showpieces: '/home-decor_showpieces.',
+};
+
+/** A sub-category's picture: the WordPress one, else an illustration shipped with the site. */
+export function subCategoryImage(
+  categorySlugValue: string,
+  subSlugValue: string,
+  wpImage?: string,
+): string | undefined {
+  const key = `${categorySlugValue}_${subSlugValue}`;
+  const retired = RETIRED_SUB_IMAGES[key];
+  if (wpImage && !(retired && wpImage.includes(retired))) return wpImage;
+  if (LOCAL_SUB_SVGS.has(key)) return `/category-images/sub/${key}.svg`;
+  return localSubImage(categorySlugValue, subSlugValue);
 }
 
 export function localSubImage(categorySlugValue: string, subSlugValue: string): string | undefined {
