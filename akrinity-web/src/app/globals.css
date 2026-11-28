@@ -60,6 +60,8 @@ footer.site{background:var(--ink);color:var(--paper);margin-top:0}
 footer.site .wrap{padding-top:72px;padding-bottom:32px}
 .fcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:40px}
 .fcols .wm{font:400 40px/1 var(--display);text-transform:uppercase}
+.fcols .fbrand{display:inline-block}
+.fcols .fbrand img{display:block;height:72px;width:auto}
 .fcols h2{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
 .fcols a{display:block;color:var(--paper);text-decoration:none;font-size:15px;padding:7px 0;transition:color .2s var(--ease)}
 .fcols a:hover{color:var(--accent)}
